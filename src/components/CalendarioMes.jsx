@@ -64,10 +64,10 @@ export default function CalendarioMes() {
       </Box>
       
       <VStack fontSize={"1.5rem"} h={"30vh"} w={"100%"} align={"end"} justify={"space-evenly"}>
-        <Link href="clientas">Clientas</Link>
-        <Link href="lashistas">Lashistas</Link>
-        <Link href="servicios">Servicios</Link>
-        <Link href="servicios">Citas</Link>
+        <Link>Clientas</Link>
+        <Link>Lashistas</Link>
+        <Link>Servicios</Link>
+        <Link>Citas</Link>
       </VStack>
     </VStack>
   );
