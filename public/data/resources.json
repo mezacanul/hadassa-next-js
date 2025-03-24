@@ -1,0 +1,8 @@
+[
+    { "id": "a1", "title": "Hadassa", "cama": 1, "src": "lsh1.png" },
+    { "id": "a2", "title": "Hadassa", "cama": 2, "src": "lsh1.png" },
+    { "id": "b1", "title": "Aithana", "cama": 1, "src": "lsh2.png" },
+    { "id": "b2", "title": "Aithana", "cama": 2, "src": "lsh2.png" },
+    { "id": "c1", "title": "Eli", "cama": 1, "src": "lsh3.png" },
+    { "id": "c2", "title": "Eli", "cama": 2, "src": "lsh3.png" }
+]

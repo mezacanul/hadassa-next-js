@@ -1,0 +1,136 @@
+[
+    {
+        "title": "Sofia Rodriguez - Lash y Diseño",
+        "start": "2025-03-08T09:30:00",
+        "end": "2025-03-08T10:30:00",
+        "resourceId": "b1"
+    },
+    {
+        "title": "Karen Magaña - Lami",
+        "start": "2025-03-08T10:00:00",
+        "end": "2025-03-08T11:00:00",
+        "resourceId": "b2"
+    },
+    {
+        "title": "Ana Karen Palma - Lami",
+        "start": "2025-03-08T11:00:00",
+        "end": "2025-03-08T12:00:00",
+        "resourceId": "b1"
+    },
+    {
+        "title": "Patricia Palma - Brow Henna",
+        "start": "2025-03-08T12:00:00",
+        "end": "2025-03-08T12:30:00",
+        "resourceId": "b2"
+    },
+    {
+        "title": "Marian Rubio - Diseño",
+        "start": "2025-03-08T12:30:00",
+        "end": "2025-03-08T13:00:00",
+        "resourceId": "b1"
+    },
+    {
+        "title": "Katia Vazquez - Diseño",
+        "start": "2025-03-08T13:00:00",
+        "end": "2025-03-08T13:30:00",
+        "resourceId": "b2"
+    },
+    {
+        "title": "Dra. Fabiola Balam - Diseño",
+        "start": "2025-03-08T13:30:00",
+        "end": "2025-03-08T14:00:00",
+        "resourceId": "b1"
+    },
+
+    {
+        "title": "Mariana Pérez - Lash y Diseño",
+        "start": "2025-03-08T09:30:00",
+        "end": "2025-03-08T10:30:00",
+        "resourceId": "a1"
+    },
+    {
+        "title": "Camila Calderón - Lash y Diseño",
+        "start": "2025-03-08T10:30:00",
+        "end": "2025-03-08T11:30:00",
+        "resourceId": "a2"
+    },
+    {
+        "title": "Yarisa Fernandez - Lami",
+        "start": "2025-03-08T11:00:00",
+        "end": "2025-03-08T12:00:00",
+        "resourceId": "a1"
+    },
+    {
+        "title": "Paula Godinez - Diseño",
+        "start": "2025-03-08T12:00:00",
+        "end": "2025-03-08T12:30:00",
+        "resourceId": "a2"
+    },
+    {
+        "title": "Susan - Lami",
+        "start": "2025-03-08T14:00:00",
+        "end": "2025-03-08T15:00:00",
+        "resourceId": "a1"
+    },
+    {
+        "title": "Susana (Mamá) - Diseño",
+        "start": "2025-03-08T14:00:00",
+        "end": "2025-03-08T14:30:00",
+        "resourceId": "a2"
+    },
+    {
+        "title": "Yamileth (carcamo) - Lash y Lami",
+        "start": "2025-03-08T15:00:00",
+        "end": "2025-03-08T16:30:00",
+        "resourceId": "a2"
+    },
+    {
+        "title": "Nora Manzanilla - Lami",
+        "start": "2025-03-08T16:00:00",
+        "end": "2025-03-08T17:00:00",
+        "resourceId": "a1"
+    },
+
+    {
+        "title": "Montserrat Rosado - Lami",
+        "start": "2025-03-08T09:30:00",
+        "end": "2025-03-08T10:30:00",
+        "resourceId": "c1"
+    },
+    {
+        "title": "Fernanda Molina - Lami",
+        "start": "2025-03-08T10:00:00",
+        "end": "2025-03-08T11:00:00",
+        "resourceId": "c2"
+    },
+    {
+        "title": "Mitzi Molina - Lami",
+        "start": "2025-03-08T11:00:00",
+        "end": "2025-03-08T12:00:00",
+        "resourceId": "c1"
+    },
+    {
+        "title": "Ale Heredia - Lami",
+        "start": "2025-03-08T11:30:00",
+        "end": "2025-03-08T12:30:00",
+        "resourceId": "c2"
+    },
+    {
+        "title": "Ana Pao Mezo - Lami",
+        "start": "2025-03-08T12:30:00",
+        "end": "2025-03-08T13:30:00",
+        "resourceId": "c1"
+    },
+    {
+        "title": "Tita Hagar - Brow Henna",
+        "start": "2025-03-08T12:30:00",
+        "end": "2025-03-08T13:00:00",
+        "resourceId": "c2"
+    },
+    {
+        "title": "Andrea Palma - Lami",
+        "start": "2025-03-08T13:00:00",
+        "end": "2025-03-08T14:00:00",
+        "resourceId": "c2"
+    }
+]

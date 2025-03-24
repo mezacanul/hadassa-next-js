@@ -12,6 +12,58 @@ import {
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
+function renderEventContent(eventInfo) {
+  let color = eventInfo.event.title == "Disponible" ? "#198754" : "#6c757d"
+  return (
+    <Box bg={color} p={"0.2rem"}>
+      <Text>{eventInfo.event.title}</Text>
+    </Box>
+  );
+}
+
+export default function CalendarioMes() {
+  const handleDayClick = (info)=>{
+    console.log(info.dayNumberText);
+    
+  }
+  return (
+    <VStack py="1rem" px="2rem">
+      <Box width="100%">
+        <style>
+            {`
+              .fc-daygrid-day {
+                // background-color:rgba(238, 144, 144, 0.5) !important; /* Set your desired background color */
+                background-color:rgba(144, 238, 144, 0.5) !important; /* Set your desired background color */
+              }
+            `}
+        </style>
+        <FullCalendar
+          height="60vh"
+          plugins={[dayGridPlugin]}
+          initialView="dayGridMonth"
+          weekends={true}
+          hiddenDays={[0]}
+          // events={events}
+          eventContent={renderEventContent}
+          // selectable={true}
+          dayCellDidMount={(info) => {
+            info.el.addEventListener("click", () => {
+              handleDayClick(info)
+            });
+          }}
+        />
+      </Box>
+      
+      <VStack fontSize={"1.5rem"} h={"30vh"} w={"100%"} align={"end"} justify={"space-evenly"}>
+        <Link>Citas</Link>
+        <Link>Clientas</Link>
+        <Link>Servicios</Link>
+        <Link>Lashistas</Link>
+      </VStack>
+    </VStack>
+  );
+}
+
 const events = [
   { title: "Lleno", start: "2025-03-03" },
   { title: "Lleno", start: "2025-03-04" },
@@ -39,36 +91,3 @@ const events = [
   
   { title: "Disponible", start: "2025-03-31" },
 ];
-
-function renderEventContent(eventInfo) {
-  let color = eventInfo.event.title == "Disponible" ? "#198754" : "#6c757d"
-  return (
-    <Box bg={color} p={"0.2rem"}>
-      <Text>{eventInfo.event.title}</Text>
-    </Box>
-  );
-}
-
-export default function CalendarioMes() {
-  return (
-    <VStack py="1rem" px="2rem">
-      <Box width="100%">
-        <FullCalendar
-          height="60vh"
-          plugins={[dayGridPlugin]}
-          initialView="dayGridMonth"
-          weekends={false}
-          events={events}
-          eventContent={renderEventContent}
-        />
-      </Box>
-      
-      <VStack fontSize={"1.5rem"} h={"30vh"} w={"100%"} align={"end"} justify={"space-evenly"}>
-        <Link>Clientas</Link>
-        <Link>Lashistas</Link>
-        <Link>Servicios</Link>
-        <Link>Citas</Link>
-      </VStack>
-    </VStack>
-  );
-}
