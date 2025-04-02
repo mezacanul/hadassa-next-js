@@ -93,21 +93,14 @@ const renderDayCellContent = (router) => (info) => {
     const handleNuevaCita = () => {
         const dateStr = info.date.toLocaleDateString()
         const date = parse(dateStr, "M/d/yyyy", new Date());
-        const formattedDate = format(date, "dd-MM-yyyy"); // "30-4-2025"
+        const formattedDate = format(date, "dd-MM-yyyy"); 
         console.log(formattedDate);
         // console.log(info.date.toLocaleDateString());
-
-        // console.log(info.date.toUTCString());
-
-        // console.log(info);
-        // console.log(info.date.toLocaleDateString());
-        // console.log(info.date);
-        // router.push('/citas')
+        router.push(`/nueva-cita/${formattedDate}`)
     };
 
     return (
         <div
-            href="citas/nueva/01-01-2025"
             style={{
                 display: "flex",
                 alignItems: "center",
@@ -129,7 +122,7 @@ const DayGridStyles = () => {
             {`
               .fc-daygrid-day {
                 // background-color:rgba(238, 144, 144, 0.5) !important; /* Set your desired background color */
-                background-color:rgba(144, 238, 144, 0.5) !important; /* Set your desired background color */
+                //background-color:rgba(144, 238, 144, 0.5) !important; /* Set your desired background color */
               }
               
               .fc-daygrid-day-top {
