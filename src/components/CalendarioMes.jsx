@@ -1,21 +1,45 @@
-import { Box, Dialog, Link, Text, VStack } from "@chakra-ui/react";
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    Dialog,
+    Link,
+    Portal,
+    Select,
+    Text,
+    VStack,
+} from "@chakra-ui/react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import { CiSquarePlus } from "react-icons/ci";
+import { LuBedSingle } from "react-icons/lu";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { format, parse } from "date-fns";
 
 export default function CalendarioMes() {
+    const router = useRouter();
+    const [openDialogue, setOpenDialogue] = useState(false);
+    const [selectedDate, setSelectedDate] = useState("");
+
     const handleDayClick = (info) => {
         console.log(info.dayNumberText);
         alert(info.dayNumberText);
     };
-    
+
     return (
-        <Dialog.Root
-                    // open={openDialogue}
-                    lazyMount
-                    placement={"center"}
-                    size={"lg"}
-                >
+        // <Dialog.Root
+        //     open={openDialogue}
+        //     lazyMount
+        //     placement={"center"}
+        //     size={"lg"}
+        // >
+        //     <AgendarCitaModal
+        //         setOpenDialogue={setOpenDialogue}
+        //         selectedDate={selectedDate}
+        //         // data={currentEventDialogue}
+        //     />
         <VStack py="1rem" px="2rem">
             <Box width="100%">
                 <DayGridStyles />
@@ -33,7 +57,7 @@ export default function CalendarioMes() {
                     //     handleDayClick(info)
                     //   });
                     // }}
-                    dayCellContent={renderDayCellContent}
+                    dayCellContent={renderDayCellContent(router)}
                 />
             </Box>
 
@@ -50,7 +74,7 @@ export default function CalendarioMes() {
                 <Link>Lashistas</Link>
             </VStack>
         </VStack>
-        </Dialog.Root>
+        // </Dialog.Root>
     );
 }
 
@@ -63,9 +87,27 @@ function renderEventContent(eventInfo) {
     );
 }
 
-function renderDayCellContent(info) {
+const renderDayCellContent = (router) => (info) => {
+    // function renderDayCellContent(info) {
+
+    const handleNuevaCita = () => {
+        const dateStr = info.date.toLocaleDateString()
+        const date = parse(dateStr, "M/d/yyyy", new Date());
+        const formattedDate = format(date, "dd-MM-yyyy"); // "30-4-2025"
+        console.log(formattedDate);
+        // console.log(info.date.toLocaleDateString());
+
+        // console.log(info.date.toUTCString());
+
+        // console.log(info);
+        // console.log(info.date.toLocaleDateString());
+        // console.log(info.date);
+        // router.push('/citas')
+    };
+
     return (
         <div
+            href="citas/nueva/01-01-2025"
             style={{
                 display: "flex",
                 alignItems: "center",
@@ -75,17 +117,11 @@ function renderDayCellContent(info) {
             <span>{info.dayNumberText}</span>
             <CiSquarePlus
                 style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                onClick={() => {
-                    console.log("Dia: ",info.date.getDay());
-                    console.log(info.date);
-                    // console.log("Mes: ",info.date.getFullMonth());
-                    console.log("Year: ",info.date.getFullYear());
-                    // alert(info.dayNumberText);
-                }}
+                onClick={handleNuevaCita}
             />
         </div>
     );
-}
+};
 
 const DayGridStyles = () => {
     return (
@@ -113,6 +149,116 @@ const DayGridStyles = () => {
         </style>
     );
 };
+
+function AgendarCitaModal({ setOpenDialogue, selectedDate, data }) {
+    return (
+        <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+                <Dialog.Content
+                    py={"3rem"}
+                    display={"flex"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                >
+                    <Dialog.Header>
+                        <Dialog.Title>Agendar Nueva Cita</Dialog.Title>
+                    </Dialog.Header>
+
+                    <CitaForm
+                        selectedDate={selectedDate}
+                        setOpenDialogue={setOpenDialogue}
+                    />
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Portal>
+    );
+}
+
+function CitaForm({ selectedDate, setOpenDialogue }) {
+    return (
+        <Dialog.Body w={"30vw"}>
+            <Card.Root>
+                <Card.Body gap="4" w={"30vw"} mb={"2rem"}>
+                    <Card.Title mt="2">{selectedDate}</Card.Title>
+                    <Card.Description>
+                        <p>Servicio</p>
+                        <select>
+                            <option value="test">test</option>
+                        </select>
+                    </Card.Description>
+                    <Card.Description>
+                        <b>Lashista:</b> TEST
+                    </Card.Description>
+                    <Card.Description>
+                        <b>Hora:</b> TEST
+                    </Card.Description>
+                </Card.Body>
+
+                <Card.Footer justifyContent="flex-end">
+                    {/* <Button variant="outline">Cerrar</Button> */}
+                    <Button
+                        colorPalette={"yellow"}
+                        onClick={() => {
+                            setOpenDialogue(false);
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        colorPalette={"blue"}
+                        onClick={() => {
+                            setOpenDialogue(false);
+                        }}
+                    >
+                        Guardar
+                    </Button>
+                </Card.Footer>
+            </Card.Root>
+        </Dialog.Body>
+    );
+}
+
+function renderResourceLabel(info) {
+    return (
+        <div style={{ padding: "8px", textAlign: "center" }}>
+            <img
+                style={{ width: "4rem", marginBottom: "0.5rem" }}
+                src={"img/lashistas/" + info.resource.extendedProps.src}
+            />
+            <p
+                style={{
+                    marginBottom: "0.5rem",
+                    fontWeight: "300",
+                    fontSize: "1.2rem",
+                }}
+            >
+                {info.resource.title}
+            </p>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <LuBedSingle
+                    style={{ fontSize: "1.4rem", color: "rgb(228, 129, 167)" }}
+                />
+                <span
+                    style={{
+                        fontSize: "1.2rem",
+                        fontWeight: "bold",
+                        marginLeft: "0.3rem",
+                        color: "rgb(228, 129, 167)",
+                    }}
+                >
+                    - {info.resource.id.slice(-1)}
+                </span>
+            </div>
+        </div>
+    );
+}
 
 const events = [
     { title: "Lleno", start: "2025-03-03" },
