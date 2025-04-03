@@ -25,7 +25,7 @@ export default function NuevaCita() {
     const [showHorarios, setShowHorarios] = useState(false);
 
     return (
-        <Box mx={"3rem"} py={"3rem"}>
+        <Box mx={"3rem"} py={"3rem"} mb="3rem">
             {/* Titulo  */}
             <VStack align={"start"} mb={"3rem"}>
                 <Heading fontWeight={"300"} size={"5xl"}>
@@ -43,19 +43,6 @@ export default function NuevaCita() {
 
             {/* Lista de Opciones  */}
             <VStack gap={"6rem"}>
-                {/* Opcion de Clienta  */}
-                <VStack display={"none"}>
-                    <Heading mb={"1rem"} size={"5xl"} color={"pink.600"}>
-                        Clienta
-                    </Heading>
-                    <Input placeholder="Buscar" />
-                    <ListaClientas />
-                    <Heading>
-                        (* agregar opcion/formulario de nueva clienta)
-                    </Heading>
-                    <Heading>Nombre Apellido</Heading>
-                </VStack>
-
                 {/* Opcion de Servicios  */}
                 <VStack >
                     <Heading fontWeight={"300"} my={"1rem"} size={"5xl"} color={"pink.600"}>
@@ -85,6 +72,19 @@ export default function NuevaCita() {
                         Horario
                     </Heading>
                     <HorarioSelect/>
+                </VStack>
+
+                {/* Opcion de Clienta  */}
+                <VStack gap={"2rem"}>
+                    <Heading fontWeight={300} mb={"1rem"} size={"5xl"} color={"pink.600"}>
+                        Clienta
+                    </Heading>
+                    <Input placeholder="Buscar" />
+                    <ListaClientas />
+                    <Heading>
+                        (* agregar opcion/formulario de nueva clienta)
+                    </Heading>
+                    {/* <Heading>Nombre Apellido</Heading> */}
                 </VStack>
 
                 <Button

@@ -1,21 +1,17 @@
-import lashistas from "/public/data/lashistas.json";
-import {
-    Box,
-    Button,
-    Grid,
-    Heading,
-    HStack,
-    Image,
-    Link,
-    Text,
-    VStack,
-} from "@chakra-ui/react";
-import { Children, useEffect } from "react";
-import { TfiTime } from "react-icons/tfi";
-import { BsCalendar2CheckFill } from "react-icons/bs";
-import { IoTimeSharp } from "react-icons/io5";
+import { Button, Grid, Image, VStack } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function ListaLashistas() {
+    const [lashistas, setLashistas] = useState([]);
+
+    useEffect(() => {
+        Promise.all([axios.get("/api/lashistas")]).then(([LashistaResp]) => {
+            setLashistas(LashistaResp.data);
+            console.log("DB data:", LashistaResp.data);
+        });
+    }, []);
+
     return (
         <Grid
             templateColumns={"repeat(3, 1fr)"}
