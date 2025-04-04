@@ -32,73 +32,85 @@ export default function Hoy() {
         setCurrentEventDialogue(info.event.toPlainObject());
     };
 
-    return (
-        <Dialog.Root
-            open={openDialogue}
-            lazyMount
-            placement={"center"}
-            size={"lg"}
-        >
-            <CitaDialog
-                setOpenDialogue={setOpenDialogue}
-                data={currentEventDialogue}
-            />
+    const formatHoyTitle = (date) => {
+        const gmtString = date.date.marker.toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
+        const parts = gmtString.split(" ");
+        const day = parts[1]; // "04"
+        const month = parts[2]; // "Apr"
+        const year = parts[3]; // "2025"
 
-            <Box my="2rem">
-                <style>
-                    {`
-          .fc-timegrid-slots {
-            // background-color: rgb(255, 238, 249); /* Set your desired color */
-            background-color: rgb(255, 249, 254); /* Set your desired color */
-          }
-        `}
-                </style>
-                <FullCalendar
-                    plugins={[timeGridPlugin, resourceTimeGridPlugin]}
-                    initialView="resourceTimeGridDay"
-                    resources={resources}
-                    events={events}
-                    initialDate={new Date()}
-                    slotMinTime="09:00:00"
-                    slotMaxTime="18:00:00"
-                    expandRows={true}
-                    height="160vh"
-                    headerToolbar={{ left: "title", center: "", right: "" }}
-                    allDaySlot={false} // Removes the all-day row
-                    slotDuration="00:30:00"
-                    slotLabelInterval="00:30:00"
-                    resourceLabelContent={renderResourceLabel}
-                    eventClick={handleEventPreview}
-                    locales={[esLocale]} // Include the Spanish locale
-                    titleFormat={(date) => {
-                        const gmtString = date.date.marker.toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
-                        const parts = gmtString.split(" ");
-                        const day = parts[1]; // "04"
-                        const month = parts[2]; // "Apr"
-                        const year = parts[3]; // "2025"
-                    
-                        // Map English month abbreviations to Spanish
-                        const monthMap = {
-                          Jan: "Enero",
-                          Feb: "Febrero",
-                          Mar: "Marzo",
-                          Apr: "Abril",
-                          May: "Mayo",
-                          Jun: "Junio",
-                          Jul: "Julio",
-                          Aug: "Agosto",
-                          Sep: "Septiembre",
-                          Oct: "Octubre",
-                          Nov: "Noviembre",
-                          Dec: "Diciembre",
-                        };
-                    
-                        const spanishMonth = monthMap[month];
-                        return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
-                      }}
+        // Map English month abbreviations to Spanish
+        const monthMap = {
+            Jan: "Enero",
+            Feb: "Febrero",
+            Mar: "Marzo",
+            Apr: "Abril",
+            May: "Mayo",
+            Jun: "Junio",
+            Jul: "Julio",
+            Aug: "Agosto",
+            Sep: "Septiembre",
+            Oct: "Octubre",
+            Nov: "Noviembre",
+            Dec: "Diciembre",
+        };
+
+        const spanishMonth = monthMap[month];
+        return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
+    };
+
+    return (
+        <div id="Hoy">
+            <Dialog.Root
+                id="Hoy"
+                open={openDialogue}
+                lazyMount
+                placement={"center"}
+                size={"lg"}
+            >
+                <CitaDialog
+                    setOpenDialogue={setOpenDialogue}
+                    data={currentEventDialogue}
                 />
-            </Box>
-        </Dialog.Root>
+
+                <Box my="2rem">
+                    <style>
+                        {`
+                            .fc-timegrid-slots {
+                                // background-color: rgb(255, 238, 249); /* Set your desired color */
+                                // background-color: rgb(255, 249, 254); /* Set your desired color */
+                                background-color: white;
+                                // background-color: transparent;
+                            }
+
+                            #Hoy .fc-toolbar-title {
+                                font-size: 2.5rem !important;
+                                font-weight: 200 !important;
+                            }
+                        `}
+                    </style>
+                    <FullCalendar
+                        plugins={[timeGridPlugin, resourceTimeGridPlugin]}
+                        initialView="resourceTimeGridDay"
+                        resources={resources}
+                        events={events}
+                        initialDate={new Date()}
+                        slotMinTime="09:00:00"
+                        slotMaxTime="18:00:00"
+                        expandRows={true}
+                        height="160vh"
+                        headerToolbar={{ left: "title", center: "", right: "" }}
+                        allDaySlot={false} // Removes the all-day row
+                        slotDuration="00:30:00"
+                        slotLabelInterval="00:30:00"
+                        resourceLabelContent={renderResourceLabel}
+                        eventClick={handleEventPreview}
+                        locales={[esLocale]} // Include the Spanish locale
+                        titleFormat={formatHoyTitle}
+                    />
+                </Box>
+            </Dialog.Root>
+        </div>
     );
 }
 

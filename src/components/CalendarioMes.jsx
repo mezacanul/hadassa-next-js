@@ -70,10 +70,41 @@ export default function CalendarioMes() {
         //         selectedDate={selectedDate}
         //         // data={currentEventDialogue}
         //     />
-        <VStack py="1rem" px="2rem">
+        <VStack mt={"2rem"} py="1rem" px="2rem" id="MesCalendar">
             <Box width="100%">
                 <DayGridStyles />
 
+                <style>
+                        {`
+                            .fc-timegrid-slots {
+                                // background-color: rgb(255, 238, 249); /* Set your desired color */
+                                // background-color: rgb(255, 249, 254); /* Set your desired color */
+                                background-color: white;
+                                // background-color: transparent;
+                            }
+
+                            #MesCalendar .fc-toolbar-title {
+                                // font-size: 2.5rem !important;
+                                font-weight: 300 !important;
+                            }
+
+                            #MesCalendar .fc-header-toolbar {
+                                flex-direction: row-reverse;
+                            }
+                            
+                            .fc-button {
+                                background-color: #ec4899 !important;
+                                border-color: #ec4899 !important;
+                                transition: all ease 0.3s;
+                            }
+                             
+                            .fc-button:hover {
+                                // background-color:rgb(210, 57, 133) !important;
+                                // border-color: rgb(183, 35, 109) !important;
+                                transform: scale(1.1);
+                            }
+                        `}
+                    </style>
                 <FullCalendar
                     dayCellContent={renderDayCellContent(
                         router,
