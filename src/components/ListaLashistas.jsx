@@ -8,7 +8,7 @@ export default function ListaLashistas() {
     useEffect(() => {
         Promise.all([axios.get("/api/lashistas")]).then(([LashistaResp]) => {
             setLashistas(LashistaResp.data);
-            console.log("DB data:", LashistaResp.data);
+            // console.log("DB data:", LashistaResp.data);
         });
     }, []);
 
@@ -29,7 +29,7 @@ export default function ListaLashistas() {
 
 function Lashista({ data }) {
     useEffect(() => {
-        console.log(data);
+        // console.log(data);
     }, []);
     return (
         <VStack align={"center"} w={"100%"} gap={"2rem"}>

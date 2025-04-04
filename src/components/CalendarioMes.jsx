@@ -14,19 +14,49 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import { CiSquarePlus } from "react-icons/ci";
 import { LuBedSingle } from "react-icons/lu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
+import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 
 export default function CalendarioMes() {
     const router = useRouter();
     const [openDialogue, setOpenDialogue] = useState(false);
     const [selectedDate, setSelectedDate] = useState("");
+    const [displayedMonthIndex, setDisplayedMonthIndex] = useState(
+        new Date().getMonth()
+    );
 
     const handleDayClick = (info) => {
         console.log(info.dayNumberText);
         alert(info.dayNumberText);
     };
+
+    const formatDateTitleOnMonthCalendar = (date) => {
+        const monthNames = [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre",
+        ];
+        console.log("Displayed Year: ", date.date.year);
+        
+        const month = monthNames[displayedMonthIndex];
+        const year = date.date.year;
+        return `${month} de ${year}`;
+    };
+
+    useEffect(() => {
+        console.log("Displayed Month Index: ", displayedMonthIndex);
+    }, [displayedMonthIndex]);
 
     return (
         // <Dialog.Root
@@ -43,21 +73,32 @@ export default function CalendarioMes() {
         <VStack py="1rem" px="2rem">
             <Box width="100%">
                 <DayGridStyles />
+
                 <FullCalendar
+                    dayCellContent={renderDayCellContent(
+                        router,
+                        displayedMonthIndex
+                    )}
+                    eventContent={renderEventContent}
+                    datesSet={(dateInfo) => {
+                        setDisplayedMonthIndex(
+                            dateInfo.view.currentStart.getMonth()
+                        ); // Update on month change
+                    }}
                     height="60vh"
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
                     weekends={true}
                     hiddenDays={[0]}
+                    locales={[esLocale]} // Include the Spanish locale
+                    titleFormat={formatDateTitleOnMonthCalendar}
                     // events={events}
-                    eventContent={renderEventContent}
                     // selectable={true}
                     // dayCellDidMount={(info) => {
                     //   info.el.addEventListener("click", () => {
                     //     handleDayClick(info)
                     //   });
                     // }}
-                    dayCellContent={renderDayCellContent(router)}
                 />
             </Box>
 
@@ -68,10 +109,10 @@ export default function CalendarioMes() {
                 align={"end"}
                 justify={"space-evenly"}
             >
-                <Link>Citas</Link>
-                <Link>Clientas</Link>
-                <Link>Servicios</Link>
-                <Link>Lashistas</Link>
+                <Link color={"pink.500"}>Citas</Link>
+                <Link color={"pink.500"}>Clientas</Link>
+                <Link color={"pink.500"}>Servicios</Link>
+                <Link color={"pink.500"}>Lashistas</Link>
             </VStack>
         </VStack>
         // </Dialog.Root>
@@ -87,16 +128,21 @@ function renderEventContent(eventInfo) {
     );
 }
 
-const renderDayCellContent = (router) => (info) => {
+const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
     // function renderDayCellContent(info) {
+    const calendarMonthIndex = info.date.getUTCMonth();
+    const isInCurrentMOnth =
+        calendarMonthIndex == displayedMonthIndex ? true : false;
 
+    // DEV:
+    // We parse and format the Date to be URL friendly
     const handleNuevaCita = () => {
-        const dateStr = info.date.toLocaleDateString()
+        const dateStr = info.date.toLocaleDateString();
         const date = parse(dateStr, "M/d/yyyy", new Date());
-        const formattedDate = format(date, "dd-MM-yyyy"); 
+        const formattedDate = format(date, "dd-MM-yyyy");
         console.log(formattedDate);
         // console.log(info.date.toLocaleDateString());
-        router.push(`/nueva-cita/${formattedDate}`)
+        router.push(`/nueva-cita/${formattedDate}`);
     };
 
     return (
@@ -108,10 +154,12 @@ const renderDayCellContent = (router) => (info) => {
             }}
         >
             <span>{info.dayNumberText}</span>
-            <CiSquarePlus
-                style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                onClick={handleNuevaCita}
-            />
+            {isInCurrentMOnth && (
+                <CiSquarePlus
+                    style={{ fontSize: "1.5rem", cursor: "pointer" }}
+                    onClick={handleNuevaCita}
+                />
+            )}
         </div>
     );
 };

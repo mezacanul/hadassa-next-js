@@ -9,7 +9,7 @@ export default function ListaServicios({setShowServicios}) {
     useEffect(() => {
         Promise.all([axios.get("/api/servicios")]).then(([serviciosResp]) => {
             setServicios(serviciosResp.data);
-            console.log("DB data:", serviciosResp.data);
+            // console.log("DB data:", serviciosResp.data);
         });
     }, []);
 
