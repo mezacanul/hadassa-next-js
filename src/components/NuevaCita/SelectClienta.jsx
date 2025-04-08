@@ -10,12 +10,14 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { MiniSingleton } from "@/utils/MiniSingleton";
+// import { loadHook } from "@/utils/PortableContext";
+// import { MiniSingleton } from "@/utils/MiniSingleton";
+import { loadHook } from "@/utils/fractal-design";
 
 const inputStyles = {borderWidth:"1px", borderColor: "pink.600"}
 
 // const useClientas = MiniSingleton([]);
-const ClientasMSt = MiniSingleton([]);
+// const ClientasMSt = MiniSingleton([]);
 
 export default function SelectClienta() {
     const [currentPanel, setCurrentPanel] = useState("none");
@@ -78,7 +80,9 @@ function ListaBuscarClienta() {
 }
 
 function ListaClientas() {
-    const [clientas, setClientas] = ClientasMSt();
+    // const [clientas, setClientas] = ClientasMSt();
+    // const clientas = []
+    const [clientas, setClientas] = loadHook("useClientas");
 
     useEffect(() => {
         Promise.all([axios.get("/api/clientas")]).then(([clientasResp]) => {

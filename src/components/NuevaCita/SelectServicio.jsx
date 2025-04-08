@@ -13,6 +13,11 @@ import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
 import { RiCloseLargeLine } from "react-icons/ri";
 
+// import { loadHook } from "@/utils/PortableContext";
+// import { MiniSingleton } from "@/utils/MiniSingleton";
+// const useServicios = MiniSingleton([]);
+import { loadHook } from "@/utils/fractal-design";
+
 export default function SelectServicio() {
     const [currentServicio, setCurrentServicio] = useState(null);
     const [showServicios, setShowServicios] = useState(true);
@@ -131,11 +136,12 @@ function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios })
 }
 
 function ListaServicios({ setShowServicios, setCurrentServicio }) {
-    const [servicios, setServicios] = useState([]);
+    // const [servicios, setServicios] = useState([]);
+    const [serviciosData, setServiciosData] = loadHook("useServicios")
 
     useEffect(() => {
         Promise.all([axios.get("/api/servicios")]).then(([serviciosResp]) => {
-            setServicios(serviciosResp.data);
+            setServiciosData(serviciosResp.data);
             // console.log("DB data:", serviciosResp.data);
         });
     }, []);
@@ -147,7 +153,7 @@ function ListaServicios({ setShowServicios, setCurrentServicio }) {
             align={"start"}
             gap={"6rem"}
         >
-            {servicios.map((srv) => {
+            {serviciosData.map((srv) => {
                 return (
                     <GridItem key={srv.id}>
                         <Servicio

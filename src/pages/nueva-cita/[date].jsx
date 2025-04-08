@@ -5,17 +5,23 @@ import SelectServicio from "@/components/NuevaCita/SelectServicio";
 import SelectLashista from "@/components/NuevaCita/SelectLashista";
 import SelectHorario from "@/components/NuevaCita/SelectHorario";
 import SelectClienta from "@/components/NuevaCita/SelectClienta";
+import { loadHook } from "@/utils/fractal-design";
 
 export default function NuevaCita() {
+    const [DOM, setDOM] = loadHook("useDOM")
     const router = useRouter();
     const { date } = router.query;
     const [currentDate, setCurrentDate] = useState("");
 
+    useEffect(()=>{
+        setDOM({title: "Agendar Cita"})
+    }, [])
+
     useEffect(() => {
         if (router.isReady) {
-          setCurrentDate(formatCurrentDate(date));
+            setCurrentDate(formatCurrentDate(date));
         }
-      }, [router.isReady, date]);
+    }, [router.isReady, date]);
 
     return (
         <Box mx={"3rem"} py={"3rem"} mb="3rem">

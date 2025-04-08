@@ -1,25 +1,32 @@
 import { useState, useEffect } from "react";
 
 export function MiniSingleton(initialState) {
-  let sharedState = initialState;
-  let listeners = [];
+    let sharedState = initialState;
+    let listeners = [];
 
-  const setSharedState = (newState) => {
-    sharedState = typeof newState === "function" ? newState(sharedState) : newState;
-    listeners.forEach((listener) => listener(sharedState));
-  };
+    const setSharedState = (newState) => {
+        sharedState =
+            typeof newState === "function" ? newState(sharedState) : newState;
+        listeners.forEach((listener) => listener(sharedState));
+    };
 
-  return function useSharedContext() {
-    const [state, setState] = useState(sharedState);
+    function useSharedContext() {
+        const [state, setState] = useState(sharedState);
 
-    useEffect(() => {
-      listeners.push(setState);
-      setState(sharedState); // Sync with latest shared state on mount
-      return () => {
-        listeners = listeners.filter((listener) => listener !== setState);
-      };
-    }, []);
+        useEffect(() => {
+            listeners.push(setState);
+            setState(sharedState); // Sync with latest shared state on mount
+            return () => {
+                listeners = listeners.filter(
+                    (listener) => listener !== setState
+                );
+            };
+        }, []);
 
-    return [state, setSharedState];
-  };
+        return [state, setSharedState];
+    }
+
+    // Expose initialState for PortableContext to access
+    useSharedContext.initialState = initialState;
+    return useSharedContext;
 }
