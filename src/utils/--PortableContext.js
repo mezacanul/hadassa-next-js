@@ -1,4 +1,4 @@
-import { MiniSingleton } from "@/utils/MiniSingleton";
+import { MiniSingleton } from "@/utils/--MiniSingleton";
 
 // Object to store hooks and their initial states
 let hooks = {};

@@ -3,9 +3,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
+import { MiniSingleton } from "@/utils/lattice-design";
+import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+
+const useLashistas = MiniSingleton(null);
+
 export default function SelectLashista() {
-    const [showLashistas, setShowLashistas] = useState(true);
-    const [currentLashista, setCurrentLashista] = useState(null);
+    const [citaPreview] = useCitaPreview();
 
     return (
         <VStack w={"100%"}>
@@ -13,36 +17,34 @@ export default function SelectLashista() {
                 mb={"2.5rem"}
                 fontWeight={"300"}
                 size={"5xl"}
-                color={"pink.700"}
+                color={"pink.600"}
             >
                 Lashista
             </Heading>
 
-            <CurrentLashista dataLashista={currentLashista} setShowLashistas={setShowLashistas} setCurrentLashista={setCurrentLashista}/>
-            {showLashistas && (
-                <ListaLashistas
-                    setShowLashistas={setShowLashistas}
-                    setCurrentLashista={setCurrentLashista}
-                />
-            )}
+            <CurrentLashista />
+            {citaPreview.lashista == null && <ListaLashistas />}
         </VStack>
     );
 }
 
-function CurrentLashista({ dataLashista, setCurrentLashista, setShowLashistas }) {
+function CurrentLashista() {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
+    
     function handleClose(e) {
-        setCurrentLashista(null)
-        setShowLashistas(true)
+        setCitaPreview({...citaPreview, lashista: null})
+        // setCurrentLashista(null)
+        // setShowLashistas(true)
     }
 
-    if (dataLashista != null) {
+    if (citaPreview.lashista != null) {
         return (
             <VStack
                 align={"center"}
                 // w={"100%"}
                 px={"3rem"}
                 py={"2rem"}
-                bg={"pink.700"}
+                bg={"pink.600"}
                 gap={"2rem"}
                 boxShadow={"0px 6px 7px rgba(136, 136, 136, 0.4)"}
                 rounded={"xl"}
@@ -74,18 +76,19 @@ function CurrentLashista({ dataLashista, setCurrentLashista, setShowLashistas })
                     borderRadius={"100%"}
                     objectFit={"cover"}
                     w={"8rem"}
-                    src={`/img/lashistas/${dataLashista.image}`}
+                    src={`/img/lashistas/${citaPreview.lashista.image}`}
                 />
                 <Heading fontWeight={"300"} size={"2xl"}>
-                    {dataLashista.nombre}
+                    {citaPreview.lashista.nombre}
                 </Heading>
             </VStack>
         );
     }
 }
 
-function ListaLashistas({ setShowLashistas, setCurrentLashista }) {
-    const [lashistas, setLashistas] = useState([]);
+function ListaLashistas() {
+    const [lashistas, setLashistas] = useLashistas();
+
     useEffect(() => {
         Promise.all([axios.get("/api/lashistas")]).then(([LashistaResp]) => {
             setLashistas(LashistaResp.data);
@@ -93,27 +96,22 @@ function ListaLashistas({ setShowLashistas, setCurrentLashista }) {
         });
     }, []);
 
-    return (
-        <Grid templateColumns={"repeat(3, 1fr)"} w={"100%"}>
-            {lashistas.map((lsh) => {
-                return (
-                    <Lashista
-                        key={lsh.id}
-                        data={lsh}
-                        setShowLashistas={setShowLashistas}
-                        setCurrentLashista={setCurrentLashista}
-                    />
-                );
-            }, [])}
-        </Grid>
-    );
+    if (lashistas != null) {
+        return (
+            <Grid templateColumns={"repeat(3, 1fr)"} w={"100%"}>
+                {lashistas.map((lsh) => {
+                    return <Lashista key={lsh.id} data={lsh} />;
+                }, [])}
+            </Grid>
+        );
+    }
 }
 
-function Lashista({ data, setShowLashistas, setCurrentLashista }) {
+function Lashista({ data }) {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
+
     function handleSelectLashista(e) {
-        setShowLashistas(false);
-        setCurrentLashista(data);
-        // console.log("test");
+        setCitaPreview({ ...citaPreview, lashista: data });
     }
 
     return (

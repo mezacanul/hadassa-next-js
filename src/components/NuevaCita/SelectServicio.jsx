@@ -8,19 +8,18 @@ import {
     Text,
     VStack,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
 import { RiCloseLargeLine } from "react-icons/ri";
 
-// import { loadHook } from "@/utils/PortableContext";
-// import { MiniSingleton } from "@/utils/MiniSingleton";
-// const useServicios = MiniSingleton([]);
-import { loadHook } from "@/utils/fractal-design";
+import { MiniSingleton } from "@/utils/lattice-design";
+import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+
+const useServicios = MiniSingleton([]);
 
 export default function SelectServicio() {
-    const [currentServicio, setCurrentServicio] = useState(null);
-    const [showServicios, setShowServicios] = useState(true);
+    const [citaPreview] = useCitaPreview();
 
     return (
         <VStack>
@@ -28,31 +27,22 @@ export default function SelectServicio() {
                 fontWeight={"300"}
                 my={"1rem"}
                 size={"5xl"}
-                color={"pink.700"}
+                color={"pink.600"}
             >
                 Servicio
             </Heading>
 
-            <CurrentServicio
-                dataServicio={currentServicio}
-                setCurrentServicio={setCurrentServicio}
-                setShowServicios={setShowServicios}
-            />
-
-            {showServicios && (
-                <ListaServicios
-                    setShowServicios={setShowServicios}
-                    setCurrentServicio={setCurrentServicio}
-                />
-            )}
+            {citaPreview.servicio == null && <ListaServicios />}
+            <CurrentServicio dataServicio={citaPreview.servicio} />
         </VStack>
     );
 }
 
-function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios }) {
+function CurrentServicio({ dataServicio }) {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
+
     function handleClose(e) {
-        setCurrentServicio(null)
-        setShowServicios(true)
+        setCitaPreview({ ...citaPreview, servicio: null });
     }
 
     if (dataServicio != null) {
@@ -64,7 +54,7 @@ function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios })
                 w={"35rem"}
                 justify={"space-between"}
                 align={"center"}
-                bg={"pink.700"}
+                bg={"pink.600"}
                 position={"relative"}
             >
                 {/* CLose Button  */}
@@ -79,8 +69,8 @@ function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios })
                     onClick={handleClose}
                     _hover={{
                         opacity: 1,
-                        cursor:"pointer",
-                        transform: "scale(1.05)"
+                        cursor: "pointer",
+                        transform: "scale(1.05)",
                     }}
                 >
                     <RiCloseLargeLine />
@@ -100,7 +90,9 @@ function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios })
                     gap={"0.3rem"}
                     w={"65%"}
                 >
-                    <Heading fontStyle={"italic"}t size={"3xl"}>{dataServicio.servicio}</Heading>
+                    <Heading fontStyle={"italic"} t size={"3xl"}>
+                        {dataServicio.servicio}
+                    </Heading>
 
                     <Text fontSize={"sm"}>{dataServicio.descripcion}</Text>
 
@@ -119,30 +111,17 @@ function CurrentServicio({ dataServicio, setCurrentServicio, setShowServicios })
                         </Text>
                     </VStack>
                 </VStack>
-
-                {/* <VStack
-                    // mt={"0.5rem"}
-                    p={"0.7rem"}
-                    // borderTop={"1px solid rgba(0,0,0,0.1)"}
-                    w={"100%"}
-                    align={"start"}
-                    gap={"0.2rem"}
-                >
-                    
-                </VStack> */}
             </HStack>
         );
     }
 }
 
-function ListaServicios({ setShowServicios, setCurrentServicio }) {
-    // const [servicios, setServicios] = useState([]);
-    const [serviciosData, setServiciosData] = loadHook("useServicios")
+function ListaServicios() {
+    const [servicios, setServicios] = useServicios();
 
     useEffect(() => {
         Promise.all([axios.get("/api/servicios")]).then(([serviciosResp]) => {
-            setServiciosData(serviciosResp.data);
-            // console.log("DB data:", serviciosResp.data);
+            setServicios(serviciosResp.data);
         });
     }, []);
 
@@ -153,14 +132,10 @@ function ListaServicios({ setShowServicios, setCurrentServicio }) {
             align={"start"}
             gap={"6rem"}
         >
-            {serviciosData.map((srv) => {
+            {servicios.map((srv) => {
                 return (
                     <GridItem key={srv.id}>
-                        <Servicio
-                            data={srv}
-                            setShowServicios={setShowServicios}
-                            setCurrentServicio={setCurrentServicio}
-                        />
+                        <Servicio data={srv} />
                     </GridItem>
                 );
             }, [])}
@@ -168,8 +143,8 @@ function ListaServicios({ setShowServicios, setCurrentServicio }) {
     );
 }
 
-function Servicio({ data, setShowServicios, setCurrentServicio }) {
-    // const imgSrc = data.tipo != "combo-hadassa" ? data.id : "combo-hadassa";
+function Servicio({ data }) {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
 
     return (
         <VStack>
@@ -221,8 +196,7 @@ function Servicio({ data, setShowServicios, setCurrentServicio }) {
                 <Button
                     size={"lg"}
                     onClick={() => {
-                        setCurrentServicio(data);
-                        setShowServicios(false);
+                        setCitaPreview({ ...citaPreview, servicio: data });
                     }}
                     colorPalette={"pink"}
                 >

@@ -1,4 +1,4 @@
-import { Heading, HStack, Image, Stack, VStack, Grid } from "@chakra-ui/react";
+import { VStack, Grid, Heading } from "@chakra-ui/react";
 import Hoy from "@/components/Hoy";
 import CalendarioMes from "@/components/CalendarioMes";
 

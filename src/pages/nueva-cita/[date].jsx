@@ -5,7 +5,15 @@ import SelectServicio from "@/components/NuevaCita/SelectServicio";
 import SelectLashista from "@/components/NuevaCita/SelectLashista";
 import SelectHorario from "@/components/NuevaCita/SelectHorario";
 import SelectClienta from "@/components/NuevaCita/SelectClienta";
-import { loadHook } from "@/utils/fractal-design";
+
+import { loadHook, MiniSingleton } from "@/utils/lattice-design";
+
+export const useCitaPreview = MiniSingleton({
+    servicio: null,
+    lashista: null,
+    horario: null,
+    clienta: null,
+})
 
 export default function NuevaCita() {
     const [DOM, setDOM] = loadHook("useDOM")
@@ -15,6 +23,10 @@ export default function NuevaCita() {
 
     useEffect(()=>{
         setDOM({title: "Agendar Cita"})
+        
+        return ()=>{
+            useCitaPreview.reset()
+        }
     }, [])
 
     useEffect(() => {

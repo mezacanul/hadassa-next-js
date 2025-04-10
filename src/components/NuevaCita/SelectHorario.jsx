@@ -6,13 +6,12 @@ import {
     Text,
     VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
-export default function SelectHorario() {
-    const [showHorarios, setShowHorarios] = useState(true);
-    const [currentHorario, setCurrentHorario] = useState(null);
+import { useCitaPreview } from "@/pages/nueva-cita/[date]";
 
+export default function SelectHorario() {
+    const [citaPreview] = useCitaPreview();
     return (
         <VStack w={"100%"}>
             <Heading
@@ -24,30 +23,25 @@ export default function SelectHorario() {
                 Horario
             </Heading>
 
-            <CurrentHorario
-                currentHorario={currentHorario}
-                setCurrentHorario={setCurrentHorario}
-                setShowHorarios={setShowHorarios}
-            />
-            {showHorarios && (
-                <HorarioSelect setShowHorarios={setShowHorarios} setCurrentHorario={setCurrentHorario}/>
-            )}
+            <CurrentHorario />
+            {citaPreview.horario == null && <HorarioSelect />}
         </VStack>
     );
 }
 
-function CurrentHorario({ setShowHorarios, setCurrentHorario, currentHorario }) {
+function CurrentHorario() {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
+
     function handleClose(e) {
-        setCurrentHorario(null);
-        setShowHorarios(true);
+        setCitaPreview({ ...citaPreview, horario: null });
     }
 
-    if (currentHorario != null) {
+    if (citaPreview.horario != null) {
         return (
             <Heading
                 rounded={"lg"}
                 color={"white"}
-                bg={"pink.700"}
+                bg={"pink.600"}
                 p={"2rem"}
                 px={"4rem"}
                 position={"relative"}
@@ -70,13 +64,15 @@ function CurrentHorario({ setShowHorarios, setCurrentHorario, currentHorario }) 
                 >
                     <RiCloseLargeLine />
                 </Text>
-                {currentHorario}
+                {citaPreview.horario}
             </Heading>
         );
     }
 }
 
-function HorarioSelect({ setShowHorarios, setCurrentHorario }) {
+function HorarioSelect() {
+    const [citaPreview, setCitaPreview] = useCitaPreview();
+
     const horariosDisponibles = createListCollection({
         items: [
             { label: "09:00 a.m.", value: "09:00 am" },
@@ -101,9 +97,7 @@ function HorarioSelect({ setShowHorarios, setCurrentHorario }) {
     });
 
     function handleSelectChange(e) {
-        setShowHorarios(false);
-        setCurrentHorario(e.target.value)
-        console.log(e.target.value);
+        setCitaPreview({...citaPreview, horario: e.target.value})
     }
 
     return (
