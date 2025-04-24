@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
+import { useHoyRef } from "./Hoy";
 
 export default function CalendarioMes() {
     const router = useRouter();
@@ -26,11 +27,7 @@ export default function CalendarioMes() {
     const [displayedMonthIndex, setDisplayedMonthIndex] = useState(
         new Date().getMonth()
     );
-
-    const handleDayClick = (info) => {
-        console.log(info.dayNumberText);
-        alert(info.dayNumberText);
-    };
+    const [hoyRef, setHoyRef] = useHoyRef()
 
     const formatDateTitleOnMonthCalendar = (date) => {
         const monthNames = [
@@ -83,6 +80,11 @@ export default function CalendarioMes() {
                                 // background-color: transparent;
                             }
 
+                            .fc-daygrid-day:hover {
+                                cursor: pointer;
+                                background-color:rgba(236, 32, 134, 0.18);
+                            }
+
                             #MesCalendar .fc-toolbar-title {
                                 // font-size: 2.5rem !important;
                                 font-weight: 300 !important;
@@ -123,13 +125,31 @@ export default function CalendarioMes() {
                     hiddenDays={[0]}
                     locales={[esLocale]} // Include the Spanish locale
                     titleFormat={formatDateTitleOnMonthCalendar}
+
+                    dayCellDidMount={(info) => {
+                        info.el.addEventListener("click", () => {                            
+                            const formattedDate = format(info.date, "yyyy-MM-dd");
+                            // hoyRef.gotoDate(formattedDate);
+                            console.log(formattedDate);
+                            console.log(hoyRef);
+                            
+        // const calendarApi = calendarRef.current.getApi();
+        // calendarApi.gotoDate(formattedDate);
+        //                     2025-04-30
+                        });
+                      }}
+                    // eventClick={(info) => {
+                    //     console.log(info);
+                        
+                    //     // const date = info.date;
+                    //     // const day = date.getDate();
+                    //     // const month = date.getMonth() + 1; // Months are 0-based, so add 1
+                    //     // const year = date.getFullYear();
+                    //     // console.log(`Clicked Date: ${day}/${month}/${year}`);
+                    // }}
+
                     // events={events}
                     // selectable={true}
-                    // dayCellDidMount={(info) => {
-                    //   info.el.addEventListener("click", () => {
-                    //     handleDayClick(info)
-                    //   });
-                    // }}
                 />
             </Box>
 

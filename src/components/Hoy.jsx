@@ -6,15 +6,28 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
 import { Box, Button, Dialog, Portal, Avatar, Card } from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
+import { MiniSingleton } from "@/utils/lattice-design";
+
+export const useHoyRef = MiniSingleton(null)
 
 export default function Hoy() {
     const [events, setEvents] = useState([]);
     const [resources, setResources] = useState([]);
     const [openDialogue, setOpenDialogue] = useState(false);
     const [currentEventDialogue, setCurrentEventDialogue] = useState([]);
+    const calendarRef = useRef(null); // Create a ref for the calendar
+    const [hoyRef, setHoyRef] = useHoyRef()
+
+    // Function to set the date
+    // const setCalendarDate = (date) => {
+    //     if (calendarRef.current) {
+    //         const calendarApi = calendarRef.current.getApi();
+    //         calendarApi.gotoDate(date); // Set the date
+    //     }
+    // };
 
     useEffect(() => {
         Promise.all([
@@ -23,8 +36,24 @@ export default function Hoy() {
         ]).then(([eventsResp, resourcesResp]) => {
             setEvents(eventsResp.data);
             setResources(resourcesResp.data);
+            // setHoyRef(calendarRef)
+            // console.log("current", calendarRef.current);
+            // console.log("hoyRef", hoyRef);
         });
+        // console.log("calendar ref",calendarRef.current);
+        console.log(hoyRef);
     }, []);
+
+    useEffect(()=>{
+        if (calendarRef.current) {
+            // setHoyRef(calendarRef.current.getApi())
+            setHoyRef("testing")
+            console.log(calendarRef.current);
+            console.log(hoyRef);
+            
+            // calendarApi.gotoDate(date); // Set the date
+        }
+    }, [calendarRef])
 
     const handleEventPreview = (info) => {
         setOpenDialogue(true);
@@ -61,6 +90,7 @@ export default function Hoy() {
 
     return (
         <div id="Hoy">
+            <p>{hoyRef}</p>
             <Dialog.Root
                 id="Hoy"
                 open={openDialogue}
@@ -90,6 +120,7 @@ export default function Hoy() {
                         `}
                     </style>
                     <FullCalendar
+                    ref={calendarRef} // Attach the ref to FullCalendar
                         plugins={[timeGridPlugin, resourceTimeGridPlugin]}
                         initialView="resourceTimeGridDay"
                         resources={resources}
@@ -107,6 +138,7 @@ export default function Hoy() {
                         eventClick={handleEventPreview}
                         locales={[esLocale]} // Include the Spanish locale
                         titleFormat={formatHoyTitle}
+                        viewDidMount={()=>{console.log(hoyRef)}}
                     />
                 </Box>
             </Dialog.Root>
