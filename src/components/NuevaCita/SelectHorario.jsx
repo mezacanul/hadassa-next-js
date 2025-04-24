@@ -1,4 +1,5 @@
 import {
+    Box,
     createListCollection,
     Heading,
     Portal,
@@ -8,70 +9,67 @@ import {
 } from "@chakra-ui/react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
-import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+import { useCurrentCita } from "@/pages/nueva-cita/[date]";
+import RemoveButton from "../common/RemoveButton";
 
 export default function SelectHorario() {
-    const [citaPreview] = useCitaPreview();
-    return (
-        <VStack w={"100%"}>
-            <Heading
-                fontWeight={"300"}
-                mb={"1rem"}
-                size={"5xl"}
-                color={"pink.600"}
-            >
-                Horario
-            </Heading>
+    const [currentCita] = useCurrentCita();
 
-            <CurrentHorario />
-            {citaPreview.horario == null && <HorarioSelect />}
-        </VStack>
-    );
+    if (currentCita.servicio != null && currentCita.lashista != null) {
+        if (currentCita.horario == null) {
+            return (
+                <VStack w={"30rem"}>
+                    <Heading
+                        fontWeight={"300"}
+                        mb={"1rem"}
+                        size={"5xl"}
+                        color={"pink.600"}
+                    >
+                        Horario
+                    </Heading>
+
+                    <HorarioSelect />
+                </VStack>
+            );
+        } else {
+            return <CurrentHorario />;
+        }
+    }
 }
 
-function CurrentHorario() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+export function CurrentHorario() {
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
-    function handleClose(e) {
-        setCitaPreview({ ...citaPreview, horario: null });
-    }
-
-    if (citaPreview.horario != null) {
+    if (currentCita.horario != null) {
         return (
-            <Heading
-                rounded={"lg"}
+            <VStack
+                borderRadius={"1rem"}
                 color={"white"}
                 bg={"pink.600"}
                 p={"2rem"}
                 px={"4rem"}
+                h={"100%"}
                 position={"relative"}
+                justify={"center"}
             >
                 {/* CLose Button  */}
-                <Text
-                    opacity={"0.7"}
-                    color={"white"}
-                    fontSize={"lg"}
-                    position={"absolute"}
-                    right={"0.7rem"}
-                    top={"0.7rem"}
-                    transition={"all ease 0.3s"}
-                    onClick={handleClose}
-                    _hover={{
-                        opacity: 1,
-                        cursor: "pointer",
-                        transform: "scale(1.05)",
+                <RemoveButton
+                    onClick={() => {
+                        setCurrentCita({ ...currentCita, horario: null });
                     }}
-                >
-                    <RiCloseLargeLine />
-                </Text>
-                {citaPreview.horario}
-            </Heading>
+                />
+
+                <Box textAlign={"center"} mt={"-1rem"}>
+                    <Text>Horario:</Text>
+                    <Heading size={"2xl"}>{currentCita.horario}</Heading>
+                </Box>
+            </VStack>
         );
     }
 }
 
 function HorarioSelect() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
     const horariosDisponibles = createListCollection({
         items: [
@@ -97,15 +95,17 @@ function HorarioSelect() {
     });
 
     function handleSelectChange(e) {
-        setCitaPreview({...citaPreview, horario: e.target.value})
+        setCurrentCita({ ...currentCita, horario: e.target.value });
     }
 
     return (
         <Select.Root
             size={"lg"}
             collection={horariosDisponibles}
-            w={"25%"}
+            w={"80%"}
             onChange={handleSelectChange}
+            borderColor={"pink.500"}
+            borderWidth={"1px"}
         >
             <Select.HiddenSelect />
             {/* <Select.Label>size = {size}</Select.Label> */}

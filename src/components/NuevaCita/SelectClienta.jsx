@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     Heading,
     HStack,
@@ -11,85 +12,79 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { MiniSingleton } from "@/utils/lattice-design";
-import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import { RiCloseLargeLine } from "react-icons/ri";
+import RemoveButton from "../common/RemoveButton";
 
-const inputStyles = { borderWidth: "1px", borderColor: "pink.600" };
+const inputStyles = {
+    borderWidth: "1.5px",
+    borderColor: "pink.500",
+    width: "40%",
+};
 
 const useClientas = MiniSingleton(null);
 
 export default function SelectClienta() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+    const [currentCita, setCurrentCita] = useCurrentCita();
     const [currentPanel, setCurrentPanel] = useState("none");
 
-    return (
-        <VStack gap={"2rem"}>
-            <Heading
-                fontWeight={300}
-                mb={"1rem"}
-                size={"5xl"}
-                color={"pink.600"}
-            >
-                Clienta
-            </Heading>
+    if (currentCita.clienta == null) {
+        return (
+            <VStack w={"70%"}>
+                <HStack mt={"3rem"} gap={"2rem"} w={"100%"} align={"end"} mb={"2rem"}>
+                    <Heading
+                        fontWeight={300}
+                        size={"5xl"}
+                        mb={"-0.5rem"}
+                        color={"pink.600"}
+                    >
+                        Clienta
+                    </Heading>
 
-            <CurrentClienta />
+                    <OpcionesClienta setCurrentPanel={setCurrentPanel} />
+                </HStack>
+                {currentPanel == "buscarClienta" && <ListaBuscarClienta />}
 
-            {citaPreview.clienta == null && (
-                <OpcionesClienta setCurrentPanel={setCurrentPanel} />
-            )}
-
-            {citaPreview.clienta == null && currentPanel == "buscarClienta" && (
-                <ListaBuscarClienta />
-            )}
-            {citaPreview.clienta == null && currentPanel == "nuevaClienta" && (
-                <FormularioNuevaClienta />
-            )}
-        </VStack>
-    );
+                {currentPanel == "nuevaClienta" && <FormularioNuevaClienta />}
+            </VStack>
+        );
+    }
 }
 
-function CurrentClienta() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+export function CurrentClienta() {
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
-    if (citaPreview.clienta != null) {
+    if (currentCita.clienta != null) {
         return (
             <VStack
+                h={"100%"}
                 borderRadius={"1rem"}
                 bg={"pink.600"}
                 color={"white"}
-                p={"2rem"}
+                py={"6rem"}
                 px={"3rem"}
                 position={"relative"}
+                justify={"center"}
             >
                 {/* CLose Button  */}
-                <Text
-                    opacity={"0.7"}
-                    color={"white"}
-                    fontSize={"lg"}
-                    position={"absolute"}
-                    right={"0.7rem"}
-                    top={"0.7rem"}
-                    transition={"all ease 0.3s"}
-                    onClick={()=>{setCitaPreview({...citaPreview, clienta: null})}}
-                    _hover={{
-                        opacity: 1,
-                        cursor: "pointer",
-                        transform: "scale(1.05)",
+                <RemoveButton
+                    onClick={() => {
+                        setCurrentCita({ ...currentCita, clienta: null });
                     }}
-                >
-                    <RiCloseLargeLine />
-                </Text>
+                />
+
+                <Text mb={"0.5rem"}>Clienta:</Text>
                 <Image
                     borderRadius={"20rem"}
-                    src={`/img/clientas/${citaPreview.clienta.foto_clienta}`}
-                    w={"8rem"}
-                    mb={"2rem"}
+                    src={`/img/clientas/${currentCita.clienta.foto_clienta}`}
+                    w={"7rem"}
+                    mb={"0.5rem"}
                 />
                 <Heading>
-                    {citaPreview.clienta.segundo_nombre}{" "}
-                    {citaPreview.clienta.apellido_paterno}
+                    {currentCita.clienta.segundo_nombre}{" "}
+                    {currentCita.clienta.apellido_paterno}
                 </Heading>
+                <Text opacity={"0.7"} fontSize={"sm"}>{currentCita.clienta.telefono}</Text>
             </VStack>
         );
     }
@@ -100,8 +95,8 @@ function OpcionesClienta({ setCurrentPanel }) {
         <HStack>
             <Button
                 // disabled
-                fontSize={"xl"}
-                size={"xl"}
+                fontSize={"md"}
+                size={"md"}
                 colorPalette={"pink"}
                 onClick={() => {
                     setCurrentPanel("buscarClienta");
@@ -111,30 +106,39 @@ function OpcionesClienta({ setCurrentPanel }) {
             </Button>
             <Button
                 // disabled
-                fontSize={"xl"}
-                size={"xl"}
+                fontSize={"md"}
+                size={"md"}
                 colorPalette={"pink"}
                 onClick={() => {
                     setCurrentPanel("nuevaClienta");
                 }}
             >
-                Nueva Clienta
+                Nueva
             </Button>
+            <Input {...inputStyles} w={"20rem"} placeholder="Buscar" />
         </HStack>
     );
 }
 
 function ListaBuscarClienta() {
     return (
-        <>
-            <Input {...inputStyles} placeholder="Buscar" />
-            <ListaClientas />
-        </>
+        <VStack w={"100%"} gap={"2rem"}>
+            <Box
+                w={"100%"}
+                height={"40vh"}
+                overflowY={"scroll"}
+                borderColor={"pink.500"}
+                borderWidth={"1px"}
+                borderRadius={"0.5rem"}
+            >
+                <ListaClientas />
+            </Box>
+        </VStack>
     );
 }
 
 function ListaClientas() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+    const [currentCita, setCurrentCita] = useCurrentCita();
     const [clientas, setClientas] = useClientas();
 
     useEffect(() => {
@@ -152,14 +156,14 @@ function ListaClientas() {
     if (clientas != null) {
         return (
             // <VStack>
-            <Table.Root size="md" variant={"outline"} interactive>
-                <Table.Header>
+            <Table.Root variant={"outline"} interactive>
+                {/* <Table.Header>
                     <Table.Row>
                         <Table.ColumnHeader>Foto</Table.ColumnHeader>
                         <Table.ColumnHeader>Nombre</Table.ColumnHeader>
                         <Table.ColumnHeader>Acciones</Table.ColumnHeader>
                     </Table.Row>
-                </Table.Header>
+                </Table.Header> */}
                 <Table.Body>
                     {clientas.map((clienta) => {
                         return (
@@ -174,12 +178,12 @@ function ListaClientas() {
                                 <Table.Cell>
                                     {getFullNombre(clienta)}
                                 </Table.Cell>
-                                <Table.Cell>
+                                <Table.Cell textAlign={"center"}>
                                     <Button
                                         colorPalette={"pink"}
                                         onClick={() => {
-                                            setCitaPreview({
-                                                ...citaPreview,
+                                            setCurrentCita({
+                                                ...currentCita,
                                                 clienta: clienta,
                                             });
                                         }}

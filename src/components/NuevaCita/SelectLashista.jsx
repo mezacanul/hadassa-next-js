@@ -1,86 +1,82 @@
-import { Button, Grid, Heading, Image, VStack } from "@chakra-ui/react";
+import {
+    Box,
+    Button,
+    Grid,
+    Heading,
+    Image,
+    Text,
+    VStack,
+} from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
 import { MiniSingleton } from "@/utils/lattice-design";
-import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+import { useCurrentCita } from "@/pages/nueva-cita/[date]";
+import RemoveButton from "../common/RemoveButton";
 
 const useLashistas = MiniSingleton(null);
 
 export default function SelectLashista() {
-    const [citaPreview] = useCitaPreview();
+    const [currentCita] = useCurrentCita();
 
-    return (
-        <VStack w={"100%"}>
-            <Heading
-                mb={"2.5rem"}
-                fontWeight={"300"}
-                size={"5xl"}
-                color={"pink.600"}
-            >
-                Lashista
-            </Heading>
+    if (currentCita.lashista == null) {
+        return (
+            <>
+            {/* // <VStack w={"100%"}> */}
+                {/* <Heading
+                    mb={"2.5rem"}
+                    fontWeight={"300"}
+                    size={"5xl"}
+                    color={"pink.600"}
+                >
+                    Lashista
+                </Heading> */}
 
-            <CurrentLashista />
-            {citaPreview.lashista == null && <ListaLashistas />}
-        </VStack>
-    );
+                <ListaLashistas />
+            {/* // </VStack> */}
+            </>
+        );
+    }
 }
 
-function CurrentLashista() {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
-    
-    function handleClose(e) {
-        setCitaPreview({...citaPreview, lashista: null})
-        // setCurrentLashista(null)
-        // setShowLashistas(true)
-    }
+export function CurrentLashista() {
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
-    if (citaPreview.lashista != null) {
+    if (currentCita.lashista != null) {
         return (
             <VStack
+                h={"100%"}
                 align={"center"}
+                justify={"center"}
                 // w={"100%"}
-                px={"3rem"}
+                px={"4rem"}
                 py={"2rem"}
                 bg={"pink.600"}
-                gap={"2rem"}
+                gap={"0.5rem"}
                 boxShadow={"0px 6px 7px rgba(136, 136, 136, 0.4)"}
                 rounded={"xl"}
                 color={"white"}
                 position={"relative"}
             >
                 {/* CLose Button  */}
-                <Button
-                    opacity={"0.7"}
-                    color={"white"}
-                    fontSize={"xl"}
-                    position={"absolute"}
-                    right={"0.1rem"}
-                    top={"0.3rem"}
-                    transition={"all ease 0.3s"}
-                    onClick={handleClose}
-                    _hover={{
-                        opacity: 1,
-                        cursor: "pointer",
-                        transform: "scale(1.05)",
+                <RemoveButton
+                    onClick={() => {
+                        setCurrentCita({ ...currentCita, lashista: null });
                     }}
-                    bg={"transparent"}
-                >
-                    <RiCloseLargeLine />
-                </Button>
+                />
+
+                <Text mb={"0.5rem"}>Lashista:</Text>
                 <Image
                     // me={"1rem"}
                     boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                     borderRadius={"100%"}
                     objectFit={"cover"}
-                    w={"8rem"}
-                    src={`/img/lashistas/${citaPreview.lashista.image}`}
+                    w={"7rem"}
+                    mb={"0.5rem"}
+                    src={`/img/lashistas/${currentCita.lashista.image}`}
                 />
-                <Heading fontWeight={"300"} size={"2xl"}>
-                    {citaPreview.lashista.nombre}
-                </Heading>
+                <Heading size={"xl"}>{currentCita.lashista.nombre}</Heading>
             </VStack>
         );
     }
@@ -98,20 +94,33 @@ function ListaLashistas() {
 
     if (lashistas != null) {
         return (
-            <Grid templateColumns={"repeat(3, 1fr)"} w={"100%"}>
-                {lashistas.map((lsh) => {
-                    return <Lashista key={lsh.id} data={lsh} />;
-                }, [])}
-            </Grid>
+            <VStack
+            h={"100%"}
+                w={"45rem"}
+                borderRadius={"2rem"}
+                borderColor={"pink.500"}
+                borderWidth={"1px"}
+                // p={"2rem"}
+                px={"0.5rem"}
+                pb={"2rem"}
+                pt={"1rem"}
+            >
+                <Text color={"pink.700"} mb={"1rem"}>Seleccionar Lashista</Text>
+                <Grid templateColumns={"repeat(3, 1fr)"} w={"100%"}>
+                    {lashistas.map((lsh) => {
+                        return <Lashista key={lsh.id} data={lsh} />;
+                    }, [])}
+                </Grid>
+            </VStack>
         );
     }
 }
 
 function Lashista({ data }) {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
     function handleSelectLashista(e) {
-        setCitaPreview({ ...citaPreview, lashista: data });
+        setCurrentCita({ ...currentCita, lashista: data });
     }
 
     return (
@@ -121,7 +130,7 @@ function Lashista({ data }) {
                 boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                 borderRadius={"100%"}
                 objectFit={"cover"}
-                w={"8rem"}
+                w={"7rem"}
                 src={`/img/lashistas/${data.image}`}
             />
             <Button

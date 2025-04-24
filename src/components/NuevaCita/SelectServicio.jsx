@@ -11,76 +11,59 @@ import {
 import { useEffect } from "react";
 import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
-import { RiCloseLargeLine } from "react-icons/ri";
+
 
 import { MiniSingleton } from "@/utils/lattice-design";
-import { useCitaPreview } from "@/pages/nueva-cita/[date]";
+import { useCurrentCita } from "@/pages/nueva-cita/[date]";
+import RemoveButton from "../common/RemoveButton";
 
 const useServicios = MiniSingleton([]);
 
 export default function SelectServicio() {
-    const [citaPreview] = useCitaPreview();
+    const [currentCita] = useCurrentCita();
 
-    return (
-        <VStack>
-            <Heading
-                fontWeight={"300"}
-                my={"1rem"}
-                size={"5xl"}
-                color={"pink.600"}
-            >
-                Servicio
-            </Heading>
+    if (currentCita.servicio == null) {
+        return (
+            <VStack>
+                <Heading
+                    fontWeight={"300"}
+                    my={"1rem"}
+                    size={"5xl"}
+                    color={"pink.600"}
+                >
+                    Servicio
+                </Heading>
 
-            {citaPreview.servicio == null && <ListaServicios />}
-            <CurrentServicio dataServicio={citaPreview.servicio} />
-        </VStack>
-    );
+                <ListaServicios />
+            </VStack>
+        );
+    }
 }
 
-function CurrentServicio({ dataServicio }) {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+export function CurrentServicio() {
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
-    function handleClose(e) {
-        setCitaPreview({ ...citaPreview, servicio: null });
-    }
-
-    if (dataServicio != null) {
+    if (currentCita.servicio != null) {
         return (
             <HStack
                 boxShadow={"0px 6px 7px rgba(136, 136, 136, 0.4)"}
                 rounded={"xl"}
                 p={"2rem"}
                 w={"35rem"}
+                h={"100%"}
                 justify={"space-between"}
                 align={"center"}
                 bg={"pink.600"}
                 position={"relative"}
             >
                 {/* CLose Button  */}
-                <Text
-                    opacity={"0.7"}
-                    color={"white"}
-                    fontSize={"xl"}
-                    position={"absolute"}
-                    right={"1rem"}
-                    top={"1rem"}
-                    transition={"all ease 0.3s"}
-                    onClick={handleClose}
-                    _hover={{
-                        opacity: 1,
-                        cursor: "pointer",
-                        transform: "scale(1.05)",
-                    }}
-                >
-                    <RiCloseLargeLine />
-                </Text>
+                <RemoveButton onClick={()=>{setCurrentCita({ ...currentCita, servicio: null })}}/>
 
                 <Image
                     boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                     borderRadius={"1.2rem"}
                     w={"9rem"}
-                    src={`/img/servicios/${dataServicio.image}`}
+                    src={`/img/servicios/${currentCita.servicio.image}`}
                 />
 
                 {/* Descripcion  */}
@@ -91,10 +74,12 @@ function CurrentServicio({ dataServicio }) {
                     w={"65%"}
                 >
                     <Heading fontStyle={"italic"} t size={"3xl"}>
-                        {dataServicio.servicio}
+                        {currentCita.servicio.servicio}
                     </Heading>
 
-                    <Text fontSize={"sm"}>{dataServicio.descripcion}</Text>
+                    <Text fontSize={"sm"}>
+                        {currentCita.servicio.descripcion}
+                    </Text>
 
                     <VStack align={"end"} alignSelf={"end"} mt={"2rem"}>
                         <HStack textDecor={"underline"}>
@@ -102,12 +87,12 @@ function CurrentServicio({ dataServicio }) {
                                 <MdTimelapse />
                             </Text>
                             <Text fontWeight={500}>
-                                {dataServicio.minutos} minutos
+                                {currentCita.servicio.minutos} minutos
                             </Text>
                         </HStack>
 
                         <Text fontSize={"xl"} fontWeight={800}>
-                            ${dataServicio.precio}
+                            ${currentCita.servicio.precio}
                         </Text>
                     </VStack>
                 </VStack>
@@ -127,7 +112,13 @@ function ListaServicios() {
 
     return (
         <Grid
-            templateColumns={"repeat(3, 1fr)"}
+            p={"1rem"}
+            borderRadius={"2rem"}
+            borderColor={"pink.500"}
+            borderWidth={"1px"}
+            height={"60vh"}
+            overflowY={"scroll"}
+            templateColumns={"repeat(2, 1fr)"}
             py={"2rem"}
             align={"start"}
             gap={"6rem"}
@@ -144,7 +135,7 @@ function ListaServicios() {
 }
 
 function Servicio({ data }) {
-    const [citaPreview, setCitaPreview] = useCitaPreview();
+    const [currentCita, setCurrentCita] = useCurrentCita();
 
     return (
         <VStack>
@@ -196,7 +187,7 @@ function Servicio({ data }) {
                 <Button
                     size={"lg"}
                     onClick={() => {
-                        setCitaPreview({ ...citaPreview, servicio: data });
+                        setCurrentCita({ ...currentCita, servicio: data });
                     }}
                     colorPalette={"pink"}
                 >
