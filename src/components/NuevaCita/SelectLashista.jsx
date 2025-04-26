@@ -11,11 +11,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
-import { MiniSingleton } from "@/utils/lattice-design";
+import { Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
 
-const useLashistas = MiniSingleton(null);
+const useLashistas = Singleton(null);
 
 export default function SelectLashista() {
     const [currentCita] = useCurrentCita();

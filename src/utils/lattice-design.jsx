@@ -3,15 +3,15 @@ import { useState, useEffect } from "react";
 let lattice_grid = {};
 const allowedEntryFiles = ["_app.jsx", "main.jsx", "route-loader.js"]; // Define allowed entry files
 
-// MiniSingleton: Creates a mini context for shared state
-export function MiniSingleton(initialState) {
+// Singleton: Creates a mini context for shared state
+export function Singleton(initialState) {
     let sharedState = initialState;
     let listeners = [];
 
     const setSharedState = (newState) => {
         sharedState =
             typeof newState === "function" ? newState(sharedState) : newState;
-        // console.log("MiniSingleton: State updated", sharedState);
+        // console.log("Singleton: State updated", sharedState);
         listeners.forEach((listener) => listener(sharedState));
     };
 

@@ -13,11 +13,11 @@ import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
 
 
-import { MiniSingleton } from "@/utils/lattice-design";
+import { Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
 
-const useServicios = MiniSingleton([]);
+const useServicios = Singleton([]);
 
 export default function SelectServicio() {
     const [currentCita] = useCurrentCita();

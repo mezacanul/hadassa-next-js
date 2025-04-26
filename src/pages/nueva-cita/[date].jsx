@@ -16,13 +16,11 @@ import SelectClienta, {
 import { FaRegClock } from "react-icons/fa";
 import { BiReceipt } from "react-icons/bi";
 import { BsCalendar2Date } from "react-icons/bs";
-
-
-
-import { loadHook, MiniSingleton } from "@/utils/lattice-design";
+import { loadHook, Singleton } from "@/utils/lattice-design";
 import { LuBedSingle } from "react-icons/lu";
+import { formatHoyTitle } from "@/utils/main";
 
-export const useCurrentCita = MiniSingleton({
+export const useCurrentCita = Singleton({
     servicio: null,
     lashista: null,
     horario: null,
@@ -30,7 +28,7 @@ export const useCurrentCita = MiniSingleton({
     fecha: null
 });
 
-// export const useCurrentCita = MiniSingleton(null)
+// export const useCurrentCita = Singleton(null)
 
 export default function NuevaCita() {
     const [DOM, setDOM] = loadHook("useDOM");
@@ -164,7 +162,7 @@ function formatCurrentDate(date) {
     // const { date } = router.query;
     const [day, month, year] = date.split("-");
     const USDate = new Date(`${month}-${day}-${year}`);
-    console.log(USDate);
+    // console.log(USDate);
     const formattedDate = USDate.toLocaleDateString("es-MX", {
         day: "numeric",
         month: "long",
@@ -174,13 +172,15 @@ function formatCurrentDate(date) {
 }
 
 function TituloAgendarCita({ fecha }) {
+    const [selectedDate] = loadHook("useSelectedDate")
+
     return (
         <VStack align={"start"} mb={"2rem"}>
             <Heading textDecor={"underline"} fontWeight={"300"} size={"3xl"}>
                 Agendar Cita:
             </Heading>
             <Heading size={"5xl"} fontWeight={"light"} fontStyle={"italic"}>
-                {fecha}
+                {formatHoyTitle(selectedDate)}
             </Heading>
         </VStack>
     );

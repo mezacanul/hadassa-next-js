@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { MiniSingleton } from "@/utils/lattice-design";
+import { Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import { RiCloseLargeLine } from "react-icons/ri";
 import RemoveButton from "../common/RemoveButton";
@@ -22,7 +22,7 @@ const inputStyles = {
     width: "40%",
 };
 
-const useClientas = MiniSingleton(null);
+const useClientas = Singleton(null);
 
 export default function SelectClienta() {
     const [currentCita, setCurrentCita] = useCurrentCita();

@@ -14,20 +14,30 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import { CiSquarePlus } from "react-icons/ci";
 import { LuBedSingle } from "react-icons/lu";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
-import { useHoyRef } from "./Hoy";
+import { loadHook } from "@/utils/lattice-design";
+
+// import { useCalendarControl } from "@/pages";
+// import { useCalendarControl } from "./Hoy";
+// import { useHoyRef } from "@/pages";
+// import { useHoyRef } from "@/pages/nueva-cita/[date]";
+// import { useHoyRef } from "./Hoy";
+// import interactionPlugin from '@fullcalendar/interaction';
 
 export default function CalendarioMes() {
+    const calendarRef = useRef(null);
     const router = useRouter();
     const [openDialogue, setOpenDialogue] = useState(false);
-    const [selectedDate, setSelectedDate] = useState("");
+    // const [selectedDate, setSelectedDate] = useState("");
     const [displayedMonthIndex, setDisplayedMonthIndex] = useState(
         new Date().getMonth()
     );
-    const [hoyRef, setHoyRef] = useHoyRef()
+    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
+    // const [hoyRef, setHoyRef] = useHoyRef()
+    // const [calendarControl ] = useCalendarControl();
 
     const formatDateTitleOnMonthCalendar = (date) => {
         const monthNames = [
@@ -44,16 +54,20 @@ export default function CalendarioMes() {
             "Noviembre",
             "Diciembre",
         ];
-        console.log("Displayed Year: ", date.date.year);
-        
+        // console.log("Displayed Year: ", date.date.year);
+
         const month = monthNames[displayedMonthIndex];
         const year = date.date.year;
         return `${month} de ${year}`;
     };
 
     useEffect(() => {
-        console.log("Displayed Month Index: ", displayedMonthIndex);
+        // console.log("Displayed Month Index: ", displayedMonthIndex);
     }, [displayedMonthIndex]);
+
+    // function handleDayClick() {
+    //     console.log(hoyRef);
+    // }
 
     return (
         // <Dialog.Root
@@ -67,104 +81,62 @@ export default function CalendarioMes() {
         //         selectedDate={selectedDate}
         //         // data={currentEventDialogue}
         //     />
-        <VStack mt={"2rem"} py="1rem" px="2rem" id="MesCalendar">
+        <VStack id="MesCalendar">
+            {/* <Button onClick={()=>{
+                console.log(hoyRef);
+            }}>
+                hoyRef
+            </Button> */}
             <Box width="100%">
                 <DayGridStyles />
-
-                <style>
-                        {`
-                            .fc-timegrid-slots {
-                                // background-color: rgb(255, 238, 249); /* Set your desired color */
-                                // background-color: rgb(255, 249, 254); /* Set your desired color */
-                                background-color: white;
-                                // background-color: transparent;
-                            }
-
-                            .fc-daygrid-day:hover {
-                                cursor: pointer;
-                                background-color:rgba(236, 32, 134, 0.18);
-                            }
-
-                            #MesCalendar .fc-toolbar-title {
-                                // font-size: 2.5rem !important;
-                                font-weight: 300 !important;
-                            }
-
-                            #MesCalendar .fc-header-toolbar {
-                                flex-direction: row-reverse;
-                            }
-                            
-                            .fc-button {
-                                background-color: #ec4899 !important;
-                                border-color: #ec4899 !important;
-                                transition: all ease 0.3s;
-                            }
-                             
-                            .fc-button:hover {
-                                // background-color:rgb(210, 57, 133) !important;
-                                // border-color: rgb(183, 35, 109) !important;
-                                transform: scale(1.1);
-                            }
-                        `}
-                    </style>
+                <style>{MesCalendarStyles}</style>
                 <FullCalendar
+                    ref={calendarRef}
+                    selectable={true}
                     dayCellContent={renderDayCellContent(
                         router,
                         displayedMonthIndex
                     )}
-                    eventContent={renderEventContent}
+                    // events={events}
+                    // eventContent={renderEventContent}
                     datesSet={(dateInfo) => {
                         setDisplayedMonthIndex(
                             dateInfo.view.currentStart.getMonth()
                         ); // Update on month change
                     }}
-                    height="60vh"
+                    height="85vh"
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
                     weekends={true}
                     hiddenDays={[0]}
                     locales={[esLocale]} // Include the Spanish locale
                     titleFormat={formatDateTitleOnMonthCalendar}
-
+                    customButtons={{
+                        today: {
+                            text: "Hoy",
+                            click: function () {
+                                calendarRef.current.getApi().today(); // Default "today" behavior
+                                setSelectedDate(null);
+                                console.log("Today button clicked!"); // Your callback
+                                // Add your custom logic here
+                            },
+                        },
+                    }}
                     dayCellDidMount={(info) => {
-                        info.el.addEventListener("click", () => {                            
-                            const formattedDate = format(info.date, "yyyy-MM-dd");
-                            // hoyRef.gotoDate(formattedDate);
-                            console.log(formattedDate);
-                            console.log(hoyRef);
-                            
-        // const calendarApi = calendarRef.current.getApi();
-        // calendarApi.gotoDate(formattedDate);
-        //                     2025-04-30
+                        info.el.addEventListener("click", () => {
+                            // console.log(info.date);
+                            const formattedDate = format(
+                                info.date,
+                                "yyyy-MM-dd"
+                            );
+                            setSelectedDate(formattedDate);
                         });
-                      }}
-                    // eventClick={(info) => {
-                    //     console.log(info);
-                        
-                    //     // const date = info.date;
-                    //     // const day = date.getDate();
-                    //     // const month = date.getMonth() + 1; // Months are 0-based, so add 1
-                    //     // const year = date.getFullYear();
-                    //     // console.log(`Clicked Date: ${day}/${month}/${year}`);
-                    // }}
-
-                    // events={events}
-                    // selectable={true}
+                    }}
+                    eventClick={(info) => {
+                        console.log("info", info);
+                    }}
                 />
             </Box>
-
-            <VStack
-                fontSize={"1.5rem"}
-                h={"30vh"}
-                w={"100%"}
-                align={"end"}
-                justify={"space-evenly"}
-            >
-                <Link color={"pink.500"}>Citas</Link>
-                <Link color={"pink.500"}>Clientas</Link>
-                <Link color={"pink.500"}>Servicios</Link>
-                <Link color={"pink.500"}>Lashistas</Link>
-            </VStack>
         </VStack>
         // </Dialog.Root>
     );
@@ -180,6 +152,8 @@ function renderEventContent(eventInfo) {
 }
 
 const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
+    // console.log("day cell info", info);
+
     // function renderDayCellContent(info) {
     const calendarMonthIndex = info.date.getUTCMonth();
     const isInCurrentMOnth =
@@ -197,21 +171,26 @@ const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
     };
 
     return (
-        <div
-            style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-            }}
-        >
+        <div>
             <span>{info.dayNumberText}</span>
-            {isInCurrentMOnth && (
-                <CiSquarePlus
-                    style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                    onClick={handleNuevaCita}
-                />
-            )}
         </div>
+        // <div
+        //     style={{
+        //         display: "flex",
+        //         // alignItems: "end",
+        //         alignItems: "space-between",
+        //         flexDirection: "column",
+        //         height: "100%",
+        //     }}
+        // >
+        //     <span>{info.dayNumberText}</span>
+        //     {isInCurrentMOnth && (
+        //         <CiSquarePlus
+        //             style={{ fontSize: "1.5rem", cursor: "pointer" }}
+        //             onClick={handleNuevaCita}
+        //         />
+        //     )}
+        // </div>
     );
 };
 
@@ -379,3 +358,57 @@ const events = [
 
     { title: "Disponible", start: "2025-03-31" },
 ];
+
+const MesCalendarStyles = `
+    #MesCalendar .fc-day-today {
+        background-color: #ec4899;
+        opacity: 0.9;
+    }
+    
+    #MesCalendar .fc-day-today span {
+        color: white !important;
+    }
+
+    #MesCalendar .fc-button {
+        padding: 5px;
+    }
+
+    .fc-timegrid-slots {
+        // background-color: rgb(255, 238, 249); /* Set your desired color */
+        // background-color: rgb(255, 249, 254); /* Set your desired color */
+        background-color: white;
+        // background-color: transparent;
+    }
+
+    .fc-daygrid-day:hover {
+        cursor: pointer;
+        background-color:rgba(236, 32, 134, 0.18);
+    }
+
+    #MesCalendar .fc-toolbar-title {
+        // font-size: 2.5rem !important;
+        font-weight: 300 !important;
+    }
+
+    #MesCalendar .fc-header-toolbar {
+        // flex-direction: row-reverse;
+    }
+
+    #MesCalendar .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) {
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 1rem;
+    }
+
+    .fc-button {
+        background-color: #ec4899 !important;
+        border-color: #ec4899 !important;
+        transition: all ease 0.3s;
+    }
+        
+    .fc-button:hover {
+        // background-color:rgb(210, 57, 133) !important;
+        // border-color: rgb(183, 35, 109) !important;
+        transform: scale(1.1);
+    }
+`;
