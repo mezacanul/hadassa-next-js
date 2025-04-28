@@ -37,8 +37,8 @@ export default function App({ Component, pageProps }) {
                 <link rel="icon" href="/favicon4.png" />
             </Head>
 
+            <NavBar />
             <VStack id="Body" px={"2rem"}>
-                <NavBar />
                 <Component {...pageProps} />
             </VStack>
         </Provider>
@@ -63,13 +63,26 @@ function NavBar() {
     }, [router]);
 
     return (
-        <Grid templateColumns="3fr 2fr" gap={"2.5rem"} w={"100%"} py={"2rem"}>
-            <Heading fontWeight={300} size={"4xl"}>
-                {formatHoyTitle(selectedDate)}
-            </Heading>
-            {/* format(info.date, "yyyy-MM-dd"); */}
-
-            <HStack gap={"0.5rem"} justify={"end"}>
+        <Grid
+            boxShadow={"-3px 3px 10px rgba(0,0,0,0.05)"}
+            px={"2rem"}
+            templateColumns="3fr 2fr"
+            gap={"2.5rem"}
+            w={"100%"}
+            pt={"1.5rem"}
+            pb={"1rem"}
+            mb={"2rem"}
+            position={"sticky"}
+            top={0}
+            bg={"white"}
+            zIndex={10}
+            borderBottom={"1px solid #ec4899"}
+        >
+            <HStack gap={"0.5rem"} justify={"space-between"}>
+                <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
+                    {formatHoyTitle(selectedDate)}
+                </Heading>
+                {/* format(info.date, "yyyy-MM-dd"); */}
                 {router.pathname != "/nueva-cita/[date]" && (
                     <Button
                         bg={"#ec4899"}
@@ -95,9 +108,21 @@ function NavBar() {
                         </HStack>
                     </Button>
                 )}
-                <Button bg={"#ec4899"}>
+            </HStack>
+
+            <HStack
+                fontSize={"1.2rem"}
+                w={"100%"}
+                justify={"space-between"}
+                align={"center"}
+            >
+                <Link color={"#ec4899"}>Citas</Link>
+                <Link color={"#ec4899"}>Clientas</Link>
+                <Link color={"#ec4899"}>Servicios</Link>
+                <Link color={"#ec4899"}>Lashistas</Link>
+                {/* <Button bg={"#ec4899"} size={"xs"}>
                     <RxHamburgerMenu />
-                </Button>
+                </Button> */}
             </HStack>
         </Grid>
     );

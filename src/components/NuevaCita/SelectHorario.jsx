@@ -8,7 +8,7 @@ import {
     VStack,
 } from "@chakra-ui/react";
 import { RiCloseLargeLine } from "react-icons/ri";
-
+import { FiClock } from "react-icons/fi";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
 
@@ -18,7 +18,7 @@ export default function SelectHorario() {
     if (currentCita.servicio != null && currentCita.lashista != null) {
         if (currentCita.horario == null) {
             return (
-                <VStack w={"30rem"}>
+                <VStack w={"15rem"}>
                     <Heading
                         fontWeight={"300"}
                         mb={"1rem"}
@@ -59,10 +59,13 @@ export function CurrentHorario() {
                     }}
                 />
 
-                <Box textAlign={"center"} mt={"-1rem"}>
+                <VStack mt={"0.5rem"} gap={0}>
                     <Text>Horario:</Text>
                     <Heading size={"2xl"}>{currentCita.horario}</Heading>
-                </Box>
+                    <Text my={"0.7rem"} fontSize={"1.8rem"}>
+                        <FiClock />
+                    </Text>
+                </VStack>
             </VStack>
         );
     }
@@ -102,7 +105,6 @@ function HorarioSelect() {
         <Select.Root
             size={"lg"}
             collection={horariosDisponibles}
-            w={"80%"}
             onChange={handleSelectChange}
             borderColor={"pink.500"}
             borderWidth={"1px"}

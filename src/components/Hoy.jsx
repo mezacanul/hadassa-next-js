@@ -4,7 +4,15 @@
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
-import { Box, Button, Dialog, Portal, Avatar, Card } from "@chakra-ui/react";
+import {
+    Box,
+    Button,
+    Dialog,
+    Portal,
+    Avatar,
+    Card,
+    Heading,
+} from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
@@ -75,17 +83,20 @@ export default function Hoy() {
                 const dateWithTime = new Date(
                     parsedDate.setHours(hours, minutes, 0)
                 );
-                // Add 90 minutes
-                const dateWithAddedTime = addMinutes(dateWithTime, 90);
+                // Add minutes
+                const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
                 // Format the result
                 const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
 
                 // console.log(start, end); // "2025-04-25T09:00:00"
                 return {
-                    title: `${ed.servicio} - ${ed.clienta}`,
+                    title: `${ed.clienta}`,
                     start: start,
                     end: end,
                     resourceId: ed.cama_id,
+                    extendedProps: {
+                        servicio: ed.servicio,
+                    },
                 };
             });
         }
@@ -151,7 +162,7 @@ export default function Hoy() {
                         slotMinTime="09:00:00"
                         slotMaxTime="18:00:00"
                         expandRows={true}
-                        height="160vh"
+                        height="200vh"
                         // headerToolbar={{ left: "title", center: "", right: "" }}
                         headerToolbar={{ left: "", center: "", right: "" }}
                         allDaySlot={false} // Removes the all-day row
@@ -165,6 +176,18 @@ export default function Hoy() {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: true,
+                        }}
+                        eventContent={(arg) => {
+                            return (
+                                <div style={{ marginLeft: "0.3rem" }}>
+                                    <b style={{ fontSize: "0.7rem" }}>
+                                        {arg.event.title}
+                                    </b>
+                                    <p style={{ fontSize: "0.7rem" }}>
+                                        {arg.event.extendedProps.servicio}
+                                    </p>
+                                </div>
+                            );
                         }}
                         // viewDidMount={() => {
                         //     console.log("viewDidMount hoyRef:", hoyRef);
@@ -233,14 +256,14 @@ function renderResourceLabel(info) {
     return (
         <div style={{ padding: "8px", textAlign: "center" }}>
             <img
-                style={{ width: "4rem", marginBottom: "0.5rem" }}
+                style={{ width: "3.5rem", marginBottom: "0.5rem" }}
                 src={"img/lashistas/" + info.resource.extendedProps.src}
             />
             <p
                 style={{
-                    marginBottom: "0.5rem",
+                    marginBottom: "0.2rem",
                     fontWeight: "300",
-                    fontSize: "1.2rem",
+                    fontSize: "1rem",
                 }}
             >
                 {info.resource.title}
@@ -253,11 +276,11 @@ function renderResourceLabel(info) {
                 }}
             >
                 <LuBedSingle
-                    style={{ fontSize: "1.4rem", color: "rgb(228, 129, 167)" }}
+                    style={{ fontSize: "1.2rem", color: "rgb(228, 129, 167)" }}
                 />
                 <span
                     style={{
-                        fontSize: "1.2rem",
+                        fontSize: "1rem",
                         fontWeight: "bold",
                         marginLeft: "0.3rem",
                         color: "rgb(228, 129, 167)",
