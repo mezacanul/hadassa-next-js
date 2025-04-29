@@ -1,7 +1,34 @@
 import { useState, useEffect } from "react";
 
 let lattice_grid = {};
-const allowedEntryFiles = ["_app.jsx", "main.jsx", "route-loader.js"]; // Define allowed entry files
+const allowedEntryFiles = [
+    "_app.js", //
+    "_app.jsx", // Next.js custom App (already in your list)
+    "_app.ts", // Next.js with TypeScript
+    "_app.tsx", // Next.js with TypeScript
+    "app.js", // Common Webpack or custom entry
+    "app.jsx", // Alternative for custom App in Next.js or Vite
+    "app.ts", // TypeScript entry
+    "app.tsx", // Alternative for custom App with TypeScript
+    "main.js", // Alternative Vite/React entry
+    "main.jsx", // Vite/React entry (already in your list)
+    "main.ts", // TypeScript entry
+    "main.tsx", // Vite/React with TypeScript
+    "_main.js", // Alternative Vite/React entry
+    "_main.jsx", // Vite/React entry (already in your list)
+    "_main.ts", // TypeScript entry
+    "_main.tsx", // Vite/React with TypeScript
+    "index.js", // Default entry for many setups (Webpack, Vite, Next.js)
+    "index.ts", // TypeScript entry
+    "index.jsx", // Common Vite/React/Next.js entry
+    "index.tsx", // Common Vite/React/Next.js with TypeScript
+    "_index.js", // Default entry for many setups (Webpack, Vite, Next.js)
+    "_index.ts", // TypeScript entry
+    "_index.jsx", // Common Vite/React/Next.js entry
+    "_index.tsx", // Common Vite/React/Next.js with TypeScript
+    "loader.js", // Possible Babel/Webpack loader entry (as you mentioned)
+    "route-loader.js", // Possible Babel/Webpack loader entry (as you mentioned)
+];
 
 // Singleton: Creates a mini context for shared state
 export function Singleton(initialState) {

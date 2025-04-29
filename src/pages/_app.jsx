@@ -25,6 +25,7 @@ import { useRouter } from "next/router";
 Nexus({
     useDOM: Singleton({ title: "Hadassa Cerón" }),
     useSelectedDate: Singleton(null),
+    useEvents: Singleton([]),
 });
 
 export default function App({ Component, pageProps }) {
@@ -49,6 +50,7 @@ function NavBar() {
     const [selectedDate] = loadHook("useSelectedDate");
     const NextNav = useNextNav();
     const router = useRouter();
+    const [events] = loadHook("useEvents");
 
     useEffect(() => {
         console.log("route", router);
@@ -87,6 +89,8 @@ function NavBar() {
                     <Button
                         bg={"#ec4899"}
                         onClick={() => {
+                            console.log("events", events);
+
                             const parsedDate = parse(
                                 selectedDate,
                                 "yyyy-MM-dd",
@@ -96,7 +100,12 @@ function NavBar() {
                                 parsedDate,
                                 "dd-MM-yyyy"
                             );
-                            console.log(formattedDate); // "26-04-2025"
+                            console.log(
+                                selectedDate,
+                                parsedDate,
+                                formattedDate
+                            );
+                            // console.log(formattedDate); // "26-04-2025"
                             NextNav.push(`/nueva-cita/${formattedDate}`);
                         }}
                     >

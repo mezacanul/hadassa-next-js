@@ -22,27 +22,42 @@ export default async function handler(req, res) {
 
             // Validate date presence
             if (!date) {
+                // Se recibe el objeto con la cita 
                 const cita = req.body;
+                
+                // Obtener nombre del dia 
                 const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
                 const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
 
+                // DEV 
+                // Obtenemos 
+                // - citas: filtradas por fecha y lashista
+                // - servicios: para comparar duracion y reglas
                 // Assuming the date is in 'YYYY-MM-DD' format and the citas table has a 'date' column
-                const [rows] = await connection.execute(
-                    `SELECT clientas.nombre_completo as clienta, servicios.servicio, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
-                                FROM 
-                                  citas 
-                                LEFT JOIN clientas ON citas.clienta_id = clientas.id
-                                LEFT JOIN servicios ON citas.servicio_id = servicios.id
-                                LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
-                                WHERE fecha = '${cita.fecha}'`
+                const [eventos] = await connection.execute(
+                    `SELECT 
+                        servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
+                    FROM 
+                        citas 
+                    LEFT JOIN clientas ON citas.clienta_id = clientas.id
+                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
+                    LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
+                    WHERE fecha = '${cita.fecha}'`
+                    // TO DO:
+                    // Falta filtrar por lashista 
+                );
+                const [servicios] = await connection.execute(
+                    `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
                 );
 
-                const citasPorCama = rows.reduce((acc, item) => {
+                // Organizamos citas por cama (filtradas por lashista actual)
+                const citasPorCama = eventos.reduce((acc, item) => {
                     const { cama_id } = item;
                     acc[cama_id] = acc[cama_id] || [];
                     acc[cama_id].push(item);
                     return acc;
                 }, {});
+                // Obtenemos horarios completos del dia 
                 const horariosDelDia = generarHorarioDelDia(["Saturday", "Sunday"].includes(dayName))
                 console.log(citasPorCama, horariosDelDia);
                 // -- DEV: TODO
@@ -51,7 +66,7 @@ export default async function handler(req, res) {
                 // -- DEV: TODO
                 // AgendarCita(): debe pasar filtros -> dia/horario, lashista, ... 
 
-                res.status(200).json([citasPorCama, horariosDelDia]);
+                res.status(200).json({citas:citasPorCama, horarios:horariosDelDia, servicios: servicios});
                 return;
                 // res.status(201).json(req.body);
                 try {
@@ -82,7 +97,7 @@ export default async function handler(req, res) {
 
             // Assuming the date is in 'YYYY-MM-DD' format and the citas table has a 'date' column
             const [rows] = await connection.execute(
-                `SELECT clientas.nombre_completo as clienta, servicios.servicio, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
+                `SELECT clientas.nombre_completo as clienta, servicios.servicio, servicios.id as servicio_id, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
                     FROM 
                       citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
@@ -96,7 +111,7 @@ export default async function handler(req, res) {
             res.status(405).json({ error: "Method not allowed" });
         }
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch citas" });
+        res.status(500).json({ message: "Failed to fetch citas", error: error });
     } finally {
         await connection.end();
     }

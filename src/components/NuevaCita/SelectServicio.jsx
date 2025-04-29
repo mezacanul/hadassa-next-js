@@ -12,9 +12,10 @@ import { useEffect } from "react";
 import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
 
-import { Singleton } from "@/utils/lattice-design";
+import { loadHook, Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
+import { formatEvents } from "../Hoy";
 
 const useServicios = Singleton([]);
 
@@ -117,12 +118,30 @@ export function CurrentServicio() {
 
 function ListaServicios() {
     const [servicios, setServicios] = useServicios();
+    const [events, setEvents] = loadHook("useEvents");
+    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
 
+    // TO DO:
+    // Filtrar servicios basado en la fecha elegida y los eventos del dia.
+    // Deshabilitar los horarios ocupados y comparar los espacios disponibles
+    // con la duracion de cada servicio para mostrar solos los servicios que
+    // se podrian agendar debido a su duracion en el dia seleccionado.
     useEffect(() => {
-        Promise.all([axios.get("/api/servicios")]).then(([serviciosResp]) => {
-            setServicios(serviciosResp.data);
-        });
-    }, []);
+        if (selectedDate != null) {
+            if (events.length == 0) {
+                console.log(selectedDate);
+                axios
+                    .post("/api/citas", { date: selectedDate })
+                    .then((citasResp) => {
+                        console.log(selectedDate, citasResp.data);
+                        setEvents(formatEvents(citasResp.data));
+                        axios.get("/api/servicios").then((serviciosResp) => {
+                            setServicios(serviciosResp.data);
+                        });
+                    });
+            }
+        }
+    }, [selectedDate]);
 
     return (
         <Grid

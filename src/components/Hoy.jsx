@@ -21,7 +21,8 @@ import { loadHook } from "@/utils/lattice-design";
 import { parse, format, addMinutes } from "date-fns";
 
 export default function Hoy() {
-    const [events, setEvents] = useState([]);
+    // const [events, setEvents] = useState([]);
+    const [events, setEvents] = loadHook("useEvents");
     const [resources, setResources] = useState(null);
     const [openDialogue, setOpenDialogue] = useState(false);
     const [currentEventDialogue, setCurrentEventDialogue] = useState([]);
@@ -66,41 +67,6 @@ export default function Hoy() {
             setResources(camasResp.data);
         });
     }, []);
-
-    function formatEvents(eventsData) {
-        if (eventsData != null) {
-            return eventsData.map((ed) => {
-                // Split the date into parts and rearrange
-                const [day, month, year] = ed.fecha.split("-");
-                const formattedDate = `${year}-${month}-${day}`;
-                // Combine with the time and add seconds
-                // const start = `${formattedDate}T${ed.hora}:00`;
-                const start = `${formattedDate}T${ed.hora}:00`;
-
-                // Parse the date and time into a Date object
-                const parsedDate = parse(ed.fecha, "dd-MM-yyyy", new Date());
-                const [hours, minutes] = ed.hora.split(":");
-                const dateWithTime = new Date(
-                    parsedDate.setHours(hours, minutes, 0)
-                );
-                // Add minutes
-                const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
-                // Format the result
-                const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
-
-                // console.log(start, end); // "2025-04-25T09:00:00"
-                return {
-                    title: `${ed.clienta}`,
-                    start: start,
-                    end: end,
-                    resourceId: ed.cama_id,
-                    extendedProps: {
-                        servicio: ed.servicio,
-                    },
-                };
-            });
-        }
-    }
 
     const handleEventPreview = (info) => {
         setOpenDialogue(true);
@@ -291,4 +257,41 @@ function renderResourceLabel(info) {
             </div>
         </div>
     );
+}
+
+export function formatEvents(eventsData) {
+    if (eventsData != null) {
+        return eventsData.map((ed) => {
+            // Split the date into parts and rearrange
+            const [day, month, year] = ed.fecha.split("-");
+            const formattedDate = `${year}-${month}-${day}`;
+            // Combine with the time and add seconds
+            // const start = `${formattedDate}T${ed.hora}:00`;
+            const start = `${formattedDate}T${ed.hora}:00`;
+
+            // Parse the date and time into a Date object
+            const parsedDate = parse(ed.fecha, "dd-MM-yyyy", new Date());
+            const [hours, minutes] = ed.hora.split(":");
+            const dateWithTime = new Date(
+                parsedDate.setHours(hours, minutes, 0)
+            );
+            // Add minutes
+            const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
+            // Format the result
+            const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
+
+            // console.log(start, end); // "2025-04-25T09:00:00"
+            return {
+                title: `${ed.clienta}`,
+                start: start,
+                end: end,
+                resourceId: ed.cama_id,
+                extendedProps: {
+                    servicio: ed.servicio,
+                    servicio_id: ed.servicio_id,
+                    duracion: ed.duracion
+                },
+            };
+        });
+    }
 }
