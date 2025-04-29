@@ -16,24 +16,31 @@ export default async function handler(req, res) {
             // GET: Return all citas
             const [rows] = await connection.execute("SELECT * FROM citas");
             res.status(200).json(rows);
+            // GET: Filter citas by date
         } else if (req.method === "POST") {
-            // POST: Filter citas by date
+            // POST: Agendar cita
             const { date } = req.body;
 
-            // Validate date presence
+            // Validate date var presence in request
             if (!date) {
-                // Se recibe el objeto con la cita 
+                // Se recibe desde POST el objeto con los 
+                // detalles de la CITA a agendar.
                 const cita = req.body;
                 
-                // Obtener nombre del dia 
+                // Extraemos NOMBRE DEL DIA para obtener 
+                // HORARIOS completos DEL DIA.
+                // TO DO:
+                // Bifurcar horariosDelDia para representar
+                // las dos camas disponibles por lashista 
                 const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
                 const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
+                const horariosDelDia = generarHorarioDelDia({weekend: ["Saturday", "Sunday"].includes(dayName)})
 
-                // DEV 
-                // Obtenemos 
-                // - citas: filtradas por fecha y lashista
-                // - servicios: para comparar duracion y reglas
-                // Assuming the date is in 'YYYY-MM-DD' format and the citas table has a 'date' column
+                // Obtenemos de la DB
+                // - EVENTOS: filtrados por fecha y lashista
+                // - SERVICIOS: para comparar duracion y reglas
+                // TO DO:
+                // Falta filtrar por lashista 
                 const [eventos] = await connection.execute(
                     `SELECT 
                         servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
@@ -43,8 +50,7 @@ export default async function handler(req, res) {
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
                     WHERE fecha = '${cita.fecha}'`
-                    // TO DO:
-                    // Falta filtrar por lashista 
+                    // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
                 );
                 const [servicios] = await connection.execute(
                     `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
@@ -57,14 +63,19 @@ export default async function handler(req, res) {
                     acc[cama_id].push(item);
                     return acc;
                 }, {});
-                // Obtenemos horarios completos del dia 
-                const horariosDelDia = generarHorarioDelDia(["Saturday", "Sunday"].includes(dayName))
-                console.log(citasPorCama, horariosDelDia);
-                // -- DEV: TODO
-                // const HorariosDisponibles: filtrado por fecha, lashista y duracion del servicio
                 
-                // -- DEV: TODO
-                // AgendarCita(): debe pasar filtros -> dia/horario, lashista, ... 
+                // TO DO:
+                // Reducir horariosDelDia despues de comparar 
+                // con horarios de eventos (citasPorCama) y 
+                // eliminar horarios no disponibles. 
+                // (Aplicar reglas de servicio [-1] [0,-1] [1])
+                
+                // TO DO:
+                // Verificar si la cita recibida puede ser agendada
+                // en el horario especificado 
+                
+                // TO DO:
+                // AgendarCita()
 
                 res.status(200).json({citas:citasPorCama, horarios:horariosDelDia, servicios: servicios});
                 return;
@@ -117,7 +128,7 @@ export default async function handler(req, res) {
     }
 }
 
-function generarHorarioDelDia(weekend = false) {
+function generarHorarioDelDia({weekend = false}) {
     const startHour = 9;
     const endHour = weekend ? 14.5 : 17.5; // 14:30 or 17:30
     const workDayHours = [];
