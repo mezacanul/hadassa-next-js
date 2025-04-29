@@ -65,16 +65,19 @@ export default async function handler(req, res) {
                 }, {});
                 
                 // TO DO:
+                // ETA: 5 horas
                 // Reducir horariosDelDia despues de comparar 
                 // con horarios de eventos (citasPorCama) y 
                 // eliminar horarios no disponibles. 
                 // (Aplicar reglas de servicio [-1] [0,-1] [1])
                 
                 // TO DO:
+                // ETA: 5 horas
                 // Verificar si la cita recibida puede ser agendada
-                // en el horario especificado 
+                // en el horario especificado. 
                 
                 // TO DO:
+                // ETA: 3 horas 
                 // AgendarCita()
 
                 res.status(200).json({citas:citasPorCama, horarios:horariosDelDia, servicios: servicios});
