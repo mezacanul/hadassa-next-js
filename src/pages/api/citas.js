@@ -23,24 +23,13 @@ export default async function handler(req, res) {
 
             // Validate date var presence in request
             if (!date) {
-                // Se recibe desde POST el objeto con los 
+                // Se recibe desde POST el objeto con los
                 // detalles de la CITA a agendar.
                 const cita = req.body;
-                
-                // Extraemos NOMBRE DEL DIA para obtener 
-                // HORARIOS completos DEL DIA.
-                // TO DO:
-                // Bifurcar horariosDelDia para representar
-                // las dos camas disponibles por lashista 
-                const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
-                const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
-                const horariosDelDia = generarHorarioDelDia({weekend: ["Saturday", "Sunday"].includes(dayName)})
 
-                // Obtenemos de la DB
+                // Obtenemos de la DB: Todos los eventos del dia
                 // - EVENTOS: filtrados por fecha y lashista
                 // - SERVICIOS: para comparar duracion y reglas
-                // TO DO:
-                // Falta filtrar por lashista 
                 const [eventos] = await connection.execute(
                     `SELECT 
                         servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
@@ -49,12 +38,19 @@ export default async function handler(req, res) {
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
-                    WHERE fecha = '${cita.fecha}'`
+                    WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}'`
                     // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
                 );
                 const [servicios] = await connection.execute(
                     `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
                 );
+                const detallesServicios = {};
+                servicios.forEach((servicio) => {
+                    detallesServicios[servicio.id] = {
+                        minutos: servicio.minutos,
+                        regla: servicio.reglas_agenda,
+                    };
+                });
 
                 // Organizamos citas por cama (filtradas por lashista actual)
                 const citasPorCama = eventos.reduce((acc, item) => {
@@ -63,24 +59,59 @@ export default async function handler(req, res) {
                     acc[cama_id].push(item);
                     return acc;
                 }, {});
-                
+
+                // Extraemos NOMBRE DEL DIA para obtener
+                // HORARIOS completos del dia por cama.
+                // (Fines de semana (S-D) tienen diferente horario)
+                const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
+                const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
+                const horariosDelDia = generarHorarioDelDia({
+                    weekend: ["Saturday", "Sunday"].includes(dayName),
+                });
+                let horariosPorCama = {};
+                Object.keys(citasPorCama).forEach((cama) => {
+                    horariosPorCama[cama] = horariosDelDia;
+                });
+
                 // TO DO:
                 // ETA: 5 horas
-                // Reducir horariosDelDia despues de comparar 
-                // con horarios de eventos (citasPorCama) y 
-                // eliminar horarios no disponibles. 
+                // Reducir horariosPorCama despues de comparar
+                // con horarios de citas (citasPorCama) y
+                // eliminar horarios no disponibles.
                 // (Aplicar reglas de servicio [-1] [0,-1] [1])
                 
+                // 1.- Loopeamos cada cama
+                Object.keys(citasPorCama).forEach((cama) => {
+                // 2.- Consultamos horarios ocupados en cada cama
+                // const horariosOcupados = citasPorCama[cama].map(cita=>cita.hora)
+                    const horariosOcupados = citasPorCama[cama].map((cita) =>
+                        getHorariosOcupados(
+                            horariosPorCama[cama],
+                            cita.hora,
+                            detallesServicios[cita.servicio_id],
+                            cita,
+                            cama
+                        )
+                    );
+                // 3.- Extraemos horariosOcupados de los horariosPorCama
+                // TO DO: 
+                // Aplicar reglas de agenda especificas de cada servicio
+                    horariosPorCama[cama] = horariosPorCama[cama].filter(
+                        (horario) => {
+                            return !horariosOcupados.flat().includes(horario);
+                        }
+                    );
+                });
+                res.status(201).json(horariosPorCama);
+
                 // TO DO:
                 // ETA: 5 horas
                 // Verificar si la cita recibida puede ser agendada
-                // en el horario especificado. 
-                
-                // TO DO:
-                // ETA: 3 horas 
-                // AgendarCita()
+                // en el horario especificado.
 
-                res.status(200).json({citas:citasPorCama, horarios:horariosDelDia, servicios: servicios});
+                // TO DO:
+                // ETA: 3 horas
+                // AgendarCita()
                 return;
                 // res.status(201).json(req.body);
                 try {
@@ -125,13 +156,16 @@ export default async function handler(req, res) {
             res.status(405).json({ error: "Method not allowed" });
         }
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch citas", error: error });
+        res.status(500).json({
+            message: "Failed to fetch citas",
+            error: error,
+        });
     } finally {
         await connection.end();
     }
 }
 
-function generarHorarioDelDia({weekend = false}) {
+function generarHorarioDelDia({ weekend = false }) {
     const startHour = 9;
     const endHour = weekend ? 14.5 : 17.5; // 14:30 or 17:30
     const workDayHours = [];
@@ -143,4 +177,12 @@ function generarHorarioDelDia({weekend = false}) {
     }
 
     return workDayHours;
+}
+
+// TO DO: 
+// Aplicar reglas de agenda por servicio
+function getHorariosOcupados(horarios, hora, detallesServicio) {
+    const startIndex = horarios.indexOf(hora);
+    const slotsToBlock = detallesServicio.minutos / 30;
+    return horarios.slice(startIndex, startIndex + slotsToBlock);
 }
