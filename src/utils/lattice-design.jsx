@@ -69,7 +69,7 @@ export function Singleton(initialState) {
     return useSharedContext;
 }
 
-// Nexus: Initializes app-wide mini singletons
+// Nexus: Initializes app-wide Singletons
 export function Nexus(config) {
     if (lattice_grid.initialized) {
         throw new Error(

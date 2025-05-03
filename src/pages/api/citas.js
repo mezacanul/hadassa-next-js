@@ -27,7 +27,18 @@ export default async function handler(req, res) {
                 // detalles de la CITA a agendar.
                 const cita = req.body;
 
-                // Obtenemos de la DB: Todos los eventos del dia
+                /**
+                 * Lista de Objetos con los detalles de los horarios ocupados.
+                 * Se popula despues de consumir multiples servicios previamente.
+                 * @type {Servicio[]}
+                 */
+                let horariosOcupados = [];
+
+                // Array : Eventos
+                // Object : Servicios
+                // Obtenemos de la DB: Todos los eventos del dia en el
+                // que se quiere agendar la cita filtrados por la lashista
+                // con la que se quiere agendar
                 // - EVENTOS: filtrados por fecha y lashista
                 // - SERVICIOS: para comparar duracion y reglas
                 const [eventos] = await connection.execute(
@@ -41,18 +52,21 @@ export default async function handler(req, res) {
                     WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}'`
                     // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
                 );
-                const [servicios] = await connection.execute(
+                let [servicios] = await connection.execute(
                     `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
                 );
                 const detallesServicios = {};
                 servicios.forEach((servicio) => {
                     detallesServicios[servicio.id] = {
+                        servicio: servicio.servicio,
                         minutos: servicio.minutos,
                         regla: servicio.reglas_agenda,
                     };
                 });
+                servicios = { ...detallesServicios };
 
-                // Organizamos citas por cama (filtradas por lashista actual)
+                // Object : citasPorCama
+                // Organizamos citas del dia por cama
                 const citasPorCama = eventos.reduce((acc, item) => {
                     const { cama_id } = item;
                     acc[cama_id] = acc[cama_id] || [];
@@ -60,9 +74,10 @@ export default async function handler(req, res) {
                     return acc;
                 }, {});
 
+                // Object : horariosPorCama
                 // Extraemos NOMBRE DEL DIA para obtener
-                // HORARIOS completos del dia por cama.
-                // (Fines de semana (S-D) tienen diferente horario)
+                // HORARIOS completos vacios del dia por cama.
+                // (Por que fines de semana (S-D) tienen diferente horario)
                 const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
                 const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
                 const horariosDelDia = generarHorarioDelDia({
@@ -79,30 +94,32 @@ export default async function handler(req, res) {
                 // con horarios de citas (citasPorCama) y
                 // eliminar horarios no disponibles.
                 // (Aplicar reglas de servicio [-1] [0,-1] [1])
-                
-                // 1.- Loopeamos cada cama
-                Object.keys(citasPorCama).forEach((cama) => {
-                // 2.- Consultamos horarios ocupados en cada cama
-                // const horariosOcupados = citasPorCama[cama].map(cita=>cita.hora)
-                    const horariosOcupados = citasPorCama[cama].map((cita) =>
-                        getHorariosOcupados(
-                            horariosPorCama[cama],
-                            cita.hora,
-                            detallesServicios[cita.servicio_id],
+
+                // 1.- Loopeamos por cada cama
+                Object.keys(citasPorCama).forEach((camaID) => {
+                    // 2.- Obtenemos horarios ocupados en cada cama
+                    // const horariosOcupados = citasPorCama[cama].map(cita=>cita.hora)
+                    horariosOcupados = citasPorCama[camaID].map((cita) =>
+                        getHorariosOcupadosPorServicio(
+                            horariosPorCama[camaID],
+                            servicios[cita.servicio_id],
                             cita,
-                            cama
+                            servicios
                         )
                     );
-                // 3.- Extraemos horariosOcupados de los horariosPorCama
-                // TO DO: 
-                // Aplicar reglas de agenda especificas de cada servicio
-                    horariosPorCama[cama] = horariosPorCama[cama].filter(
+                    console.log(horariosOcupados);
+
+                    // 3.- Extraemos horariosOcupados de los horariosPorCama
+                    // TO DO:
+                    // Aplicar reglas de agenda especificas de cada servicio
+                    horariosPorCama[camaID] = horariosPorCama[camaID].filter(
                         (horario) => {
                             return !horariosOcupados.flat().includes(horario);
                         }
                     );
                 });
-                res.status(201).json(horariosPorCama);
+                // res.status(201).json(horariosPorCama);
+                res.status(201).json({});
 
                 // TO DO:
                 // ETA: 5 horas
@@ -179,10 +196,65 @@ function generarHorarioDelDia({ weekend = false }) {
     return workDayHours;
 }
 
-// TO DO: 
+/**
+ * Retorna los horarios ocupados en cadad cama
+ * @param {Object} horariosDeCama - Arreglo con todas las horas (sin filtrar) del dia
+ * @param {string} horaCita - El horario de la cita que se quiere agendar
+ * @param {Object} detallesServicio - Detalles del servicio
+ * @returns {Array} - Arreglo con horarios ocupados
+ */
+// TO DO:
 // Aplicar reglas de agenda por servicio
-function getHorariosOcupados(horarios, hora, detallesServicio) {
-    const startIndex = horarios.indexOf(hora);
-    const slotsToBlock = detallesServicio.minutos / 30;
-    return horarios.slice(startIndex, startIndex + slotsToBlock);
+function getHorariosOcupadosPorServicio(
+    horariosDeCama,
+    detallesServicio,
+    cita,
+    servicios
+) {
+    const indexHoraCita = horariosDeCama.indexOf(cita.hora);
+    const intervalosOcupados = detallesServicio.minutos / 30;
+    const horariosOcupados = horariosDeCama.slice(
+        indexHoraCita,
+        indexHoraCita + intervalosOcupados
+    );
+    const reglasDeAgenda = JSON.parse(servicios[cita.servicio_id].regla);
+    let horariosMantener = [];
+
+    if (reglasDeAgenda.includes(-1)) {
+        horariosMantener.push(horariosOcupados[horariosOcupados.length - 1]);
+    }
+    if (reglasDeAgenda.includes(0)) {
+        horariosMantener.push(horariosOcupados[0]);
+    }
+    if (reglasDeAgenda.includes(1)) {
+    }
+
+    const response = {
+        servicioID: cita.servicio_id,
+        servicio: cita.servicio,
+        horariosOcupados1aCama: horariosOcupados,
+        horariosMantener2aCama: horariosMantener,
+        reglasDeServicio: reglasDeAgenda,
+    };
+    // console.log(response);
+    return response;
 }
+
+/**
+ * @typedef {Object} Servicio
+ * @property {string} servicioID - Unique service identifier.
+ * @property {string} servicio - Service name.
+ * @property {string[]} horariosOcupados1aCama - Occupied time slots for first bed.
+ * @property {string[]} horariosMantener2aCama - Reserved time slots for second bed.
+ * @property {number[]} reglasDeServicio - Service rule IDs.
+ */
+
+/**
+ * @typedef {number[]} ReglasDeServicio
+ * @description Reglas de agenda:
+ *  - -1: Se quita el último intervalo de horario (slot de media hora) de la cama no utilizada.
+ *  -  0: Se mantiene disponible el primer slot horario de la cama utilizada en el servicio seleccionado.
+ *  -  1: Se quitan todos los slots correspondientes a la cita.
+ * @description Duración de cada slot: 30 minutos.
+ * @example Ejemplo de slots horarios: ["10:00", "10:30"].
+ */
