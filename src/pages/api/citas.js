@@ -32,7 +32,7 @@ export default async function handler(req, res) {
                  * Se popula despues de consumir multiples servicios previamente.
                  * @type {Servicio[]}
                  */
-                let horariosOcupados = [];
+                let horariosOcupados = {};
 
                 // Array : Eventos
                 // Object : Servicios
@@ -99,25 +99,45 @@ export default async function handler(req, res) {
                 Object.keys(citasPorCama).forEach((camaID) => {
                     // 2.- Obtenemos horarios ocupados en cada cama
                     // const horariosOcupados = citasPorCama[cama].map(cita=>cita.hora)
-                    horariosOcupados = citasPorCama[camaID].map((cita) =>
-                        getHorariosOcupadosPorServicio(
-                            horariosPorCama[camaID],
-                            servicios[cita.servicio_id],
-                            cita,
-                            servicios
-                        )
-                    );
-                    console.log(horariosOcupados);
-
-                    // 3.- Extraemos horariosOcupados de los horariosPorCama
-                    // TO DO:
-                    // Aplicar reglas de agenda especificas de cada servicio
-                    horariosPorCama[camaID] = horariosPorCama[camaID].filter(
-                        (horario) => {
-                            return !horariosOcupados.flat().includes(horario);
-                        }
+                    horariosOcupados[camaID] = citasPorCama[camaID].map(
+                        (cita) =>
+                            getHorariosOcupadosPorServicio(
+                                horariosPorCama[camaID],
+                                servicios[cita.servicio_id],
+                                cita,
+                                servicios
+                            )
                     );
                 });
+
+                // console.log(horariosOcupados);
+                /**
+                 * Lista de ID's de las camas relacionadas a la fecha, cita y lashista seleccionadas
+                 * @type {string[]}
+                 */
+                const camasKeys = Object.keys(horariosPorCama);
+                if (camasKeys.length == 2) {
+                    camasKeys.forEach((camaID, IDX) => {
+                        console.log(getFamTree(camasKeys, camaID, IDX))
+                        // const currentCamaIDX = IDX;
+                        // const otherCamaIDX = camasKeys.filter(
+                        //     (camaKey) => camaKey != currentCamaIDX
+                        // );
+
+                        // console.log("Current", currentCamaIDX, "Index", index);
+                        // console.log(horariosPorCama[camaID]);
+                        // console.log(horariosOcupados[camaID]);
+                    });
+                }
+
+                // // 3.- Extraemos horariosOcupados de los horariosPorCama
+                //     // TO DO:
+                //     // Aplicar reglas de agenda especificas de cada servicio
+                //     horariosPorCama[camaID] = horariosPorCama[camaID].filter(
+                //         (horario) => {
+                //             return !horariosOcupados.flat().includes(horario);
+                //         }
+                //     );
                 // res.status(201).json(horariosPorCama);
                 res.status(201).json({});
 
@@ -234,11 +254,43 @@ function getHorariosOcupadosPorServicio(
         servicio: cita.servicio,
         horariosOcupados1aCama: horariosOcupados,
         horariosMantener2aCama: horariosMantener,
+        /**
+         * @type {ReglasDeServicio}
+         */
         reglasDeServicio: reglasDeAgenda,
     };
     // console.log(response);
     return response;
 }
+
+/**
+ * Returns a family tree object for a given bed, including current bed details and siblings.
+ * @param {string[]} camasKeys - Array of bed identifiers.
+ * @param {string} camaID - The ID of the current bed.
+ * @param {number} loopIDX - The index of the current bed in camasKeys.
+ * @returns {{ current: string, currentIDX: number, siblings: string[], siblingsIDX: number[] }} - Object with current bed ID, its index, sibling bed IDs, and their indices.
+ * @throws {Error} - If camaID or loopIDX is invalid.
+ */
+function getFamTree(camasKeys, camaID, loopIDX) {
+    if (loopIDX < 0 || loopIDX >= camasKeys.length) {
+      throw new Error(`Invalid loopIDX: ${loopIDX}`);
+    }
+    if (camasKeys[loopIDX] !== camaID) {
+      throw new Error(`camaID "${camaID}" does not match camasKeys[${loopIDX}]`);
+    }
+  
+    const siblings = camasKeys.filter(cama => cama !== camaID);
+    const siblingsIDX = camasKeys
+      .map((cama, idx) => (cama !== camaID ? idx : -1))
+      .filter(idx => idx !== -1);
+  
+    return {
+      current: camaID,
+      currentIDX: loopIDX,
+      siblings,
+      siblingsIDX,
+    };
+  }
 
 /**
  * @typedef {Object} Servicio
@@ -251,6 +303,7 @@ function getHorariosOcupadosPorServicio(
 
 /**
  * @typedef {number[]} ReglasDeServicio
+ * @variation {[-1,0,1]}
  * @description Reglas de agenda:
  *  - -1: Se quita el último intervalo de horario (slot de media hora) de la cama no utilizada.
  *  -  0: Se mantiene disponible el primer slot horario de la cama utilizada en el servicio seleccionado.
