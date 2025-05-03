@@ -125,8 +125,8 @@ export default async function handler(req, res) {
                         // );
 
                         // console.log("Current", currentCamaIDX, "Index", index);
-                        // console.log(horariosPorCama[camaID]);
-                        // console.log(horariosOcupados[camaID]);
+                        console.log(horariosPorCama[camaID]);
+                        console.log(horariosOcupados[camaID]);
                     });
                 }
 
