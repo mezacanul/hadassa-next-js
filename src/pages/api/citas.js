@@ -18,30 +18,26 @@ export default async function handler(req, res) {
             res.status(200).json(rows);
             // GET: Filter citas by date
         } else if (req.method === "POST") {
-            // POST: Agendar cita
+            // TO DO: date sera un parametro
+            // en el URL y pasara al metodo GET
             const { date } = req.body;
 
+            // POST: Agendar cita
             // Validate date var presence in request
             if (!date) {
                 // Se recibe desde POST el objeto con los
                 // detalles de la CITA a agendar.
                 const cita = req.body;
-
-                /**
-                 * Lista de Objetos con los detalles de los horarios ocupados.
-                 * Se popula despues de consumir multiples servicios previamente.
-                 * @type {Servicio[]}
-                 */
-                let horariosOcupados = {};
-
-                // Array : Eventos
-                // Object : Servicios
-                // Obtenemos de la DB: Todos los eventos del dia en el
-                // que se quiere agendar la cita filtrados por la lashista
-                // con la que se quiere agendar
-                // - EVENTOS: filtrados por fecha y lashista
-                // - SERVICIOS: para comparar duracion y reglas
-                const [eventos] = await connection.execute(
+                
+                let servicios = []
+                let camasKeys = []
+                // let citasDelDia = []
+                let citasPorCama = []
+                let horariosDispPorCama = {}
+                // let horariosOcupados = {};
+                
+                
+                let [citasDelDia] = await connection.execute(
                     `SELECT 
                         servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
                     FROM 
@@ -52,105 +48,132 @@ export default async function handler(req, res) {
                     WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}'`
                     // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
                 );
-                let [servicios] = await connection.execute(
+
+                [servicios] = await connection.execute(
                     `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
                 );
-                const detallesServicios = {};
-                servicios.forEach((servicio) => {
-                    detallesServicios[servicio.id] = {
-                        servicio: servicio.servicio,
-                        minutos: servicio.minutos,
-                        regla: servicio.reglas_agenda,
-                    };
-                });
-                servicios = { ...detallesServicios };
+                servicios = Object.fromEntries(
+                    servicios.map((servicio) => [
+                        servicio.id,
+                        {
+                            servicio: servicio.servicio,
+                            minutos: servicio.minutos,
+                            regla: servicio.reglas_agenda,
+                        },
+                    ])
+                );
 
                 // Object : citasPorCama
                 // Organizamos citas del dia por cama
-                const citasPorCama = eventos.reduce((acc, item) => {
+                citasPorCama = citasDelDia.reduce((acc, item) => {
                     const { cama_id } = item;
                     acc[cama_id] = acc[cama_id] || [];
                     acc[cama_id].push(item);
                     return acc;
                 }, {});
 
-                // Object : horariosPorCama
+                // Asignamos camasKeys tomando la informacion 
+                // de citasPorCama, ya que las camas se encuentran
+                // filtradas por lashista en esa variable 
+                camasKeys = Object.keys(citasPorCama)
+
+                // Object : horariosDispPorCama
                 // Extraemos NOMBRE DEL DIA para obtener
                 // HORARIOS completos vacios del dia por cama.
                 // (Por que fines de semana (S-D) tienen diferente horario)
                 const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
                 const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
-                const horariosDelDia = generarHorarioDelDia({
+                const horarioDelDia = generarHorarioDelDia({
                     weekend: ["Saturday", "Sunday"].includes(dayName),
                 });
-                let horariosPorCama = {};
-                Object.keys(citasPorCama).forEach((cama) => {
-                    horariosPorCama[cama] = horariosDelDia;
+                // Asignamos horariosDispPorCama
+                camasKeys.forEach((camaID) => {
+                    horariosDispPorCama[camaID] = horarioDelDia;
                 });
 
                 // TO DO:
-                // ETA: 5 horas
-                // Reducir horariosPorCama despues de comparar
+                // ETA: 5 horas (20 horas)
+                // Reducir horariosDispPorCama despues de comparar
                 // con horarios de citas (citasPorCama) y
                 // eliminar horarios no disponibles.
                 // (Aplicar reglas de servicio [-1] [0,-1] [1])
 
                 // 1.- Loopeamos por cada cama
-                Object.keys(citasPorCama).forEach((camaID) => {
-                    // 2.- Obtenemos horarios ocupados en cada cama
-                    // const horariosOcupados = citasPorCama[cama].map(cita=>cita.hora)
-                    horariosOcupados[camaID] = citasPorCama[camaID].map(
+                camasKeys.forEach((camaID, IDX) => {
+                    const currentID = getFamTree(camasKeys, camaID, IDX).current;
+                    const siblingID = getFamTree(camasKeys, camaID, IDX).siblings[0];
+
+                    // 2.- Asignamos servicios por cama { ...camaID's: ... }
+                    citasPorCama[currentID] = citasPorCama[currentID].map(
                         (cita) =>
                             getHorariosOcupadosPorServicio(
-                                horariosPorCama[camaID],
+                                horariosDispPorCama[currentID],
                                 servicios[cita.servicio_id],
                                 cita,
                                 servicios
                             )
                     );
-                });
 
-                // console.log(horariosOcupados);
-                /**
-                 * Lista de ID's de las camas relacionadas a la fecha, cita y lashista seleccionadas
-                 * @type {string[]}
-                 */
-                const camasKeys = Object.keys(horariosPorCama);
-                if (camasKeys.length == 2) {
-                    camasKeys.forEach((camaID, IDX) => {
-                        console.log(getFamTree(camasKeys, camaID, IDX))
-                        // const currentCamaIDX = IDX;
-                        // const otherCamaIDX = camasKeys.filter(
-                        //     (camaKey) => camaKey != currentCamaIDX
-                        // );
+                    // 3.- Lopeamos cada cita en la cama
+                    citasPorCama[currentID].forEach(cita => {
+                        // Eliminamos horarios ocupados en primera cama
+                        (cita.horariosOcupados1aCama).forEach((horarioOcupado)=>{
+                            horariosDispPorCama[currentID] = horariosDispPorCama[currentID].filter((horario)=>{
+                                return horarioOcupado != horario
+                            })
 
-                        // console.log("Current", currentCamaIDX, "Index", index);
-                        console.log(horariosPorCama[camaID]);
-                        console.log(horariosOcupados[camaID]);
+                            if(cita.reglasDeServicio[0] == 1){
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario)=>{
+                                    return horarioOcupado != horario
+                                })
+                            }
+                        })
                     });
-                }
 
-                // // 3.- Extraemos horariosOcupados de los horariosPorCama
-                //     // TO DO:
-                //     // Aplicar reglas de agenda especificas de cada servicio
-                //     horariosPorCama[camaID] = horariosPorCama[camaID].filter(
-                //         (horario) => {
-                //             return !horariosOcupados.flat().includes(horario);
-                //         }
-                //     );
-                // res.status(201).json(horariosPorCama);
-                res.status(201).json({});
+                    citasPorCama[currentID].forEach(cita => {
+                        // Loopeamos las reglas de servicio 
+                        cita.reglasDeServicio.forEach((directive)=>{
+                            if(directive == -1){
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
+                                    if(horario2aCama == cita.horariosMantener2aCama[cita.horariosMantener2aCama.length - 1]){
+                                        return `-${horario2aCama}`
+                                    } else {
+                                        return horario2aCama
+                                    }
+                                })
+                            } else if(directive == 0){
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
+                                    if(horario2aCama == cita.horariosMantener2aCama[0]){
+                                        return `+${horario2aCama}`
+                                    } else {
+                                        return horario2aCama
+                                    }
+                                })
+                            }
+                        })
+                    });
 
+                    // // console.log(camaFamTree);
+                    // console.log(citasPorCama[currentID]);
+                    // console.log(horariosDispPorCama[currentID]);
+                    // console.log(horariosDispPorCama[siblingID]);
+                    // console.log("\n");
+                });
+                
                 // TO DO:
                 // ETA: 5 horas
                 // Verificar si la cita recibida puede ser agendada
                 // en el horario especificado.
+                console.log(horariosDispPorCama);
+                
 
                 // TO DO:
                 // ETA: 3 horas
                 // AgendarCita()
-                return;
                 // res.status(201).json(req.body);
+                res.status(201).json({});
+                return;
+
                 try {
                     const [result] = await connection.execute(
                         `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id) 
@@ -240,14 +263,14 @@ function getHorariosOcupadosPorServicio(
     const reglasDeAgenda = JSON.parse(servicios[cita.servicio_id].regla);
     let horariosMantener = [];
 
-    if (reglasDeAgenda.includes(-1)) {
-        horariosMantener.push(horariosOcupados[horariosOcupados.length - 1]);
-    }
     if (reglasDeAgenda.includes(0)) {
         horariosMantener.push(horariosOcupados[0]);
     }
-    if (reglasDeAgenda.includes(1)) {
+    if (reglasDeAgenda.includes(-1)) {
+        horariosMantener.push(horariosOcupados[horariosOcupados.length - 1]);
     }
+    // if (reglasDeAgenda.includes(1)) {
+    // }
 
     const response = {
         servicioID: cita.servicio_id,
@@ -268,29 +291,31 @@ function getHorariosOcupadosPorServicio(
  * @param {string[]} camasKeys - Array of bed identifiers.
  * @param {string} camaID - The ID of the current bed.
  * @param {number} loopIDX - The index of the current bed in camasKeys.
- * @returns {{ current: string, currentIDX: number, siblings: string[], siblingsIDX: number[] }} - Object with current bed ID, its index, sibling bed IDs, and their indices.
+ * @returns {FamTree} - Object with current bed ID, its index, sibling bed IDs, and their indices.
  * @throws {Error} - If camaID or loopIDX is invalid.
  */
 function getFamTree(camasKeys, camaID, loopIDX) {
     if (loopIDX < 0 || loopIDX >= camasKeys.length) {
-      throw new Error(`Invalid loopIDX: ${loopIDX}`);
+        throw new Error(`Invalid loopIDX: ${loopIDX}`);
     }
     if (camasKeys[loopIDX] !== camaID) {
-      throw new Error(`camaID "${camaID}" does not match camasKeys[${loopIDX}]`);
+        throw new Error(
+            `camaID "${camaID}" does not match camasKeys[${loopIDX}]`
+        );
     }
-  
-    const siblings = camasKeys.filter(cama => cama !== camaID);
+
+    const siblings = camasKeys.filter((cama) => cama !== camaID);
     const siblingsIDX = camasKeys
-      .map((cama, idx) => (cama !== camaID ? idx : -1))
-      .filter(idx => idx !== -1);
-  
+        .map((cama, idx) => (cama !== camaID ? idx : -1))
+        .filter((idx) => idx !== -1);
+
     return {
-      current: camaID,
-      currentIDX: loopIDX,
-      siblings,
-      siblingsIDX,
+        current: camaID,
+        currentIDX: loopIDX,
+        siblings,
+        siblingsIDX,
     };
-  }
+}
 
 /**
  * @typedef {Object} Servicio
@@ -299,6 +324,15 @@ function getFamTree(camasKeys, camaID, loopIDX) {
  * @property {string[]} horariosOcupados1aCama - Occupied time slots for first bed.
  * @property {string[]} horariosMantener2aCama - Reserved time slots for second bed.
  * @property {number[]} reglasDeServicio - Service rule IDs.
+ */
+
+/**
+ * @typedef {Object} FamTree
+ * @property {string} current - The ID of the current bed.
+ * @property {number} currentIDX - The index of the current bed in the loop.
+ * @property {string[]} siblings - Array of other bed IDs in the array being looped.
+ * @property {number[]} siblingsIDX - Array of indices of other beds in the looping function.
+ * @description Object representing the family tree of a bed in a looping context.
  */
 
 /**
