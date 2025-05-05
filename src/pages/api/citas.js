@@ -114,19 +114,29 @@ export default async function handler(req, res) {
                             )
                     );
 
-                    // 3.- Lopeamos cada cita en la cama
+                    // 3.- Lopeamos cada cita
                     citasPorCama[currentID].forEach(cita => {
-                        // Eliminamos horarios ocupados en primera cama
-                        (cita.horariosOcupados1aCama).forEach((horarioOcupado)=>{
+                        
+                        // Loopeamos cada horario ocupado 
+                        (cita.horariosOcupados1aCama).forEach((horarioOcupado, idx)=>{
+
+                            // Eliminamos horario ocupado en primera cama
                             horariosDispPorCama[currentID] = horariosDispPorCama[currentID].filter((horario)=>{
                                 return horarioOcupado != horario
                             })
-
+                            
+                            // Eliminamos horario ocupado en segunda cama 
+                            // si unica regla es [1]
                             if(cita.reglasDeServicio[0] == 1){
                                 horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario)=>{
                                     return horarioOcupado != horario
                                 })
                             }
+
+                            // TO DO:
+                            // Eliminamos horario ocupado en segunda cama 
+                            // si unica regla es [-1] y horario no es el ultimo 
+                            // y horarios ocupados en primera cama son mas de 1
                         })
                     });
 
@@ -165,6 +175,8 @@ export default async function handler(req, res) {
                 // Verificar si la cita recibida puede ser agendada
                 // en el horario especificado.
                 console.log(horariosDispPorCama);
+                console.log(cita);
+                console.log(servicios[cita.servicio_id]);
                 
 
                 // TO DO:
