@@ -91,8 +91,7 @@ export default async function handler(req, res) {
                     horariosDispPorCama[camaID] = horarioDelDia;
                 });
 
-                // TO DO:
-                // ETA: 5 horas (20 horas)
+                
                 // Reducir horariosDispPorCama despues de comparar
                 // con horarios de citas (citasPorCama) y
                 // eliminar horarios no disponibles.
@@ -118,40 +117,24 @@ export default async function handler(req, res) {
                     citasPorCama[currentID].forEach(cita => {
                         
                         // Loopeamos cada horario ocupado 
-                        (cita.horariosOcupados1aCama).forEach((horarioOcupado, idx)=>{
+                        (cita.horariosOcupados1aCama).forEach((horarioOcupado1aCama, idx)=>{
 
                             // Eliminamos horario ocupado en primera cama
-                            horariosDispPorCama[currentID] = horariosDispPorCama[currentID].filter((horario)=>{
-                                return horarioOcupado != horario
+                            horariosDispPorCama[currentID] = horariosDispPorCama[currentID].filter((horario1aCama)=>{
+                                return horarioOcupado1aCama != horario1aCama
                             })
                             
                             // Eliminamos horario ocupado en segunda cama 
                             // si unica regla es [1]
                             if(cita.reglasDeServicio[0] == 1){
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario)=>{
-                                    return horarioOcupado != horario
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario2aCama)=>{
+                                    return horarioOcupado1aCama != horario2aCama
                                 })
                             }
 
-                            // TO DO:
-                            // Eliminamos horario ocupado en segunda cama 
-                            // si unica regla es [-1] y horario no es el ultimo 
-                            // y horarios ocupados en primera cama son mas de 1
-                        })
-                    });
-
-                    citasPorCama[currentID].forEach(cita => {
-                        // Loopeamos las reglas de servicio 
-                        cita.reglasDeServicio.forEach((directive)=>{
-                            if(directive == -1){
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
-                                    if(horario2aCama == cita.horariosMantener2aCama[cita.horariosMantener2aCama.length - 1]){
-                                        return `-${horario2aCama}`
-                                    } else {
-                                        return horario2aCama
-                                    }
-                                })
-                            } else if(directive == 0){
+                            // Mantenemos el primer horario del arreglo horariosMantener2aCama
+                            // si primera regla es [0]
+                            if(cita.reglasDeServicio[0] == 0){
                                 horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
                                     if(horario2aCama == cita.horariosMantener2aCama[0]){
                                         return `+${horario2aCama}`
@@ -160,14 +143,26 @@ export default async function handler(req, res) {
                                     }
                                 })
                             }
+
+                            if(cita.reglasDeServicio.includes(-1)){
+                                // Mantenemos el ultimo horario del arreglo horariosMantener2aCama
+                                // si se incluye regla [-1]
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
+                                    if(horario2aCama == cita.horariosMantener2aCama[cita.horariosMantener2aCama.length - 1]){
+                                        return `-${horario2aCama}`
+                                    } else {
+                                        return horario2aCama
+                                    }
+                                })
+
+                                // Eliminamos horario ocupado en segunda cama 
+                                // si se incluye regla [-1]
+                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario2aCama)=>{
+                                    return horarioOcupado1aCama != horario2aCama
+                                })
+                            }
                         })
                     });
-
-                    // // console.log(camaFamTree);
-                    // console.log(citasPorCama[currentID]);
-                    // console.log(horariosDispPorCama[currentID]);
-                    // console.log(horariosDispPorCama[siblingID]);
-                    // console.log("\n");
                 });
                 
                 // TO DO:
