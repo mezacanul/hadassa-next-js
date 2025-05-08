@@ -25,18 +25,22 @@ export default async function handler(req, res) {
             // POST: Agendar cita
             // Validate date var presence in request
             if (!date) {
-                // Se recibe desde POST el objeto con los
-                // detalles de la CITA a agendar.
+                // POST: cita
+                // Detalles de la CITA a agendar.
                 const cita = req.body;
-                
-                let servicios = []
-                let camasKeys = []
+                let servicios = [];
+                let camasKeys = [];
+                let citasPorCama = [];
+                let horariosDispPorCama = {};
+                let disponibilidad = {};
+                let citaDetalles = {};
                 // let citasDelDia = []
-                let citasPorCama = []
-                let horariosDispPorCama = {}
-                // let horariosOcupados = {};
-                
-                
+                const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
+                const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
+                const horarioDelDia = generarHorarioDelDia({
+                    weekend: ["Saturday", "Sunday"].includes(dayName),
+                });
+
                 let [citasDelDia] = await connection.execute(
                     `SELECT 
                         servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
@@ -52,6 +56,13 @@ export default async function handler(req, res) {
                 [servicios] = await connection.execute(
                     `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
                 );
+
+                [camasKeys] = await connection.execute(
+                    `SELECT id FROM camas WHERE lashista_id = '${cita.lashista_id}'`
+                );
+                camasKeys = camasKeys.map((cama) => cama.id);
+                console.log(camasKeys);
+
                 servicios = Object.fromEntries(
                     servicios.map((servicio) => [
                         servicio.id,
@@ -63,122 +74,177 @@ export default async function handler(req, res) {
                     ])
                 );
 
-                // Object : citasPorCama
-                // Organizamos citas del dia por cama
-                citasPorCama = citasDelDia.reduce((acc, item) => {
-                    const { cama_id } = item;
-                    acc[cama_id] = acc[cama_id] || [];
-                    acc[cama_id].push(item);
-                    return acc;
-                }, {});
+                citaDetalles = {
+                    hora: cita.hora,
+                    duracion: servicios[cita.servicio_id].minutos,
+                    slots: getSlots(cita, horarioDelDia, servicios),
+                    directiva: servicios[cita.servicio_id].regla,
+                };
 
-                // Asignamos camasKeys tomando la informacion 
-                // de citasPorCama, ya que las camas se encuentran
-                // filtradas por lashista en esa variable 
-                camasKeys = Object.keys(citasPorCama)
+                if (citasDelDia.length > 0) {
+                    // Object : citasPorCama
+                    // Organizamos citas del dia por cama
+                    citasPorCama = citasDelDia.reduce((acc, item) => {
+                        const { cama_id } = item;
+                        acc[cama_id] = acc[cama_id] || [];
+                        acc[cama_id].push(item);
+                        return acc;
+                    }, {});
+                    // console.log("citas array", citasDelDia.length);
+                    // console.log("citas", Object.entries(citasDelDia));
 
-                // Object : horariosDispPorCama
-                // Extraemos NOMBRE DEL DIA para obtener
-                // HORARIOS completos vacios del dia por cama.
-                // (Por que fines de semana (S-D) tienen diferente horario)
-                const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
-                const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
-                const horarioDelDia = generarHorarioDelDia({
-                    weekend: ["Saturday", "Sunday"].includes(dayName),
-                });
-                // Asignamos horariosDispPorCama
-                camasKeys.forEach((camaID) => {
-                    horariosDispPorCama[camaID] = horarioDelDia;
-                });
-
-                
-                // Reducir horariosDispPorCama despues de comparar
-                // con horarios de citas (citasPorCama) y
-                // eliminar horarios no disponibles.
-                // (Aplicar reglas de servicio [-1] [0,-1] [1])
-
-                // 1.- Loopeamos por cada cama
-                camasKeys.forEach((camaID, IDX) => {
-                    const currentID = getFamTree(camasKeys, camaID, IDX).current;
-                    const siblingID = getFamTree(camasKeys, camaID, IDX).siblings[0];
-
-                    // 2.- Asignamos servicios por cama { ...camaID's: ... }
-                    citasPorCama[currentID] = citasPorCama[currentID].map(
-                        (cita) =>
-                            getHorariosOcupadosPorServicio(
-                                horariosDispPorCama[currentID],
-                                servicios[cita.servicio_id],
-                                cita,
-                                servicios
-                            )
-                    );
-
-                    // 3.- Lopeamos cada cita
-                    citasPorCama[currentID].forEach(cita => {
-                        
-                        // Loopeamos cada horario ocupado 
-                        (cita.horariosOcupados1aCama).forEach((horarioOcupado1aCama, idx)=>{
-
-                            // Eliminamos horario ocupado en primera cama
-                            horariosDispPorCama[currentID] = horariosDispPorCama[currentID].filter((horario1aCama)=>{
-                                return horarioOcupado1aCama != horario1aCama
-                            })
-                            
-                            // Eliminamos horario ocupado en segunda cama 
-                            // si unica regla es [1]
-                            if(cita.reglasDeServicio[0] == 1){
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario2aCama)=>{
-                                    return horarioOcupado1aCama != horario2aCama
-                                })
-                            }
-
-                            // Mantenemos el primer horario del arreglo horariosMantener2aCama
-                            // si primera regla es [0]
-                            if(cita.reglasDeServicio[0] == 0){
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
-                                    if(horario2aCama == cita.horariosMantener2aCama[0]){
-                                        return `+${horario2aCama}`
-                                    } else {
-                                        return horario2aCama
-                                    }
-                                })
-                            }
-
-                            if(cita.reglasDeServicio.includes(-1)){
-                                // Mantenemos el ultimo horario del arreglo horariosMantener2aCama
-                                // si se incluye regla [-1]
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].map((horario2aCama)=>{
-                                    if(horario2aCama == cita.horariosMantener2aCama[cita.horariosMantener2aCama.length - 1]){
-                                        return `-${horario2aCama}`
-                                    } else {
-                                        return horario2aCama
-                                    }
-                                })
-
-                                // Eliminamos horario ocupado en segunda cama 
-                                // si se incluye regla [-1]
-                                horariosDispPorCama[siblingID] = horariosDispPorCama[siblingID].filter((horario2aCama)=>{
-                                    return horarioOcupado1aCama != horario2aCama
-                                })
-                            }
-                        })
+                    // Object
+                    // Asignamos horariosDispPorCama
+                    camasKeys.forEach((camaID) => {
+                        horariosDispPorCama[camaID] = horarioDelDia;
                     });
-                });
-                
-                // TO DO:
-                // ETA: 5 horas
-                // Verificar si la cita recibida puede ser agendada
-                // en el horario especificado.
-                console.log(horariosDispPorCama);
-                console.log(cita);
-                console.log(servicios[cita.servicio_id]);
-                
+
+                    // Reducir horariosDispPorCama despues de comparar
+                    // con horarios de citas (citasPorCama) y
+                    // eliminar horarios no disponibles.
+                    // (Aplicar reglas de servicio [-1] [0,-1] [1])
+
+                    // 1.- Loopeamos por cada cama
+                    camasKeys.forEach((camaID, IDX) => {
+                        const famTree = getFamTree(camasKeys, camaID, IDX);
+                        const currentID = famTree.current;
+                        const siblingID = famTree.siblings[0];
+
+                        console.log("TEST");
+                        console.log(famTree, currentID, siblingID);
+
+                        // 2.- Asignamos servicios por cama { ...camaID's: ... }
+                        citasPorCama[currentID] = citasPorCama[currentID].map(
+                            (cita) =>
+                                getHorariosOcupadosPorServicio(
+                                    horariosDispPorCama[currentID],
+                                    servicios[cita.servicio_id],
+                                    cita,
+                                    servicios
+                                )
+                        );
+
+                        // 3.- Lopeamos cada cita
+                        citasPorCama[currentID].forEach((cita) => {
+                            // Loopeamos cada horario ocupado
+                            cita.horariosOcupados1aCama.forEach(
+                                (horarioOcupado1aCama, idx) => {
+                                    // Eliminamos horario ocupado en primera cama
+                                    horariosDispPorCama[currentID] =
+                                        horariosDispPorCama[currentID].filter(
+                                            (horario1aCama) => {
+                                                return (
+                                                    horarioOcupado1aCama !=
+                                                    horario1aCama
+                                                );
+                                            }
+                                        );
+
+                                    // Eliminamos horario ocupado en segunda cama
+                                    // si unica regla es [1]
+                                    if (cita.reglasDeServicio[0] == 1) {
+                                        horariosDispPorCama[siblingID] =
+                                            horariosDispPorCama[
+                                                siblingID
+                                            ].filter((horario2aCama) => {
+                                                return (
+                                                    horarioOcupado1aCama !=
+                                                    horario2aCama
+                                                );
+                                            });
+                                    }
+
+                                    // Mantenemos el primer horario del arreglo horariosMantener2aCama
+                                    // si primera regla es [0]
+                                    if (cita.reglasDeServicio[0] == 0) {
+                                        horariosDispPorCama[siblingID] =
+                                            horariosDispPorCama[siblingID].map(
+                                                (horario2aCama) => {
+                                                    if (
+                                                        horario2aCama ==
+                                                        cita
+                                                            .horariosMantener2aCama[0]
+                                                    ) {
+                                                        return `+${horario2aCama}`;
+                                                    } else {
+                                                        return horario2aCama;
+                                                    }
+                                                }
+                                            );
+                                    }
+
+                                    if (cita.reglasDeServicio.includes(-1)) {
+                                        // Mantenemos el ultimo horario del arreglo horariosMantener2aCama
+                                        // si se incluye regla [-1]
+                                        horariosDispPorCama[siblingID] =
+                                            horariosDispPorCama[siblingID].map(
+                                                (horario2aCama) => {
+                                                    if (
+                                                        horario2aCama ==
+                                                        cita
+                                                            .horariosMantener2aCama[
+                                                            cita
+                                                                .horariosMantener2aCama
+                                                                .length - 1
+                                                        ]
+                                                    ) {
+                                                        return `-${horario2aCama}`;
+                                                    } else {
+                                                        return horario2aCama;
+                                                    }
+                                                }
+                                            );
+
+                                        // Eliminamos horario ocupado en segunda cama
+                                        // si se incluye regla [-1]
+                                        horariosDispPorCama[siblingID] =
+                                            horariosDispPorCama[
+                                                siblingID
+                                            ].filter((horario2aCama) => {
+                                                return (
+                                                    horarioOcupado1aCama !=
+                                                    horario2aCama
+                                                );
+                                            });
+                                    }
+                                }
+                            );
+                        });
+                    });
+
+                    camasKeys.forEach((camaID) => {
+                        disponibilidad[camaID] = isSubArray(
+                            horariosDispPorCama[camaID],
+                            citaDetalles.slots,
+                            citaDetalles.directiva
+                        );
+                    });
+                } else {
+                    camasKeys.forEach((camaID) => {
+                        disponibilidad[camaID] = true;
+                        horariosDispPorCama[camaID] = horarioDelDia;
+                    });
+                }
+                // console.log(horariosDispPorCama);
+                // console.log(citaDetalles);
 
                 // TO DO:
                 // ETA: 3 horas
                 // AgendarCita()
                 // res.status(201).json(req.body);
-                res.status(201).json({});
+                console.log(cita.fecha);
+                console.log({
+                    horariosDispPorCama,
+                    citaDetalles,
+                    disponibilidad,
+                });
+                res.status(201).json({
+                    fecha: cita.fecha,
+                    hora: cita.hora,
+                    disponibilidad,
+                    citaDetalles,
+                    horariosDispPorCama,
+                });
                 return;
 
                 try {
@@ -233,7 +299,7 @@ export default async function handler(req, res) {
 }
 
 function generarHorarioDelDia({ weekend = false }) {
-    const startHour = 9;
+    const startHour = 9.5;
     const endHour = weekend ? 14.5 : 17.5; // 14:30 or 17:30
     const workDayHours = [];
 
@@ -324,6 +390,46 @@ function getFamTree(camasKeys, camaID, loopIDX) {
     };
 }
 
+function getSlots(cita, horarioDelDia, servicios) {
+    const slotsCount = servicios[cita.servicio_id].minutos / 30;
+    // TO DO:
+    // Construir array de (slots * horarioDelDia)
+    let count = { start: horarioDelDia.indexOf(cita.hora) };
+    const citaSlots = horarioDelDia.slice(
+        count.start,
+        count.start + slotsCount
+    );
+    return citaSlots;
+}
+
+/**
+ * Checks if subArray is a consecutive subarray of array.
+ * @param {string[]} array - Main array (e.g., bed slots).
+ * @param {string[]} subArray - Subarray to find (e.g., cita slots).
+ * @returns {boolean} - True if subArray is a consecutive part of array.
+ */
+function isSubArray(array, subArray, directivaJSON) {
+    const directiva = JSON.parse(directivaJSON);
+    
+    return array.some((_, i) =>
+        array.slice(i, i + subArray.length).every((horario, horarioIdx) => {
+            // console.log(horario, horarioIdx);
+            // return horario === subArray[horarioIdx];
+
+            if (directiva[0] == 0) {
+                if(horarioIdx == 0) {
+                    horario = horario.replace("-", "");
+                } else if(horarioIdx == 1){
+                    horario = horario.replace("+", "");
+                }
+                return horario === subArray[horarioIdx];
+            } else {
+                return horario === subArray[horarioIdx];
+            }
+        })
+    );
+}
+
 /**
  * @typedef {Object} Servicio
  * @property {string} servicioID - Unique service identifier.
@@ -346,9 +452,9 @@ function getFamTree(camasKeys, camaID, loopIDX) {
  * @typedef {number[]} ReglasDeServicio
  * @variation {[-1,0,1]}
  * @description Reglas de agenda:
- *  - -1: Se quita el último intervalo de horario (slot de media hora) de la cama no utilizada.
- *  -  0: Se mantiene disponible el primer slot horario de la cama utilizada en el servicio seleccionado.
- *  -  1: Se quitan todos los slots correspondientes a la cita.
+ *  - -1: Se mantiene el último intervalo de horario (slot de media hora) en la segunda cama con un signo de -.
+ *  -  0: Se mantiene disponible el primer slot horario en la segunda cama.
+ *  -  1: Se quitan todos los slots correspondientes a la cita en la segunda cama.
  * @description Duración de cada slot: 30 minutos.
  * @example Ejemplo de slots horarios: ["10:00", "10:30"].
  */

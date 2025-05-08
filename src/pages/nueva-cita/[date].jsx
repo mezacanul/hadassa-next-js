@@ -152,8 +152,8 @@ function ResumenCita() {
             hora: formattedHora,
             cama_id: "cama-hadassa-1",
         };
-        console.log(send);
-        return
+        // console.log(send);
+        // return
         
         axios.post("/api/citas", send).then((citasResp) => {
             console.log(citasResp.data);

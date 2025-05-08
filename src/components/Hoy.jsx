@@ -49,6 +49,7 @@ export default function Hoy() {
                         axios
                             .post("/api/citas", { date: selectedDate })
                             .then((citasResp) => {
+                                console.log(citasResp.data);
                                 setEvents(formatEvents(citasResp.data));
                                 calendarApi.gotoDate(selectedDate);
                                 console.log("Updated Today's View");
@@ -112,8 +113,8 @@ export default function Hoy() {
                             }
 
                             #Hoy .fc-v-event {
-                                background-color: #ec4899 !important;
-                                border: 1px solid #ec4899 !important;
+                                background-color: #fce7f3 !important;
+                                border: 2px solid #ec4899 !important;
                                 opacity: 0.9;
                             }
                         `}
@@ -125,7 +126,7 @@ export default function Hoy() {
                         resources={resources}
                         events={events}
                         initialDate={new Date()}
-                        slotMinTime="09:00:00"
+                        slotMinTime="09:30:00"
                         slotMaxTime="18:00:00"
                         expandRows={true}
                         height="200vh"
@@ -146,10 +147,10 @@ export default function Hoy() {
                         eventContent={(arg) => {
                             return (
                                 <div style={{ marginLeft: "0.3rem" }}>
-                                    <b style={{ fontSize: "0.7rem" }}>
+                                    <b style={{ fontSize: "0.7rem", color: "black" }}>
                                         {arg.event.title}
                                     </b>
-                                    <p style={{ fontSize: "0.7rem" }}>
+                                    <p style={{ fontSize: "0.7rem", color: "black" }}>
                                         {arg.event.extendedProps.servicio}
                                     </p>
                                 </div>
