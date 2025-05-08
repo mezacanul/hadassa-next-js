@@ -28,12 +28,14 @@ export default async function handler(req, res) {
                 // POST: cita
                 // Detalles de la CITA a agendar.
                 const cita = req.body;
+                let citaDetalles = {};
+                let lashista = {};
                 let servicios = [];
                 let camasKeys = [];
                 let citasPorCama = [];
                 let horariosDispPorCama = {};
                 let disponibilidad = {};
-                let citaDetalles = {};
+                let camaDisponible = null;
                 // let citasDelDia = []
                 const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
                 const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
@@ -60,8 +62,19 @@ export default async function handler(req, res) {
                 [camasKeys] = await connection.execute(
                     `SELECT id FROM camas WHERE lashista_id = '${cita.lashista_id}'`
                 );
+
+                [lashista] = await connection.execute(
+                    `SELECT * FROM lashistas WHERE id = '${cita.lashista_id}'`
+                );
+
                 camasKeys = camasKeys.map((cama) => cama.id);
-                console.log(camasKeys);
+
+                lashista = lashista.reduce((acc, item) => {
+                    Object.keys(item).forEach((prop) => {
+                        acc[prop] = item[prop];
+                    });
+                    return acc;
+                }, {});
 
                 servicios = Object.fromEntries(
                     servicios.map((servicio) => [
@@ -90,6 +103,7 @@ export default async function handler(req, res) {
                         acc[cama_id].push(item);
                         return acc;
                     }, {});
+
                     // console.log("citas array", citasDelDia.length);
                     // console.log("citas", Object.entries(citasDelDia));
 
@@ -110,20 +124,24 @@ export default async function handler(req, res) {
                         const currentID = famTree.current;
                         const siblingID = famTree.siblings[0];
 
-                        console.log("TEST");
-                        console.log(famTree, currentID, siblingID);
-
+                        // console.log(famTree, currentID, siblingID);
+                        // console.log(citasPorCama[currentID] == null);
+                        
                         // 2.- Asignamos servicios por cama { ...camaID's: ... }
-                        citasPorCama[currentID] = citasPorCama[currentID].map(
-                            (cita) =>
-                                getHorariosOcupadosPorServicio(
-                                    horariosDispPorCama[currentID],
-                                    servicios[cita.servicio_id],
-                                    cita,
-                                    servicios
-                                )
-                        );
-
+                        if(citasPorCama[currentID]){
+                            citasPorCama[currentID] = citasPorCama[currentID].map(
+                                (cita) =>
+                                    getHorariosOcupadosPorServicio(
+                                        horariosDispPorCama[currentID],
+                                        servicios[cita.servicio_id],
+                                        cita,
+                                        servicios
+                                    )
+                            );
+                        } else {
+                            citasPorCama[currentID] = []
+                        }
+                        
                         // 3.- Lopeamos cada cita
                         citasPorCama[currentID].forEach((cita) => {
                             // Loopeamos cada horario ocupado
@@ -225,32 +243,29 @@ export default async function handler(req, res) {
                         horariosDispPorCama[camaID] = horarioDelDia;
                     });
                 }
-                // console.log(horariosDispPorCama);
-                // console.log(citaDetalles);
 
-                // TO DO:
-                // ETA: 3 horas
-                // AgendarCita()
-                // res.status(201).json(req.body);
-                console.log(cita.fecha);
-                console.log({
-                    horariosDispPorCama,
-                    citaDetalles,
-                    disponibilidad,
-                });
-                res.status(201).json({
+                const response = {
+                    camaAgendar: getCamaAgendar(disponibilidad),
+                    lashista,
                     fecha: cita.fecha,
                     hora: cita.hora,
                     disponibilidad,
                     citaDetalles,
                     horariosDispPorCama,
-                });
+                };
+
+                // TO DO:
+                // ETA: 3 horas
+                // AgendarCita()
+                // res.status(201).json(req.body);
+                console.log(response);
+                res.status(201).json(response);
                 return;
 
                 try {
                     const [result] = await connection.execute(
                         `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id) 
-                        VALUES (UUID(), '${cita.clienta_id}', '${cita.servicio_id}', '${cita.lashista_id}', '${cita.fecha}', '${cita.hora}', '${cita.cama_id}')`
+                        VALUES (UUID(), '${cita.clienta_id}', '${cita.servicio_id}', '${cita.lashista_id}', '${cita.fecha}', '${cita.hora}', '${camaDisponible}')`
                     );
                     if (result.affectedRows > 0) {
                         return res.status(201).json({
@@ -310,6 +325,27 @@ function generarHorarioDelDia({ weekend = false }) {
     }
 
     return workDayHours;
+}
+
+function getCamaAgendar(disponibilidad) {
+    const camasKeys = Object.keys(disponibilidad);
+    const todasDisponibles = camasKeys.every((camaID) => {
+        return disponibilidad[camaID] == true;
+    });
+    const noDisponible = camasKeys.every((camaID) => {
+        return disponibilidad[camaID] == false;
+    });
+    if (todasDisponibles == true) {
+        return camasKeys[0];
+    } else if (noDisponible == true) {
+        return null;
+    } else {
+        disponibilidad.forEach((camaID) => {
+            if (disponibilidad[camaID] == true) {
+                return camaID;
+            }
+        });
+    }
 }
 
 /**
@@ -410,16 +446,16 @@ function getSlots(cita, horarioDelDia, servicios) {
  */
 function isSubArray(array, subArray, directivaJSON) {
     const directiva = JSON.parse(directivaJSON);
-    
+
     return array.some((_, i) =>
         array.slice(i, i + subArray.length).every((horario, horarioIdx) => {
             // console.log(horario, horarioIdx);
             // return horario === subArray[horarioIdx];
 
             if (directiva[0] == 0) {
-                if(horarioIdx == 0) {
+                if (horarioIdx == 0) {
                     horario = horario.replace("-", "");
-                } else if(horarioIdx == 1){
+                } else if (horarioIdx == 1) {
                     horario = horario.replace("+", "");
                 }
                 return horario === subArray[horarioIdx];
