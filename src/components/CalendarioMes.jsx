@@ -91,6 +91,7 @@ export default function CalendarioMes() {
                 <DayGridStyles />
                 <style>{MesCalendarStyles}</style>
                 <FullCalendar
+                    // initialDate={new Date("25-04-2025")}
                     ref={calendarRef}
                     selectable={true}
                     dayCellContent={renderDayCellContent(

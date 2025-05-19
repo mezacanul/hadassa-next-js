@@ -126,6 +126,7 @@ export default function Hoy() {
                         resources={resources}
                         events={events}
                         initialDate={new Date()}
+                        // initialDate={new Date("04-25-2025")}
                         slotMinTime="09:30:00"
                         slotMaxTime="18:00:00"
                         expandRows={true}
