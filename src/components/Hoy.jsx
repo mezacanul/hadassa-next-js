@@ -47,7 +47,7 @@ export default function Hoy() {
                     // Use setTimeout to defer the state update to a microtask
                     setTimeout(() => {
                         axios
-                            .post("/api/citas", { date: selectedDate })
+                            .get(`/api/citas?date=${selectedDate}`)
                             .then((citasResp) => {
                                 console.log(citasResp.data);
                                 setEvents(formatEvents(citasResp.data));
@@ -263,6 +263,8 @@ function renderResourceLabel(info) {
 
 export function formatEvents(eventsData) {
     if (eventsData != null) {
+        // console.log(eventsData);
+        
         return eventsData.map((ed) => {
             // Split the date into parts and rearrange
             const [day, month, year] = ed.fecha.split("-");
@@ -280,6 +282,8 @@ export function formatEvents(eventsData) {
             // Add minutes
             const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
             // Format the result
+            console.log(dateWithTime, ed.duracion);
+            
             const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
 
             // console.log(start, end); // "2025-04-25T09:00:00"
