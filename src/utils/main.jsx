@@ -29,4 +29,42 @@ function formatHoyTitle (date) {
     return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
 };
 
-export { formatHoyTitle }
+function FormatFechaDMY(fecha) {
+    const [year, month, day] = fecha.split("-");
+    return `${day}-${month}-${year}`;
+}
+
+function queryPlusFilters(query, conditions){
+    let fullQuery = query 
+    if (conditions.length > 0) {
+        fullQuery +=
+            " WHERE " +
+            (conditions.length > 1
+                ? conditions.join(" AND ")
+                : conditions[0]);
+    }
+
+    return fullQuery
+}
+
+// Function to parse req.query and build conditions
+function parseQueryFilters(query, filterMap) {
+    const conditions = [];
+    const params = [];
+
+    // Loop through query params
+    for (const [key, value] of Object.entries(query)) {
+        // Only include if key is in filterMap and value exists
+        if (filterMap[key] && value) {
+            // Custom date formatting 
+            const sendValue = key == "date" ? FormatFechaDMY(value) : value;
+
+            conditions.push(`${filterMap[key]} = ?`);
+            params.push(sendValue);
+        }
+    }
+
+    return { conditions, params };
+}
+
+export { formatHoyTitle, queryPlusFilters, parseQueryFilters }
