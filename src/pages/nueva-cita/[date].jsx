@@ -142,17 +142,7 @@ export default function NuevaCita() {
                         {currentCita.servicio &&
                             currentCita.lashista &&
                             currentCita.horario &&
-                            !currentCita.clienta && (
-                                <VStack>
-                                    <Button bg={"pink.500"}>Nueva</Button>
-                                    <Box>
-                                        <Text>Clienta</Text>
-                                        <Text>Clienta</Text>
-                                        <Text>Clienta</Text>
-                                        <Text>Clienta</Text>
-                                    </Box>
-                                </VStack>
-                            )}
+                            !currentCita.clienta && <SelectClientas />}
                     </Box>
                 </VStack>
 
@@ -242,7 +232,6 @@ function OrderSummary() {
                                 : "--"}
                         </Text>
                     </HStack>
-                    {/* <Text fontWeight={700}>--</Text> */}
                 </HStack>
 
                 <HStack w={"100%"} justify={"space-between"}>
@@ -250,7 +239,14 @@ function OrderSummary() {
                         <IoPersonOutline />
                         <Text>Clienta: </Text>
                     </HStack>
-                    <Text fontWeight={700}>--</Text>
+                    <HStack>
+                        {currentCita.clienta && <FaRegSquareMinus />}
+                        <Text fontWeight={700}>
+                            {currentCita.clienta
+                                ? `${currentCita.clienta.nombres} ${currentCita.clienta.apellidos}`
+                                : "--"}
+                        </Text>
+                    </HStack>
                 </HStack>
             </VStack>
 
@@ -339,6 +335,55 @@ function SelectHorarios({ selectedDate }) {
                 </Grid>
             )}
         </Box>
+    );
+}
+
+function SelectClientas() {
+    const [clientas, setClientas] = useState(null);
+
+    useEffect(() => {
+        axios.get("/api/clientas").then((clientasResp) => {
+            setClientas(clientasResp.data);
+        });
+    }, []);
+
+    return (
+        <Grid gridTemplateColumns={"repeat(3, 1fr)"} gap={"2rem"}>
+            {/* <Button bg={"pink.500"}>Nueva</Button> */}
+            {clientas &&
+                clientas.map((clienta) => {
+                    return <ClientaCard key={clienta.id} data={clienta} />;
+                })}
+        </Grid>
+    );
+}
+
+function ClientaCard({ data }) {
+    const [currentCita, setCurrentCita] = useCurrentCita();
+
+    return (
+        <HStack gap={"2rem"}>
+            <Image
+                w={"10rem"}
+                objectFit={"cover"}
+                src={
+                    data.foto_clienta
+                        ? `/img/clientas/${data.foto_clienta}`
+                        : "/img/clientas/avatar.jpg"
+                }
+            />
+            <VStack gap={4} align={"start"}>
+                <Heading>{`${data.nombres} ${data.apellidos}`}</Heading>
+                <Button
+                    onClick={() => {
+                        setCurrentCita({ ...currentCita, clienta: data });
+                    }}
+                    bg={"pink.500"}
+                >
+                    Seleccionar
+                </Button>
+            </VStack>
+        </HStack>
     );
 }
 
