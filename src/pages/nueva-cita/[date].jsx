@@ -72,6 +72,21 @@ export default function NuevaCita() {
         if (currentCita.servicio && !currentCita.lashista) {
             setCurrentPaso("Lashista");
         }
+        if (
+            currentCita.servicio &&
+            currentCita.lashista &&
+            !currentCita.horario
+        ) {
+            setCurrentPaso("Horario");
+        }
+        if (
+            currentCita.servicio &&
+            currentCita.lashista &&
+            currentCita.horario &&
+            !currentCita.clienta
+        ) {
+            setCurrentPaso("Clienta");
+        }
     }, [currentCita]);
 
     useEffect(() => {
@@ -115,16 +130,30 @@ export default function NuevaCita() {
                         {lashistas && !currentCita.lashista && (
                             <SelectLashistas lashistas={lashistas} />
                         )}
-                        {currentCita.servicio && currentCita.lashista && (
-                            <SelectHorarios
-                                currentCita={currentCita}
-                                selectedDate={selectedDate}
-                            />
-                        )}
+                        {currentCita.servicio &&
+                            currentCita.lashista &&
+                            !currentCita.horario && (
+                                <SelectHorarios
+                                    currentCita={currentCita}
+                                    selectedDate={selectedDate}
+                                />
+                            )}
+
+                        {currentCita.servicio &&
+                            currentCita.lashista &&
+                            currentCita.horario &&
+                            !currentCita.clienta && (
+                                <VStack>
+                                    <Button bg={"pink.500"}>Nueva</Button>
+                                    <Box>
+                                        <Text>Clienta</Text>
+                                        <Text>Clienta</Text>
+                                        <Text>Clienta</Text>
+                                        <Text>Clienta</Text>
+                                    </Box>
+                                </VStack>
+                            )}
                     </Box>
-                    {/* <Heading>Seleccionar Lashista</Heading>
-                    <Heading>Seleccionar Horario</Heading>
-                    <Heading>Seleccionar Clienta</Heading> */}
                 </VStack>
 
                 <OrderSummary />
@@ -205,7 +234,15 @@ function OrderSummary() {
                         <FaRegClock />
                         <Text>Hora: </Text>
                     </HStack>
-                    <Text fontWeight={700}>--</Text>
+                    <HStack>
+                        {currentCita.horario && <FaRegSquareMinus />}
+                        <Text fontWeight={700}>
+                            {currentCita.horario
+                                ? currentCita.horario.hora
+                                : "--"}
+                        </Text>
+                    </HStack>
+                    {/* <Text fontWeight={700}>--</Text> */}
                 </HStack>
 
                 <HStack w={"100%"} justify={"space-between"}>
@@ -250,7 +287,8 @@ function SelectServicios({ servicios }) {
     );
 }
 
-function SelectHorarios({ currentCita, selectedDate }) {
+function SelectHorarios({ selectedDate }) {
+    const [currentCita, setCurrentCita] = useCurrentCita();
     const [horarios, setHorarios] = useState(null);
 
     useEffect(() => {
@@ -258,16 +296,17 @@ function SelectHorarios({ currentCita, selectedDate }) {
             fecha: formatFechaDMY(selectedDate),
             servicio_id: currentCita.servicio.id,
             lashista_id: currentCita.lashista.id,
+            action: "getHorariosDisponibles",
         };
         console.log(JSON.stringify(send));
 
         axios.post("/api/citas", send).then((horariosResp) => {
-            const uniqueTimeSlots = getUniqueTimeSlots(
-                horariosResp.data.horariosDispPorCama
-            );
-            console.log(horariosResp.data);
-            console.log(uniqueTimeSlots);
-            setHorarios(sortHours(uniqueTimeSlots));
+            // const uniqueTimeSlots = getUniqueTimeSlots(
+            //     horariosResp.data.horariosDispPorCama
+            // );
+            // console.log(horariosResp.data);
+            // console.log(uniqueTimeSlots);
+            setHorarios(horariosResp.data);
         });
     }, []);
 
@@ -276,11 +315,26 @@ function SelectHorarios({ currentCita, selectedDate }) {
             {!horarios && (
                 <Spinner color="blue.500" borderWidth="4px" size={"lg"} />
             )}
-            
+
             {horarios && (
                 <Grid gridTemplateColumns={"repeat(4, 1fr)"} gap={"1.5rem"}>
                     {horarios.map((hr) => {
-                        return <Badge key={hr}>{hr}</Badge>;
+                        return (
+                            <Button
+                                onClick={() => {
+                                    setCurrentCita({
+                                        ...currentCita,
+                                        horario: hr,
+                                    });
+                                }}
+                                bg={"pink.500"}
+                                key={hr.hora}
+                            >
+                                {hr.hora}
+                            </Button>
+                            // <Heading key={hr.hora}>{hr.hora}</Heading>
+                        );
+                        // return <Badge key={hr}>{hr}</Badge>;
                     })}
                 </Grid>
             )}
