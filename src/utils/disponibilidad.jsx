@@ -139,41 +139,60 @@ function getSlots(cita, horarioDelDia, servicios) {
  * @returns {boolean} - True if subArray is a consecutive part of array.
  */
 function puedeAgendar(array, subArray, directivaJSON) {
+    if (!subArray) { return false }
+    let pass = null;
     const directiva = JSON.parse(directivaJSON);
-    if (!subArray) {
-        return false;
+
+    if (directiva[0] == 1) {
+        subArray.forEach((slt) => {
+            if (array.includes(slt)) {
+                pass = true;
+            } else {
+                return false
+            }
+        });
     }
 
-    // if (directiva[0] == 1) {
+    if (directiva[0] == -1) {
+        const lastIdx = subArray.length - 1;
+        subArray.forEach((slt, idx) => {
+            if (idx == lastIdx) {
+                if (array.includes(slt) || array.includes(`+${slt}`)) {
+                    pass = true;
+                }
+            } else if (array.includes(slt)) {
+                pass = true;
+            } else {
+                return false;
+            }
+        });
+    }
 
-    // }
+    if (directiva[0] == 0 && directiva[1] == -1) {
+        let present = {
+            first: array.includes(subArray[0]) || array.includes(`-${subArray[0]}`),
+            second: array.includes(subArray[1]) || array.includes(`+${subArray[1]}`),
+        }
+        if(present.first == true && present.second == true){
+            pass = true
+        } else {
+            return false
+        }
+    }
 
-    // console.log("BEFORE", directiva, subArray, array);
-    // if (directiva[0] == 1) {
-    //     let newArray = array.map((hr) => {
-    //         return hr.replace("+", "").replace("-", "");
-    //     });
-    // }
+    // console.log(directiva, subArray, array);
+    return pass;
+}
 
-    // console.log("AFTER", directiva, subArray, newArray);
-    return true;
-
-    // return array.some((_, i) =>
-    //     array.slice(i, i + subArray.length).every((horario, horarioIdx) => {
-    //         // console.log(horario, horarioIdx);
-    //         console.log(horario, subArray[horarioIdx]);
-    //         return horario === subArray[horarioIdx];
-
-    //         // if (directiva[0] == 0) {
-    //         //     if (horarioIdx == 0) {
-    //         //         horario = horario.replace("-", "");
-    //         //     }
-    //         //     return horario === subArray[horarioIdx];
-    //         // } else {
-    //         //     return horario === subArray[horarioIdx];
-    //         // }
-    //     })
-    // );
+function sortByHora(array) {
+    return array.sort((a, b) => {
+        const getTimeValue = (hora) => {
+            const [h, m] = hora.replace(/[+-]/, '').split(':').map(Number);
+            return h * 60 + m;
+        };
+        // Sort by time value, keeping original hora order
+        return getTimeValue(a.hora) - getTimeValue(b.hora);
+    });
 }
 
 function GenerarHorariosDisponibles(
@@ -276,14 +295,15 @@ function sortHours(hours) {
 }
 
 function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
+    const camasKeys = Object.keys(horariosDispPorCama)
     const dirServicio = servicios[citaData.servicio_id].regla;
+    let registry = [];
+    // let available = {};
     let available = [];
-    // let cita = {
-    //     hora: null,
-    //     servicio_id: citaData.servicio_id
-    // }
 
-    Object.values(horariosDispPorCama).forEach((horariosCama) => {
+    camasKeys.forEach((camaID)=>{
+        const horariosCama = horariosDispPorCama[camaID]
+
         horariosCama.forEach((hora) => {
             const horaClean = hora.replace("+", "").replace("-", "");
             const slots = getSlots(
@@ -293,12 +313,18 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
             );
 
             if (puedeAgendar(horariosCama, slots, dirServicio)) {
-                available.push(hora);
+                if(!registry.includes(hora)){
+                    available.push({cama: camaID, hora})
+                    registry.push(hora);
+                }
+                // available.push(hora);
             }
         });
-    });
-    available = [...new Set(available)];
-    available = sortHours(available);
+    })
+
+    // available = [...new Set(available)];
+    // available = sortHours(available);
+    available = sortByHora(available)
     return available;
 }
 

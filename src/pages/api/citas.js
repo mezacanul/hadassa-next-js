@@ -58,7 +58,7 @@ export default async function handler(req, res) {
                 servicio_id: req.body.servicio_id ? req.body.servicio_id : null,
                 lashista_id: req.body.lashista_id ? req.body.lashista_id : null,
                 clienta_id: req.body.clienta_id ? req.body.clienta_id : null,
-            }
+            };
 
             let citaDetalles = {};
             let lashista = {};
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
             const horarioDelDia = generarHorarioDelDia({
                 weekend: ["Saturday", "Sunday"].includes(dayName),
             });
-            
+
             // let citasDelDia = []
 
             let [citasDelDia] = await connection.execute(
@@ -119,13 +119,13 @@ export default async function handler(req, res) {
                 directiva: servicios[cita.servicio_id].regla,
             };
 
-            if (citasDelDia.length > 0) {
-                // Asignamos Horarios Del Dia completos por cama
-                // para mas adelante filtrar y eliminar los horarios ocupados por citas
-                camasKeys.forEach(
-                    (camaID) => (horariosDispPorCama[camaID] = [...horarioDelDia])
-                );
+            // Asignamos Horarios Del Dia completos por cama
+            // para mas adelante filtrar y eliminar los horarios ocupados por citas
+            camasKeys.forEach(
+                (camaID) => (horariosDispPorCama[camaID] = [...horarioDelDia])
+            );
 
+            if (citasDelDia.length > 0) {
                 // Organizamos citas del dia por cama.
                 // Para ello convertimos el arreglo "citasPorCama"
                 // a Objeto { (n)camaID: [...citas] }
@@ -141,76 +141,50 @@ export default async function handler(req, res) {
                 // con horarios de citas (citasPorCama) y
                 // eliminar horarios no disponibles.
                 // (Aplicar reglas de servicio [-1] [0,-1] [1])
-                horariosDispPorCama = GenerarHorariosDisponibles(camasKeys, citasPorCama, horariosDispPorCama, servicios)
-
-                // Generamos objecto con info de disponibilidad por ID de cama 
-                // camasKeys.forEach((camaID) => {
-                //     disponibilidad[camaID] = puedeAgendar(
-                //         horariosDispPorCama[camaID],
-                //         citaDetalles.slots,
-                //         citaDetalles.directiva
-                //     );
-                // });
-            } else {
-                camasKeys.forEach((camaID) => {
-                    disponibilidad[camaID] = true;
-                    horariosDispPorCama[camaID] = [...horarioDelDia];
-                });
-            }
-
-            if(POST_Data.action == "getHorariosDisponibles"){
-                // console.log(horariosDispPorCama);
-                
-                // res.status(200).json({horariosDispPorCama, cita});
-                res.status(200).json([horariosDispPorCama, getAvailable(horariosDispPorCama, cita, horarioDelDia, servicios)]);
-                return
-            } else {
-                // TO DO: Fix disponibilidad function
-                console.log(disponibilidad);
-    
-                const response = {
-                    // Aqui decidimos en que cama agendar basandonos en el objeto {disponibilidad}
-                    camaAgendar: getCamaAgendar(disponibilidad), // str
-    
-                    lashista, // {}
-                    fecha: cita.fecha, // str
-                    hora: cita.hora, // str
-                    citaDetalles, // {}
-                    
-                    horariosDispPorCama, // {}
-                    
-                    disponibilidad, // {}
-                };
-    
-                // TO DO:
-                // ETA: 3 horas (Confirmado: +20 horas)
-                // AgendarCita()
-                // res.status(201).json(req.body);
-                // console.log(response);
-                res.status(200).json(response);
-                return;
-            }
-
-            try {
-                const [result] = await connection.execute(
-                    `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id) 
-                        VALUES (UUID(), '${cita.clienta_id}', '${cita.servicio_id}', '${cita.lashista_id}', '${cita.fecha}', '${cita.hora}', '${camaDisponible}')`
+                horariosDispPorCama = GenerarHorariosDisponibles(
+                    camasKeys,
+                    citasPorCama,
+                    horariosDispPorCama,
+                    servicios
                 );
-                if (result.affectedRows > 0) {
-                    return res.status(201).json({
-                        message: "Default cita inserted successfully",
-                        id: result.insertId,
+            }
+
+            if (POST_Data.action == "getHorariosDisponibles") {
+                const available = getAvailable(
+                    horariosDispPorCama,
+                    cita,
+                    horarioDelDia,
+                    servicios
+                );
+                // console.log(horariosDispPorCama);
+
+                // res.status(200).json({horariosDispPorCama, cita});
+                res.status(200).json(available);
+                return;
+            } else {
+                res.status(200).json("Something is missing here... 🛠️");
+                return;
+                try {
+                    const [result] = await connection.execute(
+                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id) 
+                            VALUES (UUID(), '${cita.clienta_id}', '${cita.servicio_id}', '${cita.lashista_id}', '${cita.fecha}', '${cita.hora}', '${camaDisponible}')`
+                    );
+                    if (result.affectedRows > 0) {
+                        return res.status(201).json({
+                            message: "Default cita inserted successfully",
+                            id: result.insertId,
+                        });
+                    } else {
+                        return res
+                            .status(500)
+                            .json({ error: "Failed to insert default cita" });
+                    }
+                } catch (insertError) {
+                    return res.status(500).json({
+                        error: "MySQL insertion failed",
+                        details: insertError.message,
                     });
-                } else {
-                    return res
-                        .status(500)
-                        .json({ error: "Failed to insert default cita" });
                 }
-            } catch (insertError) {
-                return res.status(500).json({
-                    error: "MySQL insertion failed",
-                    details: insertError.message,
-                });
             }
         } else {
             // Handle unsupported methods
