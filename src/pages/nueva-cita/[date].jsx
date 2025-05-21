@@ -105,8 +105,15 @@ export default function NuevaCita() {
     return (
         <Box w={"100%"} mb={"2rem"} h={"85vh"}>
             <Heading
-                mt={"1rem"}
-                textAlign={"center"}
+                // mt={"1rem"}
+                textAlign={
+                    currentCita.servicio &&
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentCita.clienta
+                        ? "center"
+                        : "left"
+                }
                 fontWeight={300}
                 size={"4xl"}
                 mb={"2rem"}
@@ -116,49 +123,70 @@ export default function NuevaCita() {
 
             <HStack
                 w={"100%"}
-                justify={"space-between"}
+                justify={
+                    currentCita.servicio &&
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentCita.clienta
+                        ? "center"
+                        : "space-between"
+                }
                 gap={"2rem"}
                 align={"start"}
             >
-                <VStack style={{ width: "65%" }} align={"start"}>
-                    <Heading mb={"1rem"}>Seleccionar {currentPaso}:</Heading>
+                {currentCita.servicio &&
+                currentCita.lashista &&
+                currentCita.horario &&
+                currentCita.clienta ? null : (
+                    <VStack style={{ width: "65%" }} align={"start"}>
+                        <Heading mb={"1rem"}>
+                            Seleccionar {currentPaso}:
+                        </Heading>
 
-                    <Box w={"100%"} maxH={"60vh"} overflowY={"scroll"}>
-                        {servicios && !currentCita.servicio && (
-                            <SelectServicios servicios={servicios} />
-                        )}
-                        {lashistas && !currentCita.lashista && (
-                            <SelectLashistas lashistas={lashistas} />
-                        )}
-                        {currentCita.servicio &&
-                            currentCita.lashista &&
-                            !currentCita.horario && (
-                                <SelectHorarios
-                                    currentCita={currentCita}
-                                    selectedDate={selectedDate}
-                                />
+                        <Box w={"100%"} maxH={"60vh"} overflowY={"scroll"}>
+                            {servicios && !currentCita.servicio && (
+                                <SelectServicios servicios={servicios} />
                             )}
+                            {lashistas && !currentCita.lashista && (
+                                <SelectLashistas lashistas={lashistas} />
+                            )}
+                            {currentCita.servicio &&
+                                currentCita.lashista &&
+                                !currentCita.horario && (
+                                    <SelectHorarios
+                                        currentCita={currentCita}
+                                        selectedDate={selectedDate}
+                                    />
+                                )}
 
-                        {currentCita.servicio &&
-                            currentCita.lashista &&
-                            currentCita.horario &&
-                            !currentCita.clienta && <SelectClientas />}
-                    </Box>
-                </VStack>
+                            {currentCita.servicio &&
+                                currentCita.lashista &&
+                                currentCita.horario &&
+                                !currentCita.clienta && <SelectClientas />}
+                        </Box>
+                    </VStack>
+                )}
 
-                <OrderSummary />
+                <OrderSummary disabled={
+                    currentCita.servicio &&
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentCita.clienta
+                        ? false
+                        : true
+                } />
             </HStack>
         </Box>
     );
 }
 
-function OrderSummary() {
+function OrderSummary({disabled}) {
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
 
     return (
-        <VStack style={{ width: "35%" }}>
-            <Heading>Resumen</Heading>
+        <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"}>
+            <Heading color={"pink.600"}>Resumen</Heading>
 
             <VStack
                 w={"100%"}
@@ -173,7 +201,8 @@ function OrderSummary() {
                         <Text>Fecha: </Text>
                     </HStack>
                     <Text fontWeight={700}>
-                        {selectedDate && formatFechaDMY(selectedDate)}
+                        {/* {selectedDate && formatFechaDMY(selectedDate)} */}
+                        {selectedDate && formatHoyTitle(selectedDate)}
                     </Text>
                 </HStack>
 
@@ -190,18 +219,6 @@ function OrderSummary() {
                                 : "--"}
                         </Text>
                     </HStack>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <PiCashRegisterBold />
-                        <Text>Precio: </Text>
-                    </HStack>
-                    <Text fontWeight={700}>
-                        {currentCita.servicio
-                            ? `$${currentCita.servicio.precio}`
-                            : "--"}
-                    </Text>
                 </HStack>
 
                 <HStack w={"100%"} justify={"space-between"}>
@@ -248,9 +265,21 @@ function OrderSummary() {
                         </Text>
                     </HStack>
                 </HStack>
+
+                <HStack w={"100%"} justify={"space-between"}>
+                    <HStack>
+                        <PiCashRegisterBold />
+                        <Text>Precio: </Text>
+                    </HStack>
+                    <Text fontWeight={700}>
+                        {currentCita.servicio
+                            ? `$${currentCita.servicio.precio}`
+                            : "--"}
+                    </Text>
+                </HStack>
             </VStack>
 
-            <Button bg={"pink.500"}>Confirmar Detalles</Button>
+            <Button size={"lg"} bg={"pink.500"} disabled={disabled}>Agendar Cita</Button>
         </VStack>
     );
 }
@@ -364,7 +393,7 @@ function ClientaCard({ data }) {
     return (
         <HStack gap={"2rem"}>
             <Image
-                w={"10rem"}
+                w={"5rem"}
                 objectFit={"cover"}
                 src={
                     data.foto_clienta
@@ -446,7 +475,7 @@ function LashistaCard({ data }) {
         <Card.Root flexDir={"row"} overflow="hidden" size="sm">
             <Image
                 objectFit="cover"
-                maxW="7rem"
+                maxW="12rem"
                 // maxH={"10rem"}
                 src={`/img/lashistas/${data.image}`}
                 alt="Caffe Latte"
