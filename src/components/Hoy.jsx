@@ -76,7 +76,7 @@ export default function Hoy() {
     };
 
     return (
-        <div id="Hoy">
+        <Box id="Hoy" bg={"white"}>
             <Dialog.Root
                 id="Hoy"
                 open={openDialogue}
@@ -169,7 +169,7 @@ export default function Hoy() {
                     />
                 </Box>
             </Dialog.Root>
-        </div>
+        </Box>
     );
 }
 

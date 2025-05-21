@@ -361,6 +361,10 @@ const events = [
 ];
 
 const MesCalendarStyles = `
+    #MesCalendar table {
+        background-color: white;
+    }
+
     #MesCalendar .fc-day-today {
         background-color: #ec4899;
         opacity: 0.9;

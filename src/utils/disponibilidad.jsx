@@ -131,6 +131,7 @@ function getSlots(cita, horarioDelDia, servicios) {
  * Checks if subArray is a consecutive subarray of array.
  * @param {string[]} array - Main array (e.g., bed slots).
  * @param {string[]} subArray - Subarray to find (e.g., cita slots).
+ * @param {string[]} servicio.directiva - Reglas del servicio.
  * @returns {boolean} - True if subArray is a consecutive part of array.
  */
 function isSubArray(array, subArray, directivaJSON) {
@@ -153,6 +154,10 @@ function isSubArray(array, subArray, directivaJSON) {
             }
         })
     );
+}
+
+function GenerarHorariosDisponibles(){
+    return
 }
 
 /**

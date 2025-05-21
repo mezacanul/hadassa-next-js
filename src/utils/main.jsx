@@ -29,7 +29,7 @@ function formatHoyTitle (date) {
     return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
 };
 
-function FormatFechaDMY(fecha) {
+function formatFechaDMY(fecha) {
     const [year, month, day] = fecha.split("-");
     return `${day}-${month}-${year}`;
 }
@@ -57,7 +57,7 @@ function parseQueryFilters(query, filterMap) {
         // Only include if key is in filterMap and value exists
         if (filterMap[key] && value) {
             // Custom date formatting 
-            const sendValue = key == "date" ? FormatFechaDMY(value) : value;
+            const sendValue = key == "date" ? formatFechaDMY(value) : value;
 
             conditions.push(`${filterMap[key]} = ?`);
             params.push(sendValue);
@@ -67,4 +67,4 @@ function parseQueryFilters(query, filterMap) {
     return { conditions, params };
 }
 
-export { formatHoyTitle, queryPlusFilters, parseQueryFilters }
+export { formatHoyTitle, formatFechaDMY, queryPlusFilters, parseQueryFilters }

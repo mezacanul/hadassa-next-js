@@ -36,7 +36,12 @@ export default async function handler(req, res) {
             );
             console.log(conditions, params);
 
-            let query = "SELECT * FROM citas";
+            let query = `SELECT clientas.nombre_completo as clienta, servicios.servicio, servicios.id as servicio_id, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
+                    FROM 
+                      citas 
+                    LEFT JOIN clientas ON citas.clienta_id = clientas.id
+                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
+                    LEFT JOIN lashistas ON citas.lashista_id = lashistas.id`;
             let fullQuery = queryPlusFilters(query, conditions);
 
             const [rows] = await connection.execute(fullQuery, params);
@@ -234,13 +239,15 @@ export default async function handler(req, res) {
             console.log(disponibilidad);
 
             const response = {
-                camaAgendar: getCamaAgendar(disponibilidad),
-                lashista,
-                fecha: cita.fecha,
-                hora: cita.hora,
-                disponibilidad,
-                citaDetalles,
-                horariosDispPorCama,
+                lashista, // {}
+                fecha: cita.fecha, // str
+                hora: cita.hora, // str
+                citaDetalles, // {}
+                
+                horariosDispPorCama, // {}
+                
+                disponibilidad, // {}
+                camaAgendar: getCamaAgendar(disponibilidad), // str
             };
 
             // TO DO:
@@ -248,7 +255,7 @@ export default async function handler(req, res) {
             // AgendarCita()
             // res.status(201).json(req.body);
             // console.log(response);
-            res.status(201).json(response);
+            res.status(200).json(response);
             return;
 
             try {

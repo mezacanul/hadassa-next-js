@@ -3,6 +3,7 @@ import { Provider } from "@/components/ui/provider";
 import Head from "next/head";
 import { loadHook, Nexus, Singleton } from "@/utils/lattice-design";
 import {
+    Box,
     Button,
     Grid,
     Heading,
@@ -20,6 +21,8 @@ import { LuCalendarPlus } from "react-icons/lu";
 import { useRouter as useNextNav } from "next/navigation";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { FaHouseChimney } from "react-icons/fa6";
+
 // import Router from 'next/router';
 
 Nexus({
@@ -38,10 +41,12 @@ export default function App({ Component, pageProps }) {
                 <link rel="icon" href="/favicon4.png" />
             </Head>
 
-            <NavBar />
-            <VStack id="Body" px={"2rem"}>
-                <Component {...pageProps} />
-            </VStack>
+            <Box bg={"#f1f5ff"}>
+                <NavBar />
+                <VStack id="Body" px={"2rem"}>
+                    <Component {...pageProps} />
+                </VStack>
+            </Box>
         </Provider>
     );
 }
@@ -87,7 +92,7 @@ function NavBar() {
                 {/* format(info.date, "yyyy-MM-dd"); */}
                 {router.pathname != "/nueva-cita/[date]" && (
                     <Button
-                        bg={"#ec4899"}
+                        bg={"pink.500"}
                         onClick={() => {
                             console.log("events", events);
 
@@ -110,10 +115,21 @@ function NavBar() {
                         }}
                     >
                         <HStack>
-                            <Text fontSize={"1rem"} fontWeight={700}>
-                                {`Agendar`}
-                            </Text>
+                            <Text fontSize={"1rem"}>{`Agendar`}</Text>
                             <LuCalendarPlus />
+                        </HStack>
+                    </Button>
+                )}
+                {router.pathname == "/nueva-cita/[date]" && (
+                    <Button
+                        onClick={() => {
+                            NextNav.push("/");
+                        }}
+                        bg={"pink.500"}
+                    >
+                        <HStack>
+                            <Text fontSize={"1rem"}>{`Inicio`}</Text>
+                            <FaHouseChimney />
                         </HStack>
                     </Button>
                 )}

@@ -131,7 +131,8 @@ function ListaServicios() {
             if (events.length == 0) {
                 console.log(selectedDate);
                 axios
-                    .post("/api/citas", { date: selectedDate })
+                    // .post("/api/citas", { date: selectedDate })
+                    .get(`/api/citas?date=${selectedDate}`)
                     .then((citasResp) => {
                         console.log(selectedDate, citasResp.data);
                         setEvents(formatEvents(citasResp.data));
