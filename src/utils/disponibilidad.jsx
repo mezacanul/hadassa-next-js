@@ -124,7 +124,11 @@ function getSlots(cita, horarioDelDia, servicios) {
         count.start,
         count.start + slotsCount
     );
-    return citaSlots;
+    if (citaSlots.length == slotsCount) {
+        return citaSlots;
+    } else {
+        return null;
+    }
 }
 
 /**
@@ -134,30 +138,168 @@ function getSlots(cita, horarioDelDia, servicios) {
  * @param {string[]} servicio.directiva - Reglas del servicio.
  * @returns {boolean} - True if subArray is a consecutive part of array.
  */
-function isSubArray(array, subArray, directivaJSON) {
+function puedeAgendar(array, subArray, directivaJSON) {
     const directiva = JSON.parse(directivaJSON);
+    if (!subArray) {
+        return false;
+    }
 
-    return array.some((_, i) =>
-        array.slice(i, i + subArray.length).every((horario, horarioIdx) => {
-            // console.log(horario, horarioIdx);
-            // return horario === subArray[horarioIdx];
+    // if (directiva[0] == 1) {
 
-            if (directiva[0] == 0) {
-                if (horarioIdx == 0) {
-                    horario = horario.replace("-", "");
-                } else if (horarioIdx == 1) {
-                    horario = horario.replace("+", "");
-                }
-                return horario === subArray[horarioIdx];
-            } else {
-                return horario === subArray[horarioIdx];
-            }
-        })
-    );
+    // }
+
+    // console.log("BEFORE", directiva, subArray, array);
+    // if (directiva[0] == 1) {
+    //     let newArray = array.map((hr) => {
+    //         return hr.replace("+", "").replace("-", "");
+    //     });
+    // }
+
+    // console.log("AFTER", directiva, subArray, newArray);
+    return true;
+
+    // return array.some((_, i) =>
+    //     array.slice(i, i + subArray.length).every((horario, horarioIdx) => {
+    //         // console.log(horario, horarioIdx);
+    //         console.log(horario, subArray[horarioIdx]);
+    //         return horario === subArray[horarioIdx];
+
+    //         // if (directiva[0] == 0) {
+    //         //     if (horarioIdx == 0) {
+    //         //         horario = horario.replace("-", "");
+    //         //     }
+    //         //     return horario === subArray[horarioIdx];
+    //         // } else {
+    //         //     return horario === subArray[horarioIdx];
+    //         // }
+    //     })
+    // );
 }
 
-function GenerarHorariosDisponibles(){
-    return
+function GenerarHorariosDisponibles(
+    camasKeys,
+    citasPorCama,
+    horariosDispPorCama,
+    servicios
+) {
+    // 1.- Loopeamos por cada CAMA
+    camasKeys.forEach((camaID, IDX) => {
+        const famTree = getFamTree(camasKeys, camaID, IDX);
+        const currentID = famTree.current;
+        const siblingID = famTree.siblings[0];
+
+        // 2.- Asignamos detalles de citas
+        // por cama { ...camaID's: ... }
+        if (citasPorCama[currentID]) {
+            citasPorCama[currentID] = citasPorCama[currentID].map((cita) =>
+                getHorariosOcupadosPorServicio(
+                    horariosDispPorCama[currentID],
+                    servicios[cita.servicio_id],
+                    cita,
+                    servicios
+                )
+            );
+        } else {
+            citasPorCama[currentID] = [];
+        }
+
+        // 3.- Lopeamos cada CITA para:
+        // - Eliminar todos los horarios ocupados en 1ra cama
+        // - Aplicar las reglas correspondientes en 2a cama
+        citasPorCama[currentID].forEach((cita) => {
+            // Eliminamos todos los horarios ocupados
+            // en 1ra cama por default
+            // en 2a cama si unica directiva es [1]
+            cita.horariosOcupados1aCama.forEach((horarioOcupado1aCama, idx) => {
+                horariosDispPorCama[currentID] = horariosDispPorCama[
+                    currentID
+                ].filter(
+                    (horario1aCama) => horarioOcupado1aCama != horario1aCama
+                );
+
+                // Eliminamos horario ocupado en segunda cama
+                // si unica regla es [1]
+                if (cita.reglasDeServicio[0] == 1) {
+                    horariosDispPorCama[siblingID] = horariosDispPorCama[
+                        siblingID
+                    ].filter(
+                        (horario2aCama) => horarioOcupado1aCama != horario2aCama
+                    );
+                }
+            });
+
+            // Transformamos ultimo horario en 2a cama si reglas incluyen [-1]: "-00:00"
+            if (cita.reglasDeServicio.includes(-1)) {
+                const ultimoHorario1aCama =
+                    cita.horariosOcupados1aCama[
+                        cita.horariosOcupados1aCama.length - 1
+                    ];
+                const IDX_ultimoHorario1aCama =
+                    horariosDispPorCama[siblingID].indexOf(ultimoHorario1aCama);
+                horariosDispPorCama[siblingID][
+                    IDX_ultimoHorario1aCama
+                ] = `-${horariosDispPorCama[siblingID][IDX_ultimoHorario1aCama]}`;
+            }
+
+            // Transformamor primer horario en 2a cama si 1ra regla es [0]: "+00:00"
+            if (cita.reglasDeServicio[0] == 0) {
+                const primerHorario1raCama = cita.horariosOcupados1aCama[0];
+                const IDX_primerHorario1raCama =
+                    horariosDispPorCama[siblingID].indexOf(
+                        primerHorario1raCama
+                    );
+                horariosDispPorCama[siblingID][
+                    IDX_primerHorario1raCama
+                ] = `+${horariosDispPorCama[siblingID][IDX_primerHorario1raCama]}`;
+            }
+
+            // Eliminamos el resto de horarios en 2a cama
+            // que coinciden con los horarios de 1ra cama
+            cita.horariosOcupados1aCama.forEach((horario) => {
+                horariosDispPorCama[siblingID] = horariosDispPorCama[
+                    siblingID
+                ].filter((horarioSibling) => horario != horarioSibling);
+            });
+        });
+    });
+    return horariosDispPorCama;
+}
+
+function sortHours(hours) {
+    return hours.sort((a, b) => {
+        const getTimeValue = (time) => {
+            const [h, m] = time.replace(/[+-]/, "").split(":").map(Number);
+            return h * 60 + m;
+        };
+        return getTimeValue(a) - getTimeValue(b);
+    });
+}
+
+function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
+    const dirServicio = servicios[citaData.servicio_id].regla;
+    let available = [];
+    // let cita = {
+    //     hora: null,
+    //     servicio_id: citaData.servicio_id
+    // }
+
+    Object.values(horariosDispPorCama).forEach((horariosCama) => {
+        horariosCama.forEach((hora) => {
+            const horaClean = hora.replace("+", "").replace("-", "");
+            const slots = getSlots(
+                { hora: horaClean, servicio_id: citaData.servicio_id },
+                horarioDelDia,
+                servicios
+            );
+
+            if (puedeAgendar(horariosCama, slots, dirServicio)) {
+                available.push(hora);
+            }
+        });
+    });
+    available = [...new Set(available)];
+    available = sortHours(available);
+    return available;
 }
 
 /**
@@ -195,5 +337,8 @@ export {
     getFamTree,
     getHorariosOcupadosPorServicio,
     getSlots,
-    isSubArray,
+    puedeAgendar,
+    GenerarHorariosDisponibles,
+    sortHours,
+    getAvailable,
 };

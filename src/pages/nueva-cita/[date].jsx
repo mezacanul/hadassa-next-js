@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loadHook, Singleton } from "@/utils/lattice-design";
 import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
+import { sortHours } from "@/utils/disponibilidad";
 import axios from "axios";
 import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -384,12 +385,12 @@ function getUniqueTimeSlots(data) {
     return [...new Set(allTimes)];
 }
 
-function sortHours(hours) {
-    return hours.sort((a, b) => {
-        const getTimeValue = (time) => {
-            const [h, m] = time.replace(/[+-]/, '').split(':').map(Number);
-            return h * 60 + m;
-        };
-        return getTimeValue(a) - getTimeValue(b);
-    });
-}
+// function sortHours(hours) {
+//     return hours.sort((a, b) => {
+//         const getTimeValue = (time) => {
+//             const [h, m] = time.replace(/[+-]/, '').split(':').map(Number);
+//             return h * 60 + m;
+//         };
+//         return getTimeValue(a) - getTimeValue(b);
+//     });
+// }
