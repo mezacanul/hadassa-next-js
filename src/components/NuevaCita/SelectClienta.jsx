@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { MiniSingleton } from "@/utils/lattice-design";
+import { Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import { RiCloseLargeLine } from "react-icons/ri";
 import RemoveButton from "../common/RemoveButton";
@@ -22,7 +22,7 @@ const inputStyles = {
     width: "40%",
 };
 
-const useClientas = MiniSingleton(null);
+const useClientas = Singleton(null);
 
 export default function SelectClienta() {
     const [currentCita, setCurrentCita] = useCurrentCita();
@@ -30,8 +30,15 @@ export default function SelectClienta() {
 
     if (currentCita.clienta == null) {
         return (
-            <VStack w={"70%"}>
-                <HStack mt={"3rem"} gap={"2rem"} w={"100%"} align={"end"} mb={"2rem"}>
+            <VStack align={"center"}>
+                <HStack
+                justify={"center"}
+                    mt={"1rem"}
+                    gap={"2rem"}
+                    w={"100%"}
+                    align={"end"}
+                    mb={"1rem"}
+                >
                     <Heading
                         fontWeight={300}
                         size={"5xl"}
@@ -43,9 +50,10 @@ export default function SelectClienta() {
 
                     <OpcionesClienta setCurrentPanel={setCurrentPanel} />
                 </HStack>
-                {currentPanel == "buscarClienta" && <ListaBuscarClienta />}
+                {/* {currentPanel == "buscarClienta" && <ListaBuscarClienta />} */}
+                <ListaBuscarClienta />
 
-                {currentPanel == "nuevaClienta" && <FormularioNuevaClienta />}
+                {/* {currentPanel == "nuevaClienta" && <FormularioNuevaClienta />} */}
             </VStack>
         );
     }
@@ -77,14 +85,13 @@ export function CurrentClienta() {
                 <Image
                     borderRadius={"20rem"}
                     src={`/img/clientas/${currentCita.clienta.foto_clienta}`}
-                    w={"7rem"}
-                    mb={"0.5rem"}
+                    w={"6rem"}
+                    // mb={"0.5rem"}
                 />
-                <Heading>
-                    {currentCita.clienta.segundo_nombre}{" "}
-                    {currentCita.clienta.apellido_paterno}
-                </Heading>
-                <Text opacity={"0.7"} fontSize={"sm"}>{currentCita.clienta.telefono}</Text>
+                <Heading>{currentCita.clienta.nombre_completo}</Heading>
+                <Text opacity={"0.7"} fontSize={"sm"}>
+                    {`(${currentCita.clienta.telefono})`}
+                </Text>
             </VStack>
         );
     }
@@ -92,8 +99,8 @@ export function CurrentClienta() {
 
 function OpcionesClienta({ setCurrentPanel }) {
     return (
-        <HStack>
-            <Button
+        <HStack gap={"1rem"}>
+            {/* <Button
                 // disabled
                 fontSize={"md"}
                 size={"md"}
@@ -103,8 +110,9 @@ function OpcionesClienta({ setCurrentPanel }) {
                 }}
             >
                 Buscar
-            </Button>
-            <Button
+            </Button> */}
+            <Input {...inputStyles} w={"15rem"} placeholder="Buscar" />
+            {/* <Button
                 // disabled
                 fontSize={"md"}
                 size={"md"}
@@ -114,26 +122,23 @@ function OpcionesClienta({ setCurrentPanel }) {
                 }}
             >
                 Nueva
-            </Button>
-            <Input {...inputStyles} w={"20rem"} placeholder="Buscar" />
+            </Button> */}
         </HStack>
     );
 }
 
 function ListaBuscarClienta() {
     return (
-        <VStack w={"100%"} gap={"2rem"}>
-            <Box
-                w={"100%"}
-                height={"40vh"}
-                overflowY={"scroll"}
-                borderColor={"pink.500"}
-                borderWidth={"1px"}
-                borderRadius={"0.5rem"}
-            >
-                <ListaClientas />
-            </Box>
-        </VStack>
+        <Box
+            w={"100%"}
+            height={"40vh"}
+            overflowY={"scroll"}
+            borderColor={"pink.500"}
+            borderWidth={"1px"}
+            borderRadius={"0.5rem"}
+        >
+            <ListaClientas />
+        </Box>
     );
 }
 
@@ -148,10 +153,6 @@ function ListaClientas() {
             // console.log("DB data:", serviciosResp.data);
         });
     }, []);
-
-    function getFullNombre(data) {
-        return `${data.segundo_nombre} ${data.apellido_paterno}`;
-    }
 
     if (clientas != null) {
         return (
@@ -176,7 +177,7 @@ function ListaClientas() {
                                     />
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {getFullNombre(clienta)}
+                                    {clienta.nombre_completo}
                                 </Table.Cell>
                                 <Table.Cell textAlign={"center"}>
                                     <Button

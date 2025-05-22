@@ -1,0 +1,69 @@
+citasHoy = [
+  {serv: "Lami Brow", hora: 09:00, cama: cama-1},
+  {serv: "Brow Henna", hora: 10:00, cama: cama-1},
+  {serv: "Diseño de cejas", hora: 10:30, cama: cama-1}
+  {serv: "Lami Brow", hora: 09:30, cama: cama-2},
+  {serv: "Lash Lift y Lami Brow", hora: 11:00, cama: cama-2},
+  {serv: "Lash Lisft Doble", hora: 12:30, cama: cama-2}
+]
+
+[
+    ["Diseño de cejas", 30, [-1]],
+    ["Brow Henna", 30, [-1]],
+    ["Lami Brow", 60, [0,-1]],
+    ["Lash Lift", 60, [-1]],
+    ["Lash Lift y Diseño de Cejas", 60, [-1]],
+    ["Lash Lift y Brow Henna", 60, [-1]],
+    ["Lash Lift y Lami Brow", 90, [-1]],
+    ["Lash Lift Doble", 90, [1]],
+    ["Lash Lift Doble y Diseño de Cejas", 90, [1]],
+    ["Lash Lift Doble y Brow Henna", 90, [1]],
+    ["Lash Lift Doble y Lami Brow", 120, [1]],
+]
+
+[
+    ["Diseño de cejas", 30, [[1,0]]],
+    ["Brow Henna", 30, [[1,0]]],
+    ["Lami Brow", 60, [[1,0],[1,1]]],
+    ["Lash Lift", 60, [[1,1],[1,0]]],
+    ["Lash Lift y Diseño de Cejas", 60, [[1,1],[1,0]]],
+    ["Lash Lift y Brow Henna", 60, [[1,1],[1,0]]],
+    ["Lash Lift y Lami Brow", 90, [[1,1],[1,1],[1,0]]],
+    ["Lash Lift Doble", 90, [[1,1],[1,1],[1,1]]],
+    ["Lash Lift Doble y Diseño de Cejas", 90,[[1,1],[1,1],[1,1]]],
+    ["Lash Lift Doble y Brow Henna", 90, [[1,1],[1,1],[1,1]]],
+    ["Lash Lift Doble y Lami Brow", 120,[[1,1],[1,1],[1,1]]],
+]
+
+1- Lami Brow y diseño de cejas
+[60, 30]
+Se pueden agendar en el mismo horario
+3:00 pm - Lami Brow
+3:00 pm - diseño de cejas
+
+2- Lami Brow y Brow Henna
+[60, 30]
+Se pueden agendar en el mismo horario
+3:00 pm - Lami Brow 
+3:00 pm - Brow Henna
+
+
+3- Lami Brow + 30 min después otro Lami Brow
+[60, 30]
+3:00 pm - Lami Brow 
+3:30 pm - Lami Brow
+
+4- Lash Lift + 30 min después un Lami Brow
+3:00 pm - Lash Lift 
+3:30 pm - Lami Brow
+
+5- Combo LashLift y Diseño de cejas ó Brow Henna
+30 min después se puede agendar un Lami Brow
+3:00 pm - Lash Lift y diseño 
+3:30 pm - Lami Brow
+
+
+6- Combo LashLift y Lami Brow
+1 hora después se puede agendar un Lami Brow
+3:00 pm - Lash Lift y Lami 
+4:00 pm - Lami Brow

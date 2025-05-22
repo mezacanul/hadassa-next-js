@@ -12,12 +12,12 @@ import { useEffect } from "react";
 import axios from "axios";
 import { MdTimelapse } from "react-icons/md";
 
-
-import { MiniSingleton } from "@/utils/lattice-design";
+import { loadHook, Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
+import { formatEvents } from "../Hoy";
 
-const useServicios = MiniSingleton([]);
+const useServicios = Singleton([]);
 
 export default function SelectServicio() {
     const [currentCita] = useCurrentCita();
@@ -26,12 +26,14 @@ export default function SelectServicio() {
         return (
             <VStack>
                 <Heading
-                    fontWeight={"300"}
                     my={"1rem"}
-                    size={"5xl"}
+                    fontWeight={400}
+                    mb={"0.5rem"}
+                    size={"2xl"}
                     color={"pink.600"}
+                    // fontStyle={"italic"}
                 >
-                    Servicio
+                    Seleccionar Servicio
                 </Heading>
 
                 <ListaServicios />
@@ -48,8 +50,9 @@ export function CurrentServicio() {
             <HStack
                 boxShadow={"0px 6px 7px rgba(136, 136, 136, 0.4)"}
                 rounded={"xl"}
-                p={"2rem"}
-                w={"35rem"}
+                px={"2rem"}
+                py={"1rem"}
+                w={"30rem"}
                 h={"100%"}
                 justify={"space-between"}
                 align={"center"}
@@ -57,13 +60,18 @@ export function CurrentServicio() {
                 position={"relative"}
             >
                 {/* CLose Button  */}
-                <RemoveButton onClick={()=>{setCurrentCita({ ...currentCita, servicio: null })}}/>
+                <RemoveButton
+                    onClick={() => {
+                        setCurrentCita({ ...currentCita, servicio: null });
+                    }}
+                />
 
                 <Image
                     boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                     borderRadius={"1.2rem"}
-                    w={"9rem"}
+                    w={"8rem"}
                     src={`/img/servicios/${currentCita.servicio.image}`}
+                    me={"1rem"}
                 />
 
                 {/* Descripcion  */}
@@ -72,28 +80,35 @@ export function CurrentServicio() {
                     align={"start"}
                     gap={"0.3rem"}
                     w={"65%"}
+                    h={"90%"}
+                    justify={"space-between"}
+                    // my={"2rem"}
                 >
-                    <Heading fontStyle={"italic"} t size={"3xl"}>
-                        {currentCita.servicio.servicio}
-                    </Heading>
+                    <VStack align={"start"}>
+                        <Heading fontStyle={"italic"} t size={"3xl"}>
+                            {currentCita.servicio.servicio}
+                        </Heading>
 
-                    <Text fontSize={"sm"}>
-                        {currentCita.servicio.descripcion}
-                    </Text>
-
-                    <VStack align={"end"} alignSelf={"end"} mt={"2rem"}>
-                        <HStack textDecor={"underline"}>
-                            <Text>
-                                <MdTimelapse />
-                            </Text>
-                            <Text fontWeight={500}>
-                                {currentCita.servicio.minutos} minutos
-                            </Text>
-                        </HStack>
-
-                        <Text fontSize={"xl"} fontWeight={800}>
-                            ${currentCita.servicio.precio}
+                        <Text fontSize={"sm"} w={"80%"}>
+                            {currentCita.servicio.descripcion}
                         </Text>
+                    </VStack>
+
+                    <VStack w={"100%"}>
+                        <VStack align={"end"} alignSelf={"end"}>
+                            <HStack textDecor={"underline"}>
+                                <Text>
+                                    <MdTimelapse />
+                                </Text>
+                                <Text fontWeight={500}>
+                                    {currentCita.servicio.minutos} minutos
+                                </Text>
+                            </HStack>
+
+                            <Text fontSize={"xl"} fontWeight={800}>
+                                ${currentCita.servicio.precio}
+                            </Text>
+                        </VStack>
                     </VStack>
                 </VStack>
             </HStack>
@@ -103,25 +118,46 @@ export function CurrentServicio() {
 
 function ListaServicios() {
     const [servicios, setServicios] = useServicios();
+    const [events, setEvents] = loadHook("useEvents");
+    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
 
+    // TO DO:
+    // Filtrar servicios basado en la fecha elegida y los eventos del dia.
+    // Deshabilitar los horarios ocupados y comparar los espacios disponibles
+    // con la duracion de cada servicio para mostrar solos los servicios que
+    // se podrian agendar debido a su duracion en el dia seleccionado.
     useEffect(() => {
-        Promise.all([axios.get("/api/servicios")]).then(([serviciosResp]) => {
-            setServicios(serviciosResp.data);
-        });
-    }, []);
+        if (selectedDate != null) {
+            if (events.length == 0) {
+                console.log(selectedDate);
+                axios
+                    // .post("/api/citas", { date: selectedDate })
+                    .get(`/api/citas?date=${selectedDate}`)
+                    .then((citasResp) => {
+                        console.log(selectedDate, citasResp.data);
+                        setEvents(formatEvents(citasResp.data));
+                        axios.get("/api/servicios").then((serviciosResp) => {
+                            setServicios(serviciosResp.data);
+                        });
+                    });
+            }
+        }
+    }, [selectedDate]);
 
     return (
         <Grid
+            boxShadow={"-3px 3px 10px rgba(0,0,0,0.2)"}
             p={"1rem"}
             borderRadius={"2rem"}
             borderColor={"pink.500"}
-            borderWidth={"1px"}
+            borderWidth={"2px"}
             height={"60vh"}
             overflowY={"scroll"}
             templateColumns={"repeat(2, 1fr)"}
             py={"2rem"}
             align={"start"}
-            gap={"6rem"}
+            columnGap={"5rem"}
+            rowGap={"3rem"}
         >
             {servicios.map((srv) => {
                 return (

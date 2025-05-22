@@ -11,11 +11,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
 
-import { MiniSingleton } from "@/utils/lattice-design";
+import { Singleton } from "@/utils/lattice-design";
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import RemoveButton from "../common/RemoveButton";
 
-const useLashistas = MiniSingleton(null);
+const useLashistas = Singleton(null);
 
 export default function SelectLashista() {
     const [currentCita] = useCurrentCita();
@@ -23,7 +23,7 @@ export default function SelectLashista() {
     if (currentCita.lashista == null) {
         return (
             <>
-            {/* // <VStack w={"100%"}> */}
+                {/* // <VStack w={"100%"}> */}
                 {/* <Heading
                     mb={"2.5rem"}
                     fontWeight={"300"}
@@ -34,7 +34,7 @@ export default function SelectLashista() {
                 </Heading> */}
 
                 <ListaLashistas />
-            {/* // </VStack> */}
+                {/* // </VStack> */}
             </>
         );
     }
@@ -72,7 +72,7 @@ export function CurrentLashista() {
                     boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                     borderRadius={"100%"}
                     objectFit={"cover"}
-                    w={"7rem"}
+                    w={"6rem"}
                     mb={"0.5rem"}
                     src={`/img/lashistas/${currentCita.lashista.image}`}
                 />
@@ -95,8 +95,9 @@ function ListaLashistas() {
     if (lashistas != null) {
         return (
             <VStack
-            h={"100%"}
-                w={"45rem"}
+                h={"100%"}
+                w={"30rem"}
+                // w={"100%"}
                 borderRadius={"2rem"}
                 borderColor={"pink.500"}
                 borderWidth={"1px"}
@@ -105,7 +106,9 @@ function ListaLashistas() {
                 pb={"2rem"}
                 pt={"1rem"}
             >
-                <Text color={"pink.700"} mb={"1rem"}>Seleccionar Lashista</Text>
+                <Text color={"pink.700"} mb={"1rem"}>
+                    Seleccionar Lashista
+                </Text>
                 <Grid templateColumns={"repeat(3, 1fr)"} w={"100%"}>
                     {lashistas.map((lsh) => {
                         return <Lashista key={lsh.id} data={lsh} />;
@@ -124,18 +127,18 @@ function Lashista({ data }) {
     }
 
     return (
-        <VStack align={"center"} w={"100%"} gap={"2rem"}>
+        <VStack align={"center"} w={"100%"} gap={"1rem"}>
             <Image
                 // me={"1rem"}
                 boxShadow={"-4px 4px 8px rgba(0,0,0,0.2)"}
                 borderRadius={"100%"}
                 objectFit={"cover"}
-                w={"7rem"}
+                w={"6rem"}
                 src={`/img/lashistas/${data.image}`}
             />
             <Button
                 fontSize={"lg"}
-                size={"lg"}
+                size={"sm"}
                 // bg={"pink.500"}
                 colorPalette={"pink"}
                 onClick={handleSelectLashista}

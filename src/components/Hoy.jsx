@@ -4,56 +4,70 @@
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
-import { Box, Button, Dialog, Portal, Avatar, Card } from "@chakra-ui/react";
+import {
+    Box,
+    Button,
+    Dialog,
+    Portal,
+    Avatar,
+    Card,
+    Heading,
+} from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
-import { MiniSingleton } from "@/utils/lattice-design";
-
-export const useHoyRef = MiniSingleton(null)
+import { loadHook } from "@/utils/lattice-design";
+import { parse, format, addMinutes } from "date-fns";
 
 export default function Hoy() {
-    const [events, setEvents] = useState([]);
-    const [resources, setResources] = useState([]);
+    // const [events, setEvents] = useState([]);
+    const [events, setEvents] = loadHook("useEvents");
+    const [resources, setResources] = useState(null);
     const [openDialogue, setOpenDialogue] = useState(false);
     const [currentEventDialogue, setCurrentEventDialogue] = useState([]);
     const calendarRef = useRef(null); // Create a ref for the calendar
-    const [hoyRef, setHoyRef] = useHoyRef()
-
-    // Function to set the date
-    // const setCalendarDate = (date) => {
-    //     if (calendarRef.current) {
-    //         const calendarApi = calendarRef.current.getApi();
-    //         calendarApi.gotoDate(date); // Set the date
-    //     }
-    // };
+    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
 
     useEffect(() => {
-        Promise.all([
-            axios.get("/data/events.json"),
-            axios.get("/api/camas"),
-        ]).then(([eventsResp, resourcesResp]) => {
-            setEvents(eventsResp.data);
-            setResources(resourcesResp.data);
-            // setHoyRef(calendarRef)
-            // console.log("current", calendarRef.current);
-            // console.log("hoyRef", hoyRef);
-        });
-        // console.log("calendar ref",calendarRef.current);
-        console.log(hoyRef);
-    }, []);
+        const formattedToday = format(new Date(), "yyyy-MM-dd");
 
-    useEffect(()=>{
         if (calendarRef.current) {
-            // setHoyRef(calendarRef.current.getApi())
-            setHoyRef("testing")
-            console.log(calendarRef.current);
-            console.log(hoyRef);
-            
-            // calendarApi.gotoDate(date); // Set the date
+            const calendarApi = calendarRef.current.getApi();
+            // console.log("selectedDate:", selectedDate);
+
+            // -- DEV: We set the current date to today's date
+            // when first mounting the Hoy component
+            if (selectedDate == null) {
+                setSelectedDate(formattedToday);
+            } else {
+                console.log("Catched! Date updated ->", selectedDate);
+                // -- DEV: When selectDate updates for the first time, it is the same as today
+                try {
+                    // Use setTimeout to defer the state update to a microtask
+                    setTimeout(() => {
+                        axios
+                            .get(`/api/citas?date=${selectedDate}`)
+                            .then((citasResp) => {
+                                console.log(citasResp.data);
+                                setEvents(formatEvents(citasResp.data));
+                                calendarApi.gotoDate(selectedDate);
+                                console.log("Updated Today's View");
+                                // console.log(citasResp.data);
+                            });
+                    }, 0);
+                } catch (error) {
+                    console.error("Error navigating to date:", error);
+                }
+            }
         }
-    }, [calendarRef])
+    }, [selectedDate]);
+
+    useEffect(() => {
+        Promise.all([axios.get("/api/camas")]).then(([camasResp]) => {
+            setResources(camasResp.data);
+        });
+    }, []);
 
     const handleEventPreview = (info) => {
         setOpenDialogue(true);
@@ -61,36 +75,8 @@ export default function Hoy() {
         setCurrentEventDialogue(info.event.toPlainObject());
     };
 
-    const formatHoyTitle = (date) => {
-        const gmtString = date.date.marker.toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
-        const parts = gmtString.split(" ");
-        const day = parts[1]; // "04"
-        const month = parts[2]; // "Apr"
-        const year = parts[3]; // "2025"
-
-        // Map English month abbreviations to Spanish
-        const monthMap = {
-            Jan: "Enero",
-            Feb: "Febrero",
-            Mar: "Marzo",
-            Apr: "Abril",
-            May: "Mayo",
-            Jun: "Junio",
-            Jul: "Julio",
-            Aug: "Agosto",
-            Sep: "Septiembre",
-            Oct: "Octubre",
-            Nov: "Noviembre",
-            Dec: "Diciembre",
-        };
-
-        const spanishMonth = monthMap[month];
-        return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
-    };
-
     return (
-        <div id="Hoy">
-            <p>{hoyRef}</p>
+        <Box id="Hoy" bg={"white"}>
             <Dialog.Root
                 id="Hoy"
                 open={openDialogue}
@@ -103,46 +89,87 @@ export default function Hoy() {
                     data={currentEventDialogue}
                 />
 
-                <Box my="2rem">
+                <Box>
                     <style>
                         {`
-                            .fc-timegrid-slots {
+                            #Hoy .fc-timegrid-slot-label-cushion {
+                                font-size: 0.85rem;
+                            }
+
+                            #Hoy .fc-timegrid-slots {
                                 // background-color: rgb(255, 238, 249); /* Set your desired color */
                                 // background-color: rgb(255, 249, 254); /* Set your desired color */
                                 background-color: white;
                                 // background-color: transparent;
+                            }
+                            
+                            #Hoy .fc-header-toolbar {
+                                display: none;
                             }
 
                             #Hoy .fc-toolbar-title {
                                 font-size: 2.5rem !important;
                                 font-weight: 200 !important;
                             }
+
+                            #Hoy .fc-v-event {
+                                background-color: #fce7f3 !important;
+                                border: 2px solid #ec4899 !important;
+                                opacity: 0.9;
+                            }
                         `}
                     </style>
                     <FullCalendar
-                    ref={calendarRef} // Attach the ref to FullCalendar
+                        ref={calendarRef} // Attach the ref to FullCalendar
                         plugins={[timeGridPlugin, resourceTimeGridPlugin]}
                         initialView="resourceTimeGridDay"
                         resources={resources}
                         events={events}
                         initialDate={new Date()}
-                        slotMinTime="09:00:00"
+                        // initialDate={new Date("04-25-2025")}
+                        slotMinTime="09:30:00"
                         slotMaxTime="18:00:00"
                         expandRows={true}
-                        height="160vh"
-                        headerToolbar={{ left: "title", center: "", right: "" }}
+                        height="200vh"
+                        // headerToolbar={{ left: "title", center: "", right: "" }}
+                        headerToolbar={{ left: "", center: "", right: "" }}
                         allDaySlot={false} // Removes the all-day row
                         slotDuration="00:30:00"
                         slotLabelInterval="00:30:00"
                         resourceLabelContent={renderResourceLabel}
                         eventClick={handleEventPreview}
                         locales={[esLocale]} // Include the Spanish locale
-                        titleFormat={formatHoyTitle}
-                        viewDidMount={()=>{console.log(hoyRef)}}
+                        // titleFormat={formatHoyTitle}
+                        slotLabelFormat={{
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                        }}
+                        eventContent={(arg) => {
+                            return (
+                                <div style={{ marginLeft: "0.3rem" }}>
+                                    <b style={{ fontSize: "0.7rem", color: "black" }}>
+                                        {arg.event.title}
+                                    </b>
+                                    <p style={{ fontSize: "0.7rem", color: "black" }}>
+                                        {arg.event.extendedProps.servicio}
+                                    </p>
+                                </div>
+                            );
+                        }}
+                        // viewDidMount={() => {
+                        //     console.log("viewDidMount hoyRef:", hoyRef);
+                        //     // Optionally test the API here
+                        //     if (hoyRef) {
+                        //         hoyRef.gotoDate("2025-04-30"); // Test navigation
+                        //     } else {
+                        //         console.log("No Hoy ref found");
+                        //     }
+                        // }}
                     />
                 </Box>
             </Dialog.Root>
-        </div>
+        </Box>
     );
 }
 
@@ -197,14 +224,14 @@ function renderResourceLabel(info) {
     return (
         <div style={{ padding: "8px", textAlign: "center" }}>
             <img
-                style={{ width: "4rem", marginBottom: "0.5rem" }}
+                style={{ width: "3.5rem", marginBottom: "0.5rem" }}
                 src={"img/lashistas/" + info.resource.extendedProps.src}
             />
             <p
                 style={{
-                    marginBottom: "0.5rem",
+                    marginBottom: "0.2rem",
                     fontWeight: "300",
-                    fontSize: "1.2rem",
+                    fontSize: "1rem",
                 }}
             >
                 {info.resource.title}
@@ -217,11 +244,11 @@ function renderResourceLabel(info) {
                 }}
             >
                 <LuBedSingle
-                    style={{ fontSize: "1.4rem", color: "rgb(228, 129, 167)" }}
+                    style={{ fontSize: "1.2rem", color: "rgb(228, 129, 167)" }}
                 />
                 <span
                     style={{
-                        fontSize: "1.2rem",
+                        fontSize: "1rem",
                         fontWeight: "bold",
                         marginLeft: "0.3rem",
                         color: "rgb(228, 129, 167)",
@@ -232,4 +259,45 @@ function renderResourceLabel(info) {
             </div>
         </div>
     );
+}
+
+export function formatEvents(eventsData) {
+    if (eventsData != null) {
+        // console.log(eventsData);
+        
+        return eventsData.map((ed) => {
+            // Split the date into parts and rearrange
+            const [day, month, year] = ed.fecha.split("-");
+            const formattedDate = `${year}-${month}-${day}`;
+            // Combine with the time and add seconds
+            // const start = `${formattedDate}T${ed.hora}:00`;
+            const start = `${formattedDate}T${ed.hora}:00`;
+
+            // Parse the date and time into a Date object
+            const parsedDate = parse(ed.fecha, "dd-MM-yyyy", new Date());
+            const [hours, minutes] = ed.hora.split(":");
+            const dateWithTime = new Date(
+                parsedDate.setHours(hours, minutes, 0)
+            );
+            // Add minutes
+            const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
+            // Format the result
+            console.log(dateWithTime, ed.duracion);
+            
+            const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
+
+            // console.log(start, end); // "2025-04-25T09:00:00"
+            return {
+                title: `${ed.nombres} ${ed.apellidos}`,
+                start: start,
+                end: end,
+                resourceId: ed.cama_id,
+                extendedProps: {
+                    servicio: ed.servicio,
+                    servicio_id: ed.servicio_id,
+                    duracion: ed.duracion
+                },
+            };
+        });
+    }
 }
