@@ -288,7 +288,7 @@ export function formatEvents(eventsData) {
 
             // console.log(start, end); // "2025-04-25T09:00:00"
             return {
-                title: `${ed.clienta}`,
+                title: `${ed.nombres} ${ed.apellidos}`,
                 start: start,
                 end: end,
                 resourceId: ed.cama_id,

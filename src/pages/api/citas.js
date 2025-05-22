@@ -38,7 +38,7 @@ export default async function handler(req, res) {
             );
             console.log(conditions, params);
 
-            let query = `SELECT clientas.nombre_completo as clienta, servicios.servicio, servicios.id as servicio_id, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
+            let query = `SELECT clientas.nombres, clientas.apellidos, servicios.servicio, servicios.id as servicio_id, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
                     FROM 
                       citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
@@ -49,6 +49,41 @@ export default async function handler(req, res) {
             const [rows] = await connection.execute(fullQuery, params);
             res.status(200).json(rows);
         } else if (req.method === "POST" && req.body.fecha) {
+            // TO DO:
+            // Separar responsabilidades de API:
+            // citas en POST solo puede agendar citas
+            // para horarios disponibles utilizaremos 
+            //     -> horarios?filtro=disponibles&fecha&hora 
+            if(req.body.action == "agendar"){
+                const cita = req.body
+                try {
+                    const [uuidResult] = await connection.execute(
+                        `SELECT UUID() AS id`
+                    );
+                    const uuid = uuidResult[0].id;
+                    const hora = (cita.horario.hora).replace("-", "").replace("+", "")
+
+                    const [mysql_response] = await connection.execute(
+                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, added) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+                            [uuid, cita.clienta.id, cita.servicio.id, cita.lashista.id, cita.fecha, cita.horario.hora, cita.horario.cama]
+                    );
+                    if (mysql_response.affectedRows > 0) {
+                        res.status(201).json({
+                            uuid,
+                            inserted: mysql_response.affectedRows,
+                        });
+                    } else {
+                        res.status(500).json({ error: "Not added" });
+                    }
+                } catch (insertError) {
+                    return res.status(500).json({
+                        error: "MySQL insertion failed",
+                        details: insertError.message,
+                    });
+                }
+            }
+
             // POST: Agendar cita
             // Detalles de la CITA a agendar.
             const POST_Data = req.body;
@@ -159,7 +194,7 @@ export default async function handler(req, res) {
                 // console.log(horariosDispPorCama);
 
                 // res.status(200).json({horariosDispPorCama, cita});
-                res.status(200).json(available);
+                res.status(200).json({horariosDispPorCama, available});
                 return;
             } else {
                 res.status(200).json("Something is missing here... 🛠️");

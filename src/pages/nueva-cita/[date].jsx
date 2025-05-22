@@ -28,6 +28,7 @@ import { FaRegClock } from "react-icons/fa";
 import { IoPersonOutline } from "react-icons/io5";
 import { PiCashRegisterBold } from "react-icons/pi";
 import { FaRegSquareMinus } from "react-icons/fa6";
+import { BsWhatsapp } from "react-icons/bs";
 
 export const useCurrentCita = Singleton({
     servicio: null,
@@ -183,9 +184,8 @@ export default function NuevaCita() {
 
                             {currentCita.servicio &&
                                 currentCita.lashista &&
-                                currentCita.horario &&
-                                // !currentCita.clienta && (
-                                (
+                                currentCita.horario && (
+                                    // !currentCita.clienta && (
                                     <SelectClientas
                                         clientasState={clientasState}
                                         setClientasState={setClientasState}
@@ -243,12 +243,21 @@ function ActionsClienta({ clientasState, setClientasState }) {
 }
 
 function OrderSummary({ disabled }) {
+    const [citaID, setCitaID] = useState(null);
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
 
-    const handleAgendar = ()=>{
+    const handleAgendar = () => {
         console.log(currentCita);
-    }
+        axios
+            .post("/api/citas", { ...currentCita, action: "agendar" })
+            .then((citasResp) => {
+                console.log(citasResp);
+                if (citasResp.status == 201 && citasResp.data.uuid) {
+                    setCitaID(citasResp.data.uuid);
+                }
+            });
+    };
 
     return (
         <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
@@ -368,8 +377,32 @@ function OrderSummary({ disabled }) {
                 </HStack>
             </VStack>
 
-            <Button onClick={handleAgendar} size={"lg"} bg={"pink.500"} disabled={disabled}>
-                Confirmar y Agendar
+            {citaID ? (
+                <CitaExito />
+            ) : (
+                <Button
+                    onClick={handleAgendar}
+                    size={"lg"}
+                    bg={"pink.500"}
+                    disabled={disabled}
+                >
+                    Confirmar y Agendar
+                </Button>
+            )}
+        </VStack>
+    );
+}
+
+function CitaExito() {
+    return (
+        <VStack gap={"1rem"} align={"center"} w={"100%"}>
+            <Alert.Root status="success" w={"100%"} shadow={"md"} textAlign={"center"}>
+                <Alert.Indicator />
+                <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
+            </Alert.Root>
+            <Button colorPalette={"green"}>
+                Enviar Ticket
+                <BsWhatsapp />
             </Button>
         </VStack>
     );

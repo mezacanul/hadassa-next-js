@@ -234,6 +234,7 @@ function GenerarHorariosDisponibles(
                     currentID
                 ].filter(
                     (horario1aCama) => horarioOcupado1aCama != horario1aCama
+                    // (horario1aCama) => horario1aCama.includes(`-${horarioOcupado1aCama}`) || horario1aCama.includes(`+${horarioOcupado1aCama}`)
                 );
 
                 // Eliminamos horario ocupado en segunda cama
@@ -242,6 +243,7 @@ function GenerarHorariosDisponibles(
                     horariosDispPorCama[siblingID] = horariosDispPorCama[
                         siblingID
                     ].filter(
+                        // (horario2aCama) => horario2aCama.includes(`-${horarioOcupado1aCama}`) || horario2aCama.includes(`+${horarioOcupado1aCama}`)
                         (horario2aCama) => horarioOcupado1aCama != horario2aCama
                     );
                 }
