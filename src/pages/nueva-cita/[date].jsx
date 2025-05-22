@@ -11,6 +11,8 @@ import {
     Grid,
     GridItem,
     Spinner,
+    Input,
+    Alert,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -46,10 +48,11 @@ export default function NuevaCita() {
 
     const [servicios, setServicios] = useState(null);
     const [lashistas, setLashistas] = useState(null);
-    const [horarios, setHorarios] = useState(null);
-    const [clientas, setClientas] = useState(null);
+    // const [horarios, setHorarios] = useState(null);
+    // const [clientas, setClientas] = useState(null);
 
     const [currentPaso, setCurrentPaso] = useState("Servicio");
+    const [clientasState, setClientasState] = useState("buscar");
 
     useEffect(() => {
         setDOM({ title: "Agendar Cita" });
@@ -91,7 +94,7 @@ export default function NuevaCita() {
 
     useEffect(() => {
         if (router.isReady) {
-            setCurrentCita({ ...currentCita, fecha: formatCurrentDate(date) });
+            setCurrentCita({ ...currentCita, fecha: date });
             if (selectedDate == null) {
                 const formattedFecha = formatFechaDMY(date);
                 setSelectedDate(formattedFecha);
@@ -105,11 +108,11 @@ export default function NuevaCita() {
     return (
         <Box w={"100%"} mb={"2rem"} h={"85vh"}>
             <Heading
-                // mt={"1rem"}
                 textAlign={
                     currentCita.servicio &&
                     currentCita.lashista &&
                     currentCita.horario &&
+                    currentPaso == "Confirmar" &&
                     currentCita.clienta
                         ? "center"
                         : "left"
@@ -120,6 +123,16 @@ export default function NuevaCita() {
             >
                 Agendar Cita
             </Heading>
+
+            {currentCita.servicio &&
+            currentCita.lashista &&
+            currentCita.horario &&
+            currentPaso == "Confirmar" &&
+            currentCita.clienta ? null : (
+                <Heading color={"pink.600"} mb={"2rem"}>
+                    Seleccionar {currentPaso}:
+                </Heading>
+            )}
 
             <HStack
                 w={"100%"}
@@ -137,19 +150,28 @@ export default function NuevaCita() {
                 {currentCita.servicio &&
                 currentCita.lashista &&
                 currentCita.horario &&
+                currentPaso == "Confirmar" &&
                 currentCita.clienta ? null : (
                     <VStack style={{ width: "65%" }} align={"start"}>
-                        <Heading mb={"1rem"}>
-                            Seleccionar {currentPaso}:
-                        </Heading>
+                        {currentCita.servicio &&
+                            currentCita.lashista &&
+                            currentCita.horario &&
+                            !currentCita.clienta && (
+                                <ActionsClienta
+                                    clientasState={clientasState}
+                                    setClientasState={setClientasState}
+                                />
+                            )}
 
-                        <Box w={"100%"} maxH={"60vh"} overflowY={"scroll"}>
+                        <Box w={"100%"} maxH={"65vh"} overflowY={"scroll"}>
                             {servicios && !currentCita.servicio && (
                                 <SelectServicios servicios={servicios} />
                             )}
-                            {lashistas && !currentCita.lashista && (
-                                <SelectLashistas lashistas={lashistas} />
-                            )}
+                            {lashistas &&
+                                currentCita.servicio &&
+                                !currentCita.lashista && (
+                                    <SelectLashistas lashistas={lashistas} />
+                                )}
                             {currentCita.servicio &&
                                 currentCita.lashista &&
                                 !currentCita.horario && (
@@ -162,30 +184,74 @@ export default function NuevaCita() {
                             {currentCita.servicio &&
                                 currentCita.lashista &&
                                 currentCita.horario &&
-                                !currentCita.clienta && <SelectClientas />}
+                                // !currentCita.clienta && (
+                                (
+                                    <SelectClientas
+                                        clientasState={clientasState}
+                                        setClientasState={setClientasState}
+                                        setCurrentPaso={setCurrentPaso}
+                                    />
+                                )}
                         </Box>
                     </VStack>
                 )}
 
-                <OrderSummary disabled={
-                    currentCita.servicio &&
-                    currentCita.lashista &&
-                    currentCita.horario &&
-                    currentCita.clienta
-                        ? false
-                        : true
-                } />
+                <OrderSummary
+                    disabled={
+                        currentCita.servicio &&
+                        currentCita.lashista &&
+                        currentCita.horario &&
+                        currentCita.clienta
+                            ? false
+                            : true
+                    }
+                />
             </HStack>
         </Box>
     );
 }
 
-function OrderSummary({disabled}) {
+function ActionsClienta({ clientasState, setClientasState }) {
+    return (
+        <Grid
+            w={"100%"}
+            mb={"1rem"}
+            gridTemplateColumns={"repeat(2, 1fr)"}
+            gap={"2rem"}
+        >
+            <Input
+                disabled={clientasState == "buscar" ? false : true}
+                shadow={"md"}
+                bg={"white"}
+                size={"sm"}
+                placeholder="Buscar"
+            />
+            <GridItem alignSelf={"start"}>
+                <Button
+                    disabled={clientasState == "buscar" ? false : true}
+                    onClick={() => {
+                        setClientasState("nueva");
+                    }}
+                    size={"sm"}
+                    bg={"pink.500"}
+                >
+                    Nueva
+                </Button>
+            </GridItem>
+        </Grid>
+    );
+}
+
+function OrderSummary({ disabled }) {
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
 
+    const handleAgendar = ()=>{
+        console.log(currentCita);
+    }
+
     return (
-        <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"}>
+        <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
             <Heading color={"pink.600"}>Resumen</Heading>
 
             <VStack
@@ -200,7 +266,7 @@ function OrderSummary({disabled}) {
                         <LuCalendar1 />
                         <Text>Fecha: </Text>
                     </HStack>
-                    <Text fontWeight={700}>
+                    <Text textDecor={"underline"} fontWeight={700}>
                         {/* {selectedDate && formatFechaDMY(selectedDate)} */}
                         {selectedDate && formatHoyTitle(selectedDate)}
                     </Text>
@@ -213,7 +279,12 @@ function OrderSummary({disabled}) {
                     </HStack>
                     <HStack>
                         {currentCita.servicio && <FaRegSquareMinus />}
-                        <Text fontWeight={700}>
+                        <Text
+                            textDecor={
+                                currentCita.servicio ? "underline" : "none"
+                            }
+                            fontWeight={700}
+                        >
                             {currentCita.servicio
                                 ? currentCita.servicio.servicio
                                 : "--"}
@@ -228,7 +299,12 @@ function OrderSummary({disabled}) {
                     </HStack>
                     <HStack>
                         {currentCita.lashista && <FaRegSquareMinus />}
-                        <Text fontWeight={700}>
+                        <Text
+                            textDecor={
+                                currentCita.lashista ? "underline" : "none"
+                            }
+                            fontWeight={700}
+                        >
                             {currentCita.lashista
                                 ? currentCita.lashista.nombre
                                 : "--"}
@@ -243,7 +319,12 @@ function OrderSummary({disabled}) {
                     </HStack>
                     <HStack>
                         {currentCita.horario && <FaRegSquareMinus />}
-                        <Text fontWeight={700}>
+                        <Text
+                            textDecor={
+                                currentCita.horario ? "underline" : "none"
+                            }
+                            fontWeight={700}
+                        >
                             {currentCita.horario
                                 ? currentCita.horario.hora
                                 : "--"}
@@ -258,7 +339,12 @@ function OrderSummary({disabled}) {
                     </HStack>
                     <HStack>
                         {currentCita.clienta && <FaRegSquareMinus />}
-                        <Text fontWeight={700}>
+                        <Text
+                            textDecor={
+                                currentCita.clienta ? "underline" : "none"
+                            }
+                            fontWeight={700}
+                        >
                             {currentCita.clienta
                                 ? `${currentCita.clienta.nombres} ${currentCita.clienta.apellidos}`
                                 : "--"}
@@ -269,9 +355,12 @@ function OrderSummary({disabled}) {
                 <HStack w={"100%"} justify={"space-between"}>
                     <HStack>
                         <PiCashRegisterBold />
-                        <Text>Precio: </Text>
+                        <Text>Total: </Text>
                     </HStack>
-                    <Text fontWeight={700}>
+                    <Text
+                        textDecor={currentCita.servicio ? "underline" : "none"}
+                        fontWeight={700}
+                    >
                         {currentCita.servicio
                             ? `$${currentCita.servicio.precio}`
                             : "--"}
@@ -279,7 +368,9 @@ function OrderSummary({disabled}) {
                 </HStack>
             </VStack>
 
-            <Button size={"lg"} bg={"pink.500"} disabled={disabled}>Agendar Cita</Button>
+            <Button onClick={handleAgendar} size={"lg"} bg={"pink.500"} disabled={disabled}>
+                Confirmar y Agendar
+            </Button>
         </VStack>
     );
 }
@@ -336,16 +427,21 @@ function SelectHorarios({ selectedDate }) {
     }, []);
 
     return (
-        <Box>
+        <HStack justify={"center"} h={"50vh"} align={"center"}>
             {!horarios && (
                 <Spinner color="blue.500" borderWidth="4px" size={"lg"} />
             )}
 
             {horarios && (
-                <Grid gridTemplateColumns={"repeat(4, 1fr)"} gap={"1.5rem"}>
+                <Grid
+                    gridTemplateColumns={"repeat(4, 1fr)"}
+                    gap={"1.5rem"}
+                    w={"75%"}
+                >
                     {horarios.map((hr) => {
                         return (
                             <Button
+                                size={"lg"}
                                 onClick={() => {
                                     setCurrentCita({
                                         ...currentCita,
@@ -363,11 +459,11 @@ function SelectHorarios({ selectedDate }) {
                     })}
                 </Grid>
             )}
-        </Box>
+        </HStack>
     );
 }
 
-function SelectClientas() {
+function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
     const [clientas, setClientas] = useState(null);
 
     useEffect(() => {
@@ -377,42 +473,198 @@ function SelectClientas() {
     }, []);
 
     return (
-        <Grid gridTemplateColumns={"repeat(3, 1fr)"} gap={"2rem"}>
-            {/* <Button bg={"pink.500"}>Nueva</Button> */}
-            {clientas &&
-                clientas.map((clienta) => {
-                    return <ClientaCard key={clienta.id} data={clienta} />;
-                })}
-        </Grid>
+        <Box h={"100%"} w={"100%"} pb={"1rem"}>
+            <Grid gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
+                {/* <Button bg={"pink.500"}>Nueva</Button> */}
+                {clientas &&
+                    clientasState == "buscar" &&
+                    clientas.map((clienta) => {
+                        return (
+                            <ClientaCard
+                                key={clienta.id}
+                                data={clienta}
+                                setCurrentPaso={setCurrentPaso}
+                            />
+                        );
+                    })}
+                {clientas && clientasState == "nueva" && (
+                    <NuevaClienta
+                        setClientasState={setClientasState}
+                        setCurrentPaso={setCurrentPaso}
+                    />
+                )}
+            </Grid>
+        </Box>
     );
 }
 
-function ClientaCard({ data }) {
+function NuevaClienta({ setClientasState, setCurrentPaso }) {
+    const [insertedID, setInsertedID] = useState(null);
+    const [currentCita, setCurrentCita] = useCurrentCita();
+    const [nuevaClienta, setNuevaClienta] = useState({
+        foto_clienta: null,
+        nombres: "José Eduardo",
+        apellidos: "Meza Canul",
+        lada: "52",
+        telefono: "9993524438",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setNuevaClienta((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleAdd = () => {
+        console.log(nuevaClienta);
+        axios.post("/api/clientas", nuevaClienta).then((nuevaClientaResp) => {
+            console.log(nuevaClientaResp.data);
+            if (nuevaClientaResp.status == 201 && nuevaClientaResp.data.uuid) {
+                setInsertedID(nuevaClientaResp.data.uuid);
+                setCurrentCita({
+                    ...currentCita,
+                    clienta: {
+                        ...nuevaClienta,
+                        id: nuevaClientaResp.data.uuid,
+                    },
+                });
+            }
+        });
+    };
+
+    return (
+        <>
+            <ClientaCard data={nuevaClienta} />
+            {insertedID && (
+                <VStack gap={"1rem"} align={"start"} w={"100%"}>
+                    <Alert.Root status="success" w={"100%"} shadow={"md"}>
+                        <Alert.Indicator />
+                        <Alert.Title>Clienta Agregada con Exito!</Alert.Title>
+                    </Alert.Root>
+                    <Button
+                        onClick={() => {
+                            setCurrentPaso("Confirmar");
+                        }}
+                        bg={"pink.500"}
+                    >
+                        Continuar
+                    </Button>
+                </VStack>
+            )}
+            {!insertedID && (
+                <VStack gap={"1rem"} align={"start"}>
+                    <Input
+                        bg={"white"}
+                        shadow={"md"}
+                        name="nombres" // Added name attribute
+                        value={nuevaClienta.nombres}
+                        onChange={handleChange}
+                        placeholder="Nombres"
+                    />
+                    <Input
+                        bg={"white"}
+                        shadow={"md"}
+                        name="apellidos" // Added name attribute
+                        value={nuevaClienta.apellidos}
+                        onChange={handleChange}
+                        placeholder="Apellidos"
+                    />
+                    <HStack gap={"1rem"}>
+                        <Input
+                            bg={"white"}
+                            shadow={"md"}
+                            name="lada" // Added name attribute
+                            w={"25%"}
+                            value={nuevaClienta.lada}
+                            onChange={handleChange}
+                            placeholder="Lada"
+                        />
+                        <Input
+                            bg={"white"}
+                            shadow={"md"}
+                            name="telefono" // Added name attribute
+                            value={nuevaClienta.telefono}
+                            onChange={handleChange}
+                            placeholder="Telefono/Celular"
+                        />
+                    </HStack>
+                    <HStack gap={"1rem"}>
+                        <Button onClick={handleAdd} bg={"pink.500"}>
+                            Agregar y Seleccionar
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setClientasState("buscar");
+                            }}
+                            bg={"gray.500"}
+                        >
+                            Cancelar
+                        </Button>
+                    </HStack>
+                </VStack>
+            )}
+        </>
+    );
+}
+
+function ClientaCard({ data, setCurrentPaso }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
 
     return (
-        <HStack gap={"2rem"}>
+        <Card.Root
+            bg={"white"}
+            shadow={"lg"}
+            flexDirection="row"
+            overflow="hidden"
+            maxW="xl"
+        >
             <Image
-                w={"5rem"}
-                objectFit={"cover"}
+                objectFit="cover"
+                w={"8rem"}
                 src={
                     data.foto_clienta
                         ? `/img/clientas/${data.foto_clienta}`
-                        : "/img/clientas/avatar.jpg"
+                        : "/img/clientas/avatar-woman.png"
                 }
+                alt=""
             />
-            <VStack gap={4} align={"start"}>
-                <Heading>{`${data.nombres} ${data.apellidos}`}</Heading>
-                <Button
-                    onClick={() => {
-                        setCurrentCita({ ...currentCita, clienta: data });
-                    }}
-                    bg={"pink.500"}
-                >
-                    Seleccionar
-                </Button>
-            </VStack>
-        </HStack>
+            <Box>
+                <Card.Body>
+                    <Card.Title mb="2">
+                        {data.nombres || data.apellidos
+                            ? `${data.nombres} ${data.apellidos}`
+                            : "--"}
+                    </Card.Title>
+                    <Card.Description>
+                        {data.lada || data.telefono
+                            ? `+${data.lada} ${data.telefono}`
+                            : "--"}
+                    </Card.Description>
+                </Card.Body>
+                <Card.Footer>
+                    {data.id ? (
+                        <Button
+                            disabled={data.id ? false : true}
+                            onClick={() => {
+                                setCurrentPaso("Confirmar");
+                                setCurrentCita({
+                                    ...currentCita,
+                                    clienta: data,
+                                });
+                            }}
+                            bg={"pink.500"}
+                            size={"sm"}
+                        >
+                            Seleccionar
+                        </Button>
+                    ) : (
+                        <Badge colorPalette={"green"}>Nueva Clienta</Badge>
+                    )}
+                </Card.Footer>
+            </Box>
+        </Card.Root>
     );
 }
 
@@ -432,7 +684,7 @@ function formatCurrentDate(date) {
 function ServicioCard({ data }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
     return (
-        <Card.Root overflow="hidden" size="sm">
+        <Card.Root overflow="hidden" size="sm" shadow={"md"}>
             <Image
                 objectFit="cover"
                 // maxW="5rem"
@@ -447,10 +699,10 @@ function ServicioCard({ data }) {
                 </Card.Body>
                 <Card.Footer justifyContent={"space-between"}>
                     <HStack mt="4">
-                        <Badge colorPalette={"cyan"}>
+                        <Badge colorPalette={"blue"}>
                             {data.minutos} minutos
                         </Badge>
-                        <Badge colorPalette={"cyan"}>${data.precio}</Badge>
+                        <Badge colorPalette={"blue"}>${data.precio}</Badge>
                     </HStack>
                     <Button
                         size={"sm"}
@@ -472,7 +724,7 @@ function LashistaCard({ data }) {
     const horariosLV = JSON.parse(data.horarioLV);
 
     return (
-        <Card.Root flexDir={"row"} overflow="hidden" size="sm">
+        <Card.Root flexDir={"row"} overflow="hidden" size="sm" shadow={"md"}>
             <Image
                 objectFit="cover"
                 maxW="12rem"
