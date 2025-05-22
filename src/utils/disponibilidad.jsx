@@ -82,11 +82,16 @@ function getHorariosOcupadosPorServicio(
     horariosDeCama,
     detallesServicio,
     cita,
-    servicios
+    servicios,
+    horarioDelDia
 ) {
-    const indexHoraCita = horariosDeCama.indexOf(cita.hora);
+    console.log(horarioDelDia);
+    
+    const indexHoraCita = horarioDelDia.indexOf(cita.hora);
+    // const indexHoraCita = horariosDeCama.indexOf(cita.hora);
     const intervalosOcupados = detallesServicio.minutos / 30;
-    const horariosOcupados = horariosDeCama.slice(
+    const horariosOcupados = horarioDelDia.slice(
+    // const horariosOcupados = horariosDeCama.slice(
         indexHoraCita,
         indexHoraCita + intervalosOcupados
     );
@@ -112,7 +117,7 @@ function getHorariosOcupadosPorServicio(
          */
         reglasDeServicio: reglasDeAgenda,
     };
-    // console.log(response);
+    console.log(response);
     return response;
 }
 
@@ -199,7 +204,8 @@ function GenerarHorariosDisponibles(
     camasKeys,
     citasPorCama,
     horariosDispPorCama,
-    servicios
+    servicios,
+    horarioDelDia
 ) {
     // 1.- Loopeamos por cada CAMA
     camasKeys.forEach((camaID, IDX) => {
@@ -215,12 +221,16 @@ function GenerarHorariosDisponibles(
                     horariosDispPorCama[currentID],
                     servicios[cita.servicio_id],
                     cita,
-                    servicios
+                    servicios,
+                    horarioDelDia
                 )
             );
         } else {
             citasPorCama[currentID] = [];
         }
+
+        // console.log(citasPorCama);
+        
 
         // 3.- Lopeamos cada CITA para:
         // - Eliminar todos los horarios ocupados en 1ra cama
@@ -233,7 +243,10 @@ function GenerarHorariosDisponibles(
                 horariosDispPorCama[currentID] = horariosDispPorCama[
                     currentID
                 ].filter(
-                    (horario1aCama) => horarioOcupado1aCama != horario1aCama
+                    (horario1aCama) => {
+                        // console.log(currentID, horarioOcupado1aCama, horario1aCama);
+                        return horarioOcupado1aCama != horario1aCama
+                    }
                     // (horario1aCama) => horario1aCama.includes(`-${horarioOcupado1aCama}`) || horario1aCama.includes(`+${horarioOcupado1aCama}`)
                 );
 

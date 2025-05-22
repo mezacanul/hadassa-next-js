@@ -66,7 +66,7 @@ export default async function handler(req, res) {
                     const [mysql_response] = await connection.execute(
                         `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, added) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-                            [uuid, cita.clienta.id, cita.servicio.id, cita.lashista.id, cita.fecha, cita.horario.hora, cita.horario.cama]
+                            [uuid, cita.clienta.id, cita.servicio.id, cita.lashista.id, cita.fecha, hora, cita.horario.cama]
                     );
                     if (mysql_response.affectedRows > 0) {
                         res.status(201).json({
@@ -180,7 +180,8 @@ export default async function handler(req, res) {
                     camasKeys,
                     citasPorCama,
                     horariosDispPorCama,
-                    servicios
+                    servicios,
+                    horarioDelDia
                 );
             }
 
@@ -194,7 +195,8 @@ export default async function handler(req, res) {
                 // console.log(horariosDispPorCama);
 
                 // res.status(200).json({horariosDispPorCama, cita});
-                res.status(200).json({horariosDispPorCama, available});
+                // res.status(200).json({horariosDispPorCama, available});
+                res.status(200).json(available);
                 return;
             } else {
                 res.status(200).json("Something is missing here... 🛠️");
