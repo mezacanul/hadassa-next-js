@@ -85,7 +85,7 @@ function getHorariosOcupadosPorServicio(
     servicios,
     horarioDelDia
 ) {
-    console.log(horarioDelDia);
+    // console.log(horarioDelDia);
     
     const indexHoraCita = horarioDelDia.indexOf(cita.hora);
     // const indexHoraCita = horariosDeCama.indexOf(cita.hora);
@@ -236,6 +236,8 @@ function GenerarHorariosDisponibles(
         // - Eliminar todos los horarios ocupados en 1ra cama
         // - Aplicar las reglas correspondientes en 2a cama
         citasPorCama[currentID].forEach((cita) => {
+            console.log(horariosDispPorCama[currentID]);
+            
             // Eliminamos todos los horarios ocupados
             // en 1ra cama por default
             // en 2a cama si unica directiva es [1]
@@ -245,7 +247,9 @@ function GenerarHorariosDisponibles(
                 ].filter(
                     (horario1aCama) => {
                         // console.log(currentID, horarioOcupado1aCama, horario1aCama);
-                        return horarioOcupado1aCama != horario1aCama
+                        // return horarioOcupado1aCama != horario1aCama
+                        const hora = horario1aCama.replace("+", "")
+                        return horarioOcupado1aCama != hora
                     }
                     // (horario1aCama) => horario1aCama.includes(`-${horarioOcupado1aCama}`) || horario1aCama.includes(`+${horarioOcupado1aCama}`)
                 );
