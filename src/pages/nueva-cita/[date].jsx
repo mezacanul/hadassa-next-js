@@ -197,6 +197,8 @@ export default function NuevaCita() {
                 )}
 
                 <OrderSummary
+                    setCurrentPaso={setCurrentPaso}
+                    stage={currentPaso}
                     disabled={
                         currentCita.servicio &&
                         currentCita.lashista &&
@@ -242,7 +244,7 @@ function ActionsClienta({ clientasState, setClientasState }) {
     );
 }
 
-function OrderSummary({ disabled }) {
+function OrderSummary({ disabled, setCurrentPaso }) {
     const [citaID, setCitaID] = useState(null);
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
@@ -257,6 +259,45 @@ function OrderSummary({ disabled }) {
                     setCitaID(citasResp.data.uuid);
                 }
             });
+    };
+
+    const handleCurrentCita = (stage) => {
+        switch (stage) {
+            case "Servicio":
+                setCurrentCita({
+                    ...currentCita,
+                    servicio: null,
+                    lashista: null,
+                    horario: null,
+                    clienta: null,
+                });
+                break;
+            case "Lashista":
+                setCurrentCita({
+                    ...currentCita,
+                    lashista: null,
+                    horario: null,
+                    clienta: null,
+                });
+                break;
+            case "Horario":
+                setCurrentCita({
+                    ...currentCita,
+                    horario: null,
+                    clienta: null,
+                });
+                break;
+            case "Clienta":
+                setCurrentCita({
+                    ...currentCita,
+                    clienta: null,
+                });
+                break;
+            default:
+                break;
+        }
+        setCurrentPaso(stage)
+        console.log(stage);
     };
 
     return (
@@ -287,7 +328,13 @@ function OrderSummary({ disabled }) {
                         <Text>Servicio: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.servicio && <FaRegSquareMinus />}
+                        {currentCita.servicio && (
+                            <FaRegSquareMinus
+                                onClick={() => {
+                                    handleCurrentCita("Servicio");
+                                }}
+                            />
+                        )}
                         <Text
                             textDecor={
                                 currentCita.servicio ? "underline" : "none"
@@ -307,7 +354,13 @@ function OrderSummary({ disabled }) {
                         <Text>Lashista: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.lashista && <FaRegSquareMinus />}
+                        {currentCita.lashista && (
+                            <FaRegSquareMinus
+                                onClick={() => {
+                                    handleCurrentCita("Lashista");
+                                }}
+                            />
+                        )}
                         <Text
                             textDecor={
                                 currentCita.lashista ? "underline" : "none"
@@ -327,7 +380,13 @@ function OrderSummary({ disabled }) {
                         <Text>Hora: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.horario && <FaRegSquareMinus />}
+                        {currentCita.horario && (
+                            <FaRegSquareMinus
+                                onClick={() => {
+                                    handleCurrentCita("Horario");
+                                }}
+                            />
+                        )}
                         <Text
                             textDecor={
                                 currentCita.horario ? "underline" : "none"
@@ -347,7 +406,13 @@ function OrderSummary({ disabled }) {
                         <Text>Clienta: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.clienta && <FaRegSquareMinus />}
+                        {currentCita.clienta && (
+                            <FaRegSquareMinus
+                                onClick={() => {
+                                    handleCurrentCita("Clienta");
+                                }}
+                            />
+                        )}
                         <Text
                             textDecor={
                                 currentCita.clienta ? "underline" : "none"
@@ -396,7 +461,12 @@ function OrderSummary({ disabled }) {
 function CitaExito() {
     return (
         <VStack gap={"1rem"} align={"center"} w={"100%"}>
-            <Alert.Root status="success" w={"100%"} shadow={"md"} textAlign={"center"}>
+            <Alert.Root
+                status="success"
+                w={"100%"}
+                shadow={"md"}
+                textAlign={"center"}
+            >
                 <Alert.Indicator />
                 <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
             </Alert.Root>
