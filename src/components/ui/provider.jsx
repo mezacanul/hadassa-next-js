@@ -8,6 +8,7 @@ const config = defineConfig({
     "html, body": {
       margin: 0,
       padding: 0,
+      backgroundColor: "#f1f5ff"
     },
   },
   theme: {

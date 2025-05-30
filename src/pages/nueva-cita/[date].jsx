@@ -296,7 +296,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
             default:
                 break;
         }
-        setCurrentPaso(stage)
+        setCurrentPaso(stage);
         console.log(stage);
     };
 
@@ -316,7 +316,11 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                         <LuCalendar1 />
                         <Text>Fecha: </Text>
                     </HStack>
-                    <Text textDecor={"underline"} fontWeight={700}>
+                    <Text
+                        textDecor={"underline"}
+                        fontWeight={700}
+                        color={"pink.600"}
+                    >
                         {/* {selectedDate && formatFechaDMY(selectedDate)} */}
                         {selectedDate && formatHoyTitle(selectedDate)}
                     </Text>
@@ -329,17 +333,24 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                     </HStack>
                     <HStack>
                         {currentCita.servicio && (
-                            <FaRegSquareMinus
-                                onClick={() => {
-                                    handleCurrentCita("Servicio");
+                            <Text
+                                _hover={{
+                                    cursor: "pointer",
                                 }}
-                            />
+                            >
+                                <FaRegSquareMinus
+                                    onClick={() => {
+                                        handleCurrentCita("Servicio");
+                                    }}
+                                />
+                            </Text>
                         )}
                         <Text
                             textDecor={
                                 currentCita.servicio ? "underline" : "none"
                             }
                             fontWeight={700}
+                            color={"pink.600"}
                         >
                             {currentCita.servicio
                                 ? currentCita.servicio.servicio
@@ -355,17 +366,24 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                     </HStack>
                     <HStack>
                         {currentCita.lashista && (
-                            <FaRegSquareMinus
-                                onClick={() => {
-                                    handleCurrentCita("Lashista");
+                            <Text
+                                _hover={{
+                                    cursor: "pointer",
                                 }}
-                            />
+                            >
+                                <FaRegSquareMinus
+                                    onClick={() => {
+                                        handleCurrentCita("Lashista");
+                                    }}
+                                />
+                            </Text>
                         )}
                         <Text
                             textDecor={
                                 currentCita.lashista ? "underline" : "none"
                             }
                             fontWeight={700}
+                            color={"pink.600"}
                         >
                             {currentCita.lashista
                                 ? currentCita.lashista.nombre
@@ -381,17 +399,24 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                     </HStack>
                     <HStack>
                         {currentCita.horario && (
-                            <FaRegSquareMinus
-                                onClick={() => {
-                                    handleCurrentCita("Horario");
+                            <Text
+                                _hover={{
+                                    cursor: "pointer",
                                 }}
-                            />
+                            >
+                                <FaRegSquareMinus
+                                    onClick={() => {
+                                        handleCurrentCita("Horario");
+                                    }}
+                                />
+                            </Text>
                         )}
                         <Text
                             textDecor={
                                 currentCita.horario ? "underline" : "none"
                             }
                             fontWeight={700}
+                            color={"pink.600"}
                         >
                             {currentCita.horario
                                 ? currentCita.horario.hora
@@ -407,17 +432,24 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                     </HStack>
                     <HStack>
                         {currentCita.clienta && (
-                            <FaRegSquareMinus
-                                onClick={() => {
-                                    handleCurrentCita("Clienta");
+                            <Text
+                                _hover={{
+                                    cursor: "pointer",
                                 }}
-                            />
+                            >
+                                <FaRegSquareMinus
+                                    onClick={() => {
+                                        handleCurrentCita("Clienta");
+                                    }}
+                                />
+                            </Text>
                         )}
                         <Text
                             textDecor={
                                 currentCita.clienta ? "underline" : "none"
                             }
                             fontWeight={700}
+                            color={"pink.600"}
                         >
                             {currentCita.clienta
                                 ? `${currentCita.clienta.nombres} ${currentCita.clienta.apellidos}`
@@ -434,6 +466,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                     <Text
                         textDecor={currentCita.servicio ? "underline" : "none"}
                         fontWeight={700}
+                        color={"pink.600"}
                     >
                         {currentCita.servicio
                             ? `$${currentCita.servicio.precio}`
@@ -532,7 +565,7 @@ function SelectHorarios({ selectedDate }) {
     return (
         <HStack justify={"center"} h={"50vh"} align={"center"}>
             {!horarios && (
-                <Spinner color="blue.500" borderWidth="4px" size={"lg"} />
+                <Spinner color="pink.500" borderWidth="4px" size={"lg"} />
             )}
 
             {horarios && (

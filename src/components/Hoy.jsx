@@ -12,6 +12,10 @@ import {
     Avatar,
     Card,
     Heading,
+    HStack,
+    Image,
+    Text,
+    Badge,
 } from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useState, useRef } from "react";
@@ -148,10 +152,20 @@ export default function Hoy() {
                         eventContent={(arg) => {
                             return (
                                 <div style={{ marginLeft: "0.3rem" }}>
-                                    <b style={{ fontSize: "0.7rem", color: "black" }}>
+                                    <b
+                                        style={{
+                                            fontSize: "0.7rem",
+                                            color: "black",
+                                        }}
+                                    >
                                         {arg.event.title}
                                     </b>
-                                    <p style={{ fontSize: "0.7rem", color: "black" }}>
+                                    <p
+                                        style={{
+                                            fontSize: "0.7rem",
+                                            color: "black",
+                                        }}
+                                    >
                                         {arg.event.extendedProps.servicio}
                                     </p>
                                 </div>
@@ -174,11 +188,14 @@ export default function Hoy() {
 }
 
 function CitaDialog({ setOpenDialogue, data }) {
+    const citaData = { ...data.extendedProps };
     return (
         <Portal>
             <Dialog.Backdrop />
             <Dialog.Positioner>
                 <Dialog.Content
+                    // bg={"pink.100"}
+                    bg={"rgb(235, 235, 235)"}
                     py={"3rem"}
                     display={"flex"}
                     justifyContent={"center"}
@@ -188,23 +205,90 @@ function CitaDialog({ setOpenDialogue, data }) {
                       <Dialog.Title>Dialog Title</Dialog.Title>
                   </Dialog.Header> */}
                     <Dialog.Body>
-                        <Card.Root>
+                        <Card.Root
+                            shadow={"md"}
+                            w={"25rem"}
+                            py={"1rem"}
+                            px={"2rem"}
+                        >
                             <Card.Body gap="4">
-                                <Avatar.Root size="lg" shape="rounded">
-                                    <Avatar.Image src="https://picsum.photos/200/300" />
-                                    <Avatar.Fallback name="Nue Camp" />
-                                </Avatar.Root>
-                                <Card.Title mt="2">{data.title}</Card.Title>
+                                <HStack
+                                    justify={"center"}
+                                    w={"100%"}
+                                    mb={"1rem"}
+                                >
+                                    <Image
+                                        w={"12rem"}
+                                        h={"12rem"}
+                                        borderRadius={"50%"}
+                                        src={`/img/clientas/${
+                                            citaData.foto
+                                                ? clienta.foto
+                                                : "avatar-woman.png"
+                                        }`}
+                                        objectFit={"cover"}
+                                    />
+                                </HStack>
+                                <Card.Description mb={"-0.5rem"}>
+                                    {`${citaData.nombres} ${citaData.apellidos}`}
+                                </Card.Description>
+                                <Card.Title
+                                    fontSize={"1.5rem"}
+                                    mt={0}
+                                    mb={"0.5rem"}
+                                    color={"pink.700"}
+                                >
+                                    {citaData.servicio}
+                                </Card.Title>
+
                                 <Card.Description>
-                                    <b>Inicia:</b> {data.start}
+                                    <HStack justify={"space-between"}>
+                                        <Text>Hora:</Text>
+                                        <Text fontWeight={800}>
+                                            {citaData.hora}{" a.m."}
+                                        </Text>
+                                    </HStack>
                                 </Card.Description>
                                 <Card.Description>
-                                    <b>Termina:</b> {data.end}
+                                    <HStack justify={"space-between"}>
+                                        <Text>Lashista:</Text>
+                                        <Text fontWeight={800}>
+                                            {citaData.lashista}
+                                        </Text>
+                                    </HStack>
                                 </Card.Description>
+                                {/* <Card.Description>
+                                    <HStack justify={"space-between"}>
+                                        <Text>Cama:</Text>
+                                        <Text fontWeight={800}>
+                                            {citaData.cama_id}
+                                        </Text>
+                                    </HStack>
+                                </Card.Description> */}
+                                <Card.Description>
+                                    <HStack justify={"space-between"}>
+                                        <Text>Total a Pagar:</Text>
+                                        <Text fontWeight={800}>
+                                            <Badge size={"md"} me={"1rem"} colorPalette={"green"}>Pagado</Badge>
+                                            {`$${citaData.precio}`}
+                                        </Text>
+                                    </HStack>
+                                </Card.Description>
+                                {/* <Card.Description>
+                                    <b>Lashista:</b> {citaData.lashista}
+                                </Card.Description>
+                                <Card.Description>
+                                    <b>Cama:</b> {citaData.cama_id}
+                                </Card.Description>
+                                <Card.Description>
+                                    <b>Total a Pagar:</b>{" "}
+                                    {`$${citaData.precio}`}
+                                </Card.Description> */}
                             </Card.Body>
                             <Card.Footer justifyContent="flex-end">
                                 {/* <Button variant="outline">Cerrar</Button> */}
                                 <Button
+                                    bg={"pink.600"}
                                     onClick={() => {
                                         setOpenDialogue(false);
                                     }}
@@ -264,7 +348,7 @@ function renderResourceLabel(info) {
 export function formatEvents(eventsData) {
     if (eventsData != null) {
         // console.log(eventsData);
-        
+
         return eventsData.map((ed) => {
             // Split the date into parts and rearrange
             const [day, month, year] = ed.fecha.split("-");
@@ -283,7 +367,7 @@ export function formatEvents(eventsData) {
             const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
             // Format the result
             console.log(dateWithTime, ed.duracion);
-            
+
             const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
 
             // console.log(start, end); // "2025-04-25T09:00:00"
@@ -293,9 +377,7 @@ export function formatEvents(eventsData) {
                 end: end,
                 resourceId: ed.cama_id,
                 extendedProps: {
-                    servicio: ed.servicio,
-                    servicio_id: ed.servicio_id,
-                    duracion: ed.duracion
+                    ...ed,
                 },
             };
         });
