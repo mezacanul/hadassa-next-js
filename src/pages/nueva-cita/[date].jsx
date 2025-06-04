@@ -119,10 +119,10 @@ export default function NuevaCita() {
                         : "left"
                 }
                 fontWeight={300}
-                size={"4xl"}
-                mb={"2rem"}
+                size={"3xl"}
+                mb={"1rem"}
             >
-                Agendar Cita
+                {formatHoyTitle(selectedDate)}
             </Heading>
 
             {currentCita.servicio &&
@@ -197,6 +197,7 @@ export default function NuevaCita() {
                 )}
 
                 <OrderSummary
+                    setClientasState={setClientasState}
                     setCurrentPaso={setCurrentPaso}
                     stage={currentPaso}
                     disabled={
@@ -244,7 +245,7 @@ function ActionsClienta({ clientasState, setClientasState }) {
     );
 }
 
-function OrderSummary({ disabled, setCurrentPaso }) {
+function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
     const [citaID, setCitaID] = useState(null);
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
@@ -261,9 +262,10 @@ function OrderSummary({ disabled, setCurrentPaso }) {
             });
     };
 
-    const handleCurrentCita = (stage) => {
+    const handleCurrentStage = (stage) => {
         switch (stage) {
             case "Servicio":
+                setClientasState("buscar");
                 setCurrentCita({
                     ...currentCita,
                     servicio: null,
@@ -273,6 +275,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                 });
                 break;
             case "Lashista":
+                setClientasState("buscar");
                 setCurrentCita({
                     ...currentCita,
                     lashista: null,
@@ -281,6 +284,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                 });
                 break;
             case "Horario":
+                setClientasState("buscar");
                 setCurrentCita({
                     ...currentCita,
                     horario: null,
@@ -288,6 +292,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                 });
                 break;
             case "Clienta":
+                setClientasState("buscar");
                 setCurrentCita({
                     ...currentCita,
                     clienta: null,
@@ -340,7 +345,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentCita("Servicio");
+                                        handleCurrentStage("Servicio");
                                     }}
                                 />
                             </Text>
@@ -373,7 +378,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentCita("Lashista");
+                                        handleCurrentStage("Lashista");
                                     }}
                                 />
                             </Text>
@@ -406,7 +411,7 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentCita("Horario");
+                                        handleCurrentStage("Horario");
                                     }}
                                 />
                             </Text>
@@ -439,12 +444,13 @@ function OrderSummary({ disabled, setCurrentPaso }) {
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentCita("Clienta");
+                                        handleCurrentStage("Clienta");
                                     }}
                                 />
                             </Text>
                         )}
                         <Text
+                            truncate
                             textDecor={
                                 currentCita.clienta ? "underline" : "none"
                             }
@@ -830,15 +836,21 @@ function ServicioCard({ data }) {
             />
             <Box>
                 <Card.Body>
-                    <Card.Title mb="2">{data.servicio}</Card.Title>
+                    <Card.Title mb="2" color={"pink.600"}>
+                        {data.servicio}
+                    </Card.Title>
                     <Card.Description>{data.descripcion}</Card.Description>
                 </Card.Body>
-                <Card.Footer justifyContent={"space-between"}>
-                    <HStack mt="4">
+                <Card.Footer
+                    justifyContent={"space-between"}
+                    mt="4"
+                    alignItems={"end"}
+                >
+                    <HStack>
+                        <Badge colorPalette={"blue"}>${data.precio}</Badge>
                         <Badge colorPalette={"blue"}>
                             {data.minutos} minutos
                         </Badge>
-                        <Badge colorPalette={"blue"}>${data.precio}</Badge>
                     </HStack>
                     <Button
                         size={"sm"}
@@ -870,9 +882,11 @@ function LashistaCard({ data }) {
             />
             <Box my={"1rem"}>
                 <Card.Body>
-                    <Card.Title mb="2">{data.nombre}</Card.Title>
+                    <Card.Title mb="2" color={"pink.600"}>
+                        {data.nombre}
+                    </Card.Title>
                     {/* <Card.Description>{data.horarioLV[0]}</Card.Description> */}
-                    <Card.Description>Horario</Card.Description>
+                    <Card.Description>Horario L-V</Card.Description>
                     {horariosLV.map((hlv) => {
                         return <Text key={hlv}>{hlv}</Text>;
                     })}

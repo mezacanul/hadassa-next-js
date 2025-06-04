@@ -33,9 +33,6 @@ function LashistasTable({ lashistas }) {
             <Table.Header>
                 <Table.Row bg={"pink.500"}>
                     <Table.ColumnHeader color={"white"}>
-                        {/* <HStack justify={"center"}>
-                            <AiFillPicture size={"1.5rem"} />
-                        </HStack> */}
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
                         Lashista

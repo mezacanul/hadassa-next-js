@@ -78,11 +78,12 @@ function NavBar({ h }) {
             top={0}
             bg={"white"}
             zIndex={10}
-            borderBottom={"1px solid #ec4899"}
+            borderBottom={"2px solid #ec4899"}
         >
             <HStack gap={"0.5rem"} justify={"space-between"}>
                 <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
                     {router.pathname == "/" && formatHoyTitle(selectedDate)}
+                    {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
                     {router.pathname == "/citas" && "Citas"}
                     {router.pathname == "/clientas" && "Clientas"}
                     {router.pathname == "/servicios" && "Servicios"}

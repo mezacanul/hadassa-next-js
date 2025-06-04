@@ -16,6 +16,8 @@ import {
     Image,
     Text,
     Badge,
+    VStack,
+    CloseButton,
 } from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useState, useRef } from "react";
@@ -23,6 +25,7 @@ import axios from "axios";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { loadHook } from "@/utils/lattice-design";
 import { parse, format, addMinutes } from "date-fns";
+import { useRouter as useNextNav } from "next/navigation";
 
 export default function Hoy() {
     // const [events, setEvents] = useState([]);
@@ -84,9 +87,10 @@ export default function Hoy() {
             <Dialog.Root
                 id="Hoy"
                 open={openDialogue}
-                lazyMount
+                closeOnInteractOutside
+                // lazyMount
                 placement={"center"}
-                size={"lg"}
+                size={"md"}
             >
                 <CitaDialog
                     setOpenDialogue={setOpenDialogue}
@@ -188,14 +192,13 @@ export default function Hoy() {
 }
 
 function CitaDialog({ setOpenDialogue, data }) {
+    const NextNav = useNextNav();
     const citaData = { ...data.extendedProps };
     return (
         <Portal>
             <Dialog.Backdrop />
             <Dialog.Positioner>
                 <Dialog.Content
-                    // bg={"pink.100"}
-                    bg={"rgb(235, 235, 235)"}
                     py={"3rem"}
                     display={"flex"}
                     justifyContent={"center"}
@@ -206,10 +209,12 @@ function CitaDialog({ setOpenDialogue, data }) {
                   </Dialog.Header> */}
                     <Dialog.Body>
                         <Card.Root
-                            shadow={"md"}
+                            // shadow={"md"}
                             w={"25rem"}
                             py={"1rem"}
-                            px={"2rem"}
+                            px={"1rem"}
+                            borderColor={"pink.500"}
+                            borderWidth={"2px"}
                         >
                             <Card.Body gap="4">
                                 <HStack
@@ -217,21 +222,24 @@ function CitaDialog({ setOpenDialogue, data }) {
                                     w={"100%"}
                                     mb={"1rem"}
                                 >
-                                    <Image
-                                        w={"12rem"}
-                                        h={"12rem"}
-                                        borderRadius={"50%"}
-                                        src={`/img/clientas/${
-                                            citaData.foto
-                                                ? clienta.foto
-                                                : "avatar-woman.png"
-                                        }`}
-                                        objectFit={"cover"}
-                                    />
+                                    <VStack>
+                                        <Image
+                                            w={"12rem"}
+                                            h={"12rem"}
+                                            borderRadius={"50%"}
+                                            src={`/img/clientas/${
+                                                citaData.foto
+                                                    ? clienta.foto
+                                                    : "avatar-woman.png"
+                                            }`}
+                                            objectFit={"cover"}
+                                        />
+                                        <Text
+                                            mt={"1rem"}
+                                            fontSize={"1rem"}
+                                        >{`${citaData.nombres} ${citaData.apellidos}`}</Text>
+                                    </VStack>
                                 </HStack>
-                                <Card.Description mb={"-0.5rem"}>
-                                    {`${citaData.nombres} ${citaData.apellidos}`}
-                                </Card.Description>
                                 <Card.Title
                                     fontSize={"1.5rem"}
                                     mt={0}
@@ -241,63 +249,64 @@ function CitaDialog({ setOpenDialogue, data }) {
                                     {citaData.servicio}
                                 </Card.Title>
 
-                                <Card.Description>
-                                    <HStack justify={"space-between"}>
-                                        <Text>Hora:</Text>
-                                        <Text fontWeight={800}>
-                                            {citaData.hora}{" a.m."}
-                                        </Text>
-                                    </HStack>
+                                <Card.Description
+                                    justifyContent={"space-between"}
+                                    display={"flex"}
+                                >
+                                    <Text as="span">Hora:</Text>
+                                    <Text as="span" fontWeight={800}>
+                                        {citaData.hora}
+                                        {" a.m."}
+                                    </Text>
                                 </Card.Description>
-                                <Card.Description>
-                                    <HStack justify={"space-between"}>
-                                        <Text>Lashista:</Text>
-                                        <Text fontWeight={800}>
-                                            {citaData.lashista}
-                                        </Text>
-                                    </HStack>
+                                <Card.Description
+                                    justifyContent={"space-between"}
+                                    display={"flex"}
+                                >
+                                    <Text as="span">Lashista:</Text>
+                                    <Text as="span" fontWeight={800}>
+                                        {citaData.lashista}
+                                    </Text>
                                 </Card.Description>
-                                {/* <Card.Description>
-                                    <HStack justify={"space-between"}>
-                                        <Text>Cama:</Text>
-                                        <Text fontWeight={800}>
-                                            {citaData.cama_id}
-                                        </Text>
-                                    </HStack>
-                                </Card.Description> */}
-                                <Card.Description>
-                                    <HStack justify={"space-between"}>
-                                        <Text>Total a Pagar:</Text>
-                                        <Text fontWeight={800}>
-                                            <Badge size={"md"} me={"1rem"} colorPalette={"green"}>Pagado</Badge>
-                                            {`$${citaData.precio}`}
-                                        </Text>
-                                    </HStack>
+                                <Card.Description
+                                    justifyContent={"space-between"}
+                                    display={"flex"}
+                                    w={"100%"}
+                                >
+                                    <Text as="span">Total a Pagar:</Text>
+                                    <Text as="span" fontWeight={800}>
+                                        {/* <Badge
+                                                size={"md"}
+                                                me={"1rem"}
+                                                colorPalette={"green"}
+                                            >
+                                                Pagado
+                                            </Badge> */}
+                                        {`$${citaData.precio}`}
+                                    </Text>
                                 </Card.Description>
-                                {/* <Card.Description>
-                                    <b>Lashista:</b> {citaData.lashista}
-                                </Card.Description>
-                                <Card.Description>
-                                    <b>Cama:</b> {citaData.cama_id}
-                                </Card.Description>
-                                <Card.Description>
-                                    <b>Total a Pagar:</b>{" "}
-                                    {`$${citaData.precio}`}
-                                </Card.Description> */}
                             </Card.Body>
-                            <Card.Footer justifyContent="flex-end">
-                                {/* <Button variant="outline">Cerrar</Button> */}
+                            <Card.Footer justifyContent="center" mt={"2rem"}>
                                 <Button
                                     bg={"pink.600"}
                                     onClick={() => {
-                                        setOpenDialogue(false);
+                                        NextNav.push(`/citas/1`);
                                     }}
                                 >
-                                    Cerrar
+                                    Abrir Ticket
                                 </Button>
                             </Card.Footer>
                         </Card.Root>
                     </Dialog.Body>
+                    <Dialog.CloseTrigger top="0" insetEnd="-12" asChild>
+                        <CloseButton
+                            onClick={() => {
+                                setOpenDialogue(false);
+                            }}
+                            bg="bg"
+                            size="sm"
+                        />
+                    </Dialog.CloseTrigger>
                 </Dialog.Content>
             </Dialog.Positioner>
         </Portal>

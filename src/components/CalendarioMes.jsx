@@ -88,7 +88,7 @@ export default function CalendarioMes() {
                 hoyRef
             </Button> */}
             <Box width="100%">
-                <DayGridStyles />
+                <style>{DayGridStyles}</style>
                 <style>{MesCalendarStyles}</style>
                 <FullCalendar
                     // initialDate={new Date("25-04-2025")}
@@ -124,13 +124,27 @@ export default function CalendarioMes() {
                         },
                     }}
                     dayCellDidMount={(info) => {
+                        // Check if date is today and add class on mount
+                        const today = new Date();
+                        const formattedToday = format(today, "yyyy-MM-dd");
+                        const formattedDate = format(info.date, "yyyy-MM-dd");
+                        if (formattedDate === formattedToday) {
+                            info.el.classList.add("day-clicked");
+                        }
+
                         info.el.addEventListener("click", () => {
-                            // console.log(info.date);
                             const formattedDate = format(
                                 info.date,
                                 "yyyy-MM-dd"
                             );
                             setSelectedDate(formattedDate);
+                            document
+                                .querySelectorAll("td.fc-daygrid-day")
+                                .forEach((td) => {
+                                    td.classList.remove("day-clicked");
+                                });
+                            info.el.classList.add("day-clicked");
+                            console.log("INFO", info, info.el);
                         });
                     }}
                     eventClick={(info) => {
@@ -175,50 +189,6 @@ const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
         <div>
             <span>{info.dayNumberText}</span>
         </div>
-        // <div
-        //     style={{
-        //         display: "flex",
-        //         // alignItems: "end",
-        //         alignItems: "space-between",
-        //         flexDirection: "column",
-        //         height: "100%",
-        //     }}
-        // >
-        //     <span>{info.dayNumberText}</span>
-        //     {isInCurrentMOnth && (
-        //         <CiSquarePlus
-        //             style={{ fontSize: "1.5rem", cursor: "pointer" }}
-        //             onClick={handleNuevaCita}
-        //         />
-        //     )}
-        // </div>
-    );
-};
-
-const DayGridStyles = () => {
-    return (
-        <style>
-            {`
-              .fc-daygrid-day {
-                // background-color:rgba(238, 144, 144, 0.5) !important; /* Set your desired background color */
-                //background-color:rgba(144, 238, 144, 0.5) !important; /* Set your desired background color */
-              }
-              
-              .fc-daygrid-day-top {
-                justify-content: center;
-              }
-
-              .fc-daygrid-day-number {
-              width: 100%;
-              }
-              .fc-daygrid-day-number div {
-              width: 100%;
-              justify-content: space-between !important;
-              padding-left: 10px;
-              padding-right: 10px;
-              }
-            `}
-        </style>
     );
 };
 
@@ -366,12 +336,12 @@ const MesCalendarStyles = `
     }
 
     #MesCalendar .fc-day-today {
-        background-color: #ec4899;
-        opacity: 0.9;
+        background: transparent;
     }
-    
-    #MesCalendar .fc-day-today span {
-        color: white !important;
+
+    #MesCalendar .fc-day-today .fc-daygrid-day-frame {
+        border: 2px solid #ec4899;
+        opacity: 0.9;
     }
 
     #MesCalendar .fc-button {
@@ -379,15 +349,16 @@ const MesCalendarStyles = `
     }
 
     .fc-timegrid-slots {
-        // background-color: rgb(255, 238, 249); /* Set your desired color */
-        // background-color: rgb(255, 249, 254); /* Set your desired color */
         background-color: white;
-        // background-color: transparent;
     }
 
-    .fc-daygrid-day:hover {
+    .fc-daygrid-day:hover, #MesCalendar .fc-day-today:hover {
         cursor: pointer;
         background-color:rgba(236, 32, 134, 0.18);
+    }
+
+    .fc-day-today.fc-daygrid-day:hover .fc-daygrid-day-number {
+        color: black;
     }
 
     #MesCalendar .fc-toolbar-title {
@@ -415,5 +386,34 @@ const MesCalendarStyles = `
         // background-color:rgb(210, 57, 133) !important;
         // border-color: rgb(183, 35, 109) !important;
         transform: scale(1.1);
+    }
+
+    td.day-clicked {
+        background-color: #ec4899 !important;
+    }
+    
+    td.day-clicked .fc-daygrid-day-number {
+        color: white !important;
+    }
+`;
+
+const DayGridStyles = `
+    .fc-daygrid-day {
+    // background-color:rgba(238, 144, 144, 0.5) !important; /* Set your desired background color */
+    //background-color:rgba(144, 238, 144, 0.5) !important; /* Set your desired background color */
+    }
+    
+    .fc-daygrid-day-top {
+    justify-content: center;
+    }
+
+    .fc-daygrid-day-number {
+    width: 100%;
+    }
+    .fc-daygrid-day-number div {
+    width: 100%;
+    justify-content: space-between !important;
+    padding-left: 10px;
+    padding-right: 10px;
     }
 `;

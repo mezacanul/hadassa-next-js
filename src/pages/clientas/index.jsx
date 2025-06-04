@@ -43,17 +43,17 @@ function ClientasTable({ clientas }) {
                     <Table.ColumnHeader color={"white"}>
                         Telefono
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
+                    {/* <Table.ColumnHeader color={"white"}>
                         Agregada
-                    </Table.ColumnHeader>
+                    </Table.ColumnHeader> */}
                     <Table.ColumnHeader color={"white"}>
                         Fecha de Nacimiento
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Detalles Cejas
+                        Detalles
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Fotos Cejas
+                        Fotos
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
                         Acciones
@@ -74,7 +74,7 @@ function ClientasTable({ clientas }) {
                         <Table.Cell
                             w={"10rem"}
                         >{`+${clienta.lada} ${clienta.telefono}`}</Table.Cell>
-                        <Table.Cell>{clienta.fecha_agregado}</Table.Cell>
+                        {/* <Table.Cell>{clienta.fecha_agregado}</Table.Cell> */}
                         <Table.Cell>{clienta.fecha_de_nacimiento}</Table.Cell>
                         <Table.Cell>{clienta.detalles_cejas}</Table.Cell>
                         <Table.Cell>{clienta.fotos_cejas}</Table.Cell>
