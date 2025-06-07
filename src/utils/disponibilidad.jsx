@@ -85,13 +85,13 @@ function getHorariosOcupadosPorServicio(
     servicios,
     horarioDelDia
 ) {
-    console.log(horarioDelDia);
-    
+    // console.log(horarioDelDia);
+
     const indexHoraCita = horarioDelDia.indexOf(cita.hora);
     // const indexHoraCita = horariosDeCama.indexOf(cita.hora);
     const intervalosOcupados = detallesServicio.minutos / 30;
     const horariosOcupados = horarioDelDia.slice(
-    // const horariosOcupados = horariosDeCama.slice(
+        // const horariosOcupados = horariosDeCama.slice(
         indexHoraCita,
         indexHoraCita + intervalosOcupados
     );
@@ -137,62 +137,74 @@ function getSlots(cita, horarioDelDia, servicios) {
 }
 
 /**
- * Checks if subArray is a consecutive subarray of array.
- * @param {string[]} array - Main array (e.g., bed slots).
- * @param {string[]} subArray - Subarray to find (e.g., cita slots).
+ * Checks if slots is a consecutive subarray of horariosCama.
+ * @param {string[]} horariosCama - Main array (e.g., bed slots).
+ * @param {string[]} slots - Subarray to find (e.g., cita slots).
  * @param {string[]} servicio.directiva - Reglas del servicio.
- * @returns {boolean} - True if subArray is a consecutive part of array.
+ * @returns {boolean} - True if slots are a consecutive part of horariosCama.
  */
-function puedeAgendar(array, subArray, directivaJSON) {
-    if (!subArray) { return false }
+function puedeAgendar(horariosCama, slots, directivaJSON) {
+    if (!slots) {
+        return false;
+    }
     let pass = null;
     const directiva = JSON.parse(directivaJSON);
 
     if (directiva[0] == 1) {
-        subArray.forEach((slt) => {
-            if (array.includes(slt)) {
-                pass = true;
-            } else {
-                return false
+        slots.forEach((slt) => {
+            if(pass != false){
+                if (horariosCama.includes(slt)) {
+                    pass = true;
+                } else {
+                    pass = false;
+                }
             }
         });
     }
 
     if (directiva[0] == -1) {
-        const lastIdx = subArray.length - 1;
-        subArray.forEach((slt, idx) => {
-            if (idx == lastIdx) {
-                if (array.includes(slt) || array.includes(`+${slt}`)) {
+        const lastIdx = slots.length - 1;
+
+        slots.forEach((slt, idx) => {
+            if (pass != false) {
+                if (idx == lastIdx) {
+                    if (
+                        horariosCama.includes(slt) ||
+                        horariosCama.includes(`+${slt}`)
+                    ) {
+                        pass = true;
+                    }
+                } else if (horariosCama.includes(slt)) {
                     pass = true;
+                } else {
+                    pass = false;
                 }
-            } else if (array.includes(slt)) {
-                pass = true;
-            } else {
-                return false;
             }
         });
     }
 
     if (directiva[0] == 0 && directiva[1] == -1) {
         let present = {
-            first: array.includes(subArray[0]) || array.includes(`-${subArray[0]}`),
-            second: array.includes(subArray[1]) || array.includes(`+${subArray[1]}`),
-        }
-        if(present.first == true && present.second == true){
-            pass = true
+            first:
+                horariosCama.includes(slots[0]) ||
+                horariosCama.includes(`-${slots[0]}`),
+            second:
+                horariosCama.includes(slots[1]) ||
+                horariosCama.includes(`+${slots[1]}`),
+        };
+        if (present.first == true && present.second == true) {
+            pass = true;
         } else {
-            return false
+            pass = false;
         }
     }
-
-    // console.log(directiva, subArray, array);
     return pass;
 }
 
 function sortByHora(array) {
     return array.sort((a, b) => {
         const getTimeValue = (hora) => {
-            const [h, m] = hora.replace(/[+-]/, '').split(':').map(Number);
+            const [h, m] = hora.replace(/[+-]/, "").split(":").map(Number);
             return h * 60 + m;
         };
         // Sort by time value, keeping original hora order
@@ -230,12 +242,13 @@ function GenerarHorariosDisponibles(
         }
 
         // console.log(citasPorCama);
-        
 
         // 3.- Lopeamos cada CITA para:
         // - Eliminar todos los horarios ocupados en 1ra cama
         // - Aplicar las reglas correspondientes en 2a cama
         citasPorCama[currentID].forEach((cita) => {
+            // console.log(horariosDispPorCama[currentID]);
+
             // Eliminamos todos los horarios ocupados
             // en 1ra cama por default
             // en 2a cama si unica directiva es [1]
@@ -245,7 +258,12 @@ function GenerarHorariosDisponibles(
                 ].filter(
                     (horario1aCama) => {
                         // console.log(currentID, horarioOcupado1aCama, horario1aCama);
-                        return horarioOcupado1aCama != horario1aCama
+                        // return horarioOcupado1aCama != horario1aCama
+                        let hora = horario1aCama.replace("+", "");
+                        // if(cita.reglasDeServicio[0] != 0){
+                        //     hora = hora.replace("-", "")
+                        // }
+                        return horarioOcupado1aCama != hora;
                     }
                     // (horario1aCama) => horario1aCama.includes(`-${horarioOcupado1aCama}`) || horario1aCama.includes(`+${horarioOcupado1aCama}`)
                 );
@@ -310,14 +328,15 @@ function sortHours(hours) {
 }
 
 function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
-    const camasKeys = Object.keys(horariosDispPorCama)
+    const camasKeys = Object.keys(horariosDispPorCama);
     const dirServicio = servicios[citaData.servicio_id].regla;
     let registry = [];
     // let available = {};
     let available = [];
 
-    camasKeys.forEach((camaID)=>{
-        const horariosCama = horariosDispPorCama[camaID]
+    camasKeys.forEach((camaID) => {
+        const horariosCama = horariosDispPorCama[camaID];
+        console.log(camaID, horariosCama);
 
         horariosCama.forEach((hora) => {
             const horaClean = hora.replace("+", "").replace("-", "");
@@ -327,19 +346,23 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
                 servicios
             );
 
+            if (slots && slots[0] == "10:00") {
+                console.log(camaID);
+                // console.log("puede agendar", slots, camaID, puedeAgendar(horariosCama, slots, dirServicio));
+            }
             if (puedeAgendar(horariosCama, slots, dirServicio)) {
-                if(!registry.includes(hora)){
-                    available.push({cama: camaID, hora})
+                if (!registry.includes(hora)) {
+                    available.push({ cama: camaID, hora });
                     registry.push(hora);
                 }
                 // available.push(hora);
             }
         });
-    })
+    });
 
     // available = [...new Set(available)];
     // available = sortHours(available);
-    available = sortByHora(available)
+    available = sortByHora(available);
     return available;
 }
 

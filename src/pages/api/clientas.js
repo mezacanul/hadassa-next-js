@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === "GET") {
-            const [rows] = await connection.execute("SELECT * FROM clientas");
+            const [rows] = await connection.execute("SELECT * FROM clientas ORDER BY nombres ASC, apellidos ASC");
             res.status(200).json(rows);
         } else if (req.method === "POST") {
             const nueva_clienta = req.body;

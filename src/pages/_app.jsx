@@ -19,7 +19,7 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { parse, format } from "date-fns";
 import { LuCalendarPlus } from "react-icons/lu";
 import { useRouter as useNextNav } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { FaHouseChimney } from "react-icons/fa6";
 
@@ -42,8 +42,8 @@ export default function App({ Component, pageProps }) {
             </Head>
 
             <Box bg={"#f1f5ff"}>
-                <NavBar />
-                <VStack id="Body" px={"2rem"}>
+                <NavBar h={"10vh"} />
+                <VStack id="Body" px={"2rem"} py={"2.5rem"} minH={"90vh"}>
                     <Component {...pageProps} />
                 </VStack>
             </Box>
@@ -51,22 +51,15 @@ export default function App({ Component, pageProps }) {
     );
 }
 
-function NavBar() {
+function NavBar({ h }) {
     const [selectedDate] = loadHook("useSelectedDate");
     const NextNav = useNextNav();
     const router = useRouter();
     const [events] = loadHook("useEvents");
+    const [currentPath, setCurrentPath] = useState(null);
 
     useEffect(() => {
         console.log("route", router);
-
-        // const handleRouteChange = (url) => {
-        //     console.log(router.pathname);
-        // };
-
-        // router.events.on("routeChangeComplete", handleRouteChange);
-        // return () =>
-        //     router.events.off("routeChangeComplete", handleRouteChange);
     }, [router]);
 
     return (
@@ -76,21 +69,28 @@ function NavBar() {
             templateColumns="3fr 2fr"
             gap={"2.5rem"}
             w={"100%"}
-            pt={"1.5rem"}
-            pb={"1rem"}
-            mb={"2rem"}
+            h={h}
+            // pt={"1.5rem"}
+            // pb={"1rem"}
+            // mb={"2rem"}
+
             position={"sticky"}
             top={0}
             bg={"white"}
             zIndex={10}
-            borderBottom={"1px solid #ec4899"}
+            borderBottom={"2px solid #ec4899"}
         >
             <HStack gap={"0.5rem"} justify={"space-between"}>
                 <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
-                    {formatHoyTitle(selectedDate)}
+                    {router.pathname == "/" && formatHoyTitle(selectedDate)}
+                    {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
+                    {router.pathname == "/citas" && "Citas"}
+                    {router.pathname == "/clientas" && "Clientas"}
+                    {router.pathname == "/servicios" && "Servicios"}
+                    {router.pathname == "/lashistas" && "Lashistas"}
                 </Heading>
                 {/* format(info.date, "yyyy-MM-dd"); */}
-                {router.pathname != "/nueva-cita/[date]" && (
+                {router.pathname == "/" ? (
                     <Button
                         bg={"pink.500"}
                         onClick={() => {
@@ -119,8 +119,7 @@ function NavBar() {
                             <LuCalendarPlus />
                         </HStack>
                     </Button>
-                )}
-                {router.pathname == "/nueva-cita/[date]" && (
+                ) : (
                     <Button
                         onClick={() => {
                             NextNav.push("/");
@@ -141,10 +140,28 @@ function NavBar() {
                 justify={"space-between"}
                 align={"center"}
             >
-                <Link color={"#ec4899"}>Citas</Link>
-                <Link color={"#ec4899"}>Clientas</Link>
-                <Link color={"#ec4899"}>Servicios</Link>
-                <Link color={"#ec4899"}>Lashistas</Link>
+                <Link
+                    onClick={() => {
+                        NextNav.push("/citas");
+                    }}
+                    color={"#ec4899"}
+                >
+                    Citas
+                </Link>
+                <Link
+                    onClick={() => {
+                        NextNav.push("/clientas");
+                    }}
+                    color={"#ec4899"}
+                >
+                    Clientas
+                </Link>
+                <Link onClick={() => {
+                        NextNav.push("/servicios");
+                    }} color={"#ec4899"}>Servicios</Link>
+                <Link onClick={() => {
+                        NextNav.push("/lashistas");
+                    }} color={"#ec4899"}>Lashistas</Link>
                 {/* <Button bg={"#ec4899"} size={"xs"}>
                     <RxHamburgerMenu />
                 </Button> */}

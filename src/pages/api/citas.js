@@ -38,13 +38,14 @@ export default async function handler(req, res) {
             );
             console.log(conditions, params);
 
-            let query = `SELECT clientas.nombres, clientas.apellidos, servicios.servicio, servicios.id as servicio_id, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
+            let query = `SELECT clientas.nombres, clientas.apellidos, clientas.foto_clienta as foto, servicios.servicio, servicios.id as servicio_id, servicios.precio, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
                     FROM 
                       citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     LEFT JOIN lashistas ON citas.lashista_id = lashistas.id`;
             let fullQuery = queryPlusFilters(query, conditions);
+            fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`
 
             const [rows] = await connection.execute(fullQuery, params);
             res.status(200).json(rows);
@@ -52,21 +53,31 @@ export default async function handler(req, res) {
             // TO DO:
             // Separar responsabilidades de API:
             // citas en POST solo puede agendar citas
-            // para horarios disponibles utilizaremos 
-            //     -> horarios?filtro=disponibles&fecha&hora 
-            if(req.body.action == "agendar"){
-                const cita = req.body
+            // para horarios disponibles utilizaremos
+            //     -> horarios?filtro=disponibles&fecha&hora
+            if (req.body.action == "agendar") {
+                const cita = req.body;
                 try {
                     const [uuidResult] = await connection.execute(
                         `SELECT UUID() AS id`
                     );
                     const uuid = uuidResult[0].id;
-                    const hora = (cita.horario.hora).replace("-", "").replace("+", "")
+                    const hora = cita.horario.hora
+                        .replace("-", "")
+                        .replace("+", "");
 
                     const [mysql_response] = await connection.execute(
                         `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, added) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-                            [uuid, cita.clienta.id, cita.servicio.id, cita.lashista.id, cita.fecha, hora, cita.horario.cama]
+                        [
+                            uuid,
+                            cita.clienta.id,
+                            cita.servicio.id,
+                            cita.lashista.id,
+                            cita.fecha,
+                            hora,
+                            cita.horario.cama,
+                        ]
                     );
                     if (mysql_response.affectedRows > 0) {
                         res.status(201).json({

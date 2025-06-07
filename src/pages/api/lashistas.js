@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     // Query the lashistas table
-    const [rows] = await connection.execute('SELECT * FROM lashistas');
+    const [rows] = await connection.execute('SELECT * FROM lashistas ORDER BY nombre ASC');
     // Send the results as an array
     res.status(200).json(rows);
   } catch (error) {
