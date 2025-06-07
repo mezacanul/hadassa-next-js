@@ -77,14 +77,14 @@ export function Nexus(config) {
         );
     }
 
-    const callerFile = detectCallerFile();
-    if (!callerFile || !allowedEntryFiles.includes(callerFile)) {
-        throw new Error(
-            `Nexus can only be initialized in entry-level files: ${allowedEntryFiles.join(
-                ", "
-            )}. It was called from ${callerFile || "an unknown file"}.`
-        );
-    }
+    // const callerFile = detectCallerFile();
+    // if (!callerFile || !allowedEntryFiles.includes(callerFile)) {
+    //     throw new Error(
+    //         `Nexus can only be initialized in entry-level files: ${allowedEntryFiles.join(
+    //             ", "
+    //         )}. It was called from ${callerFile || "an unknown file"}.`
+    //     );
+    // }
 
     // Initialize lattice_grid
     Object.entries(config).forEach(([key, singleton]) => {
