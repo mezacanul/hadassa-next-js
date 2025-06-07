@@ -54,6 +54,7 @@ export default function NuevaCita() {
 
     const [currentPaso, setCurrentPaso] = useState("Servicio");
     const [clientasState, setClientasState] = useState("buscar");
+    const [loading, setLoading] = loadHook("useLoader")
 
     useEffect(() => {
         setDOM({ title: "Agendar Cita" });
@@ -67,6 +68,7 @@ export default function NuevaCita() {
             console.log(serviciosResp.data, lashistasResp.data);
         });
 
+        setLoading(false)
         return () => {
             useCurrentCita.reset();
         };

@@ -1,3 +1,4 @@
+import { loadHook } from "@/utils/lattice-design";
 import { Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -5,11 +6,13 @@ import { AiFillPicture } from "react-icons/ai";
 
 export default function Clientas() {
     const [clientas, setClientas] = useState(null);
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         axios.get("/api/clientas").then((clientasResp) => {
             console.log(clientasResp.data);
             setClientas(clientasResp.data);
+            setLoading(false)
         });
     }, []);
 

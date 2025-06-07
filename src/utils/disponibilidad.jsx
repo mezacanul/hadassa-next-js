@@ -117,7 +117,7 @@ function getHorariosOcupadosPorServicio(
          */
         reglasDeServicio: reglasDeAgenda,
     };
-    console.log(response);
+    // console.log(response);
     return response;
 }
 
@@ -336,7 +336,7 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
 
     camasKeys.forEach((camaID) => {
         const horariosCama = horariosDispPorCama[camaID];
-        console.log(camaID, horariosCama);
+        // console.log(camaID, horariosCama);
 
         horariosCama.forEach((hora) => {
             const horaClean = hora.replace("+", "").replace("-", "");
@@ -347,7 +347,7 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
             );
 
             if (slots && slots[0] == "10:00") {
-                console.log(camaID);
+                // console.log(camaID);
                 // console.log("puede agendar", slots, camaID, puedeAgendar(horariosCama, slots, dirServicio));
             }
             if (puedeAgendar(horariosCama, slots, dirServicio)) {

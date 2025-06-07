@@ -12,6 +12,7 @@ import {
     getSlots,
     puedeAgendar,
 } from "@/utils/disponibilidad";
+import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection({
@@ -114,6 +115,7 @@ export default async function handler(req, res) {
             let horariosDispPorCama = {};
             let disponibilidad = {};
             let camaDisponible = null;
+            let horarioLashista = []
             const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
             const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
             const horarioDelDia = generarHorarioDelDia({
@@ -158,6 +160,13 @@ export default async function handler(req, res) {
                     },
                 ])
             );
+
+            horarioLashista = ["Saturday", "Sunday"].includes(dayName) ? lashista.horarioSBD : lashista.horarioLV 
+            let horarioLashistaArray = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
+            // horarioDelDia = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
+            // console.log(lashista.nombre, {horarioDelDia, lashista});
+            // console.log("Filtrado", filterTimeSlotsByRange(horarioDelDia, horarioLashista));
+            
             citaDetalles = {
                 hora: cita.hora,
                 duracion: servicios[cita.servicio_id].minutos,
@@ -168,7 +177,8 @@ export default async function handler(req, res) {
             // Asignamos Horarios Del Dia completos por cama
             // para mas adelante filtrar y eliminar los horarios ocupados por citas
             camasKeys.forEach(
-                (camaID) => (horariosDispPorCama[camaID] = [...horarioDelDia])
+                // (camaID) => (horariosDispPorCama[camaID] = [...horarioDelDia])
+                (camaID) => (horariosDispPorCama[camaID] = [...horarioLashistaArray])
             );
 
             if (citasDelDia.length > 0) {
@@ -211,28 +221,6 @@ export default async function handler(req, res) {
                 return;
             } else {
                 res.status(200).json("Something is missing here... 🛠️");
-                return;
-                try {
-                    const [result] = await connection.execute(
-                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id) 
-                            VALUES (UUID(), '${cita.clienta_id}', '${cita.servicio_id}', '${cita.lashista_id}', '${cita.fecha}', '${cita.hora}', '${camaDisponible}')`
-                    );
-                    if (result.affectedRows > 0) {
-                        return res.status(201).json({
-                            message: "Default cita inserted successfully",
-                            id: result.insertId,
-                        });
-                    } else {
-                        return res
-                            .status(500)
-                            .json({ error: "Failed to insert default cita" });
-                    }
-                } catch (insertError) {
-                    return res.status(500).json({
-                        error: "MySQL insertion failed",
-                        details: insertError.message,
-                    });
-                }
             }
         } else {
             // Handle unsupported methods

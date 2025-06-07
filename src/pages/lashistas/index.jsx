@@ -1,3 +1,4 @@
+import { loadHook } from "@/utils/lattice-design";
 import { Box, Button, Heading, HStack, Image, Table, Text } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -5,11 +6,13 @@ import { AiFillPicture } from "react-icons/ai";
 
 export default function Lashistas() {
     const [lashistas, setLashistas] = useState(null);
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         axios.get("/api/lashistas").then((lashistasResp) => {
             console.log(lashistasResp.data);
             setLashistas(lashistasResp.data);
+            setLoading(false)
         });
     }, []);
 
