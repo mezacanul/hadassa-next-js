@@ -2,28 +2,30 @@ import mysql from "mysql2/promise";
 import { parse, format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { getCurrentDateSpan } from "@/utils/detalles-citas";
+import { db_info } from "@/config/db";
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection({
-        host: "localhost",
-        port: 3306,
-        user: "root",
-        password: "",
-        database: "hadassa",
+        host: db_info.host,
+        port: db_info.port,
+        user: db_info.user,
+        password: db_info.password,
+        database: db_info.database,
     });
 
     try {
         if (req.method === "GET") {
-            let response
+            let response;
 
             switch (req.query.action) {
                 case "lashistas":
-                    const query = "SELECT id, nombre, image as foto FROM lashistas"
+                    const query =
+                        "SELECT id, nombre, image as foto FROM lashistas";
                     const [rows] = await connection.execute(query);
-                    response = rows
+                    response = rows;
                     break;
                 case "this-week":
-                    response = getCurrentDateSpan()
+                    response = getCurrentDateSpan();
                 default:
                     break;
             }

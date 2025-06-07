@@ -8,6 +8,11 @@ import { format } from "date-fns";
 
 export default function Index() {
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
+    const [loading, setLoading] = loadHook("useLoader");
+
+    useEffect(()=>{
+        setLoading(false)
+    }, [])
 
     useEffect(()=>{
         console.log("mounted at home", selectedDate);

@@ -162,6 +162,7 @@ function NavBar({ h }) {
                 ) : (
                     <Button
                         onClick={() => {
+                            setLoading(true)
                             NextNav.push("/");
                         }}
                         bg={"pink.500"}

@@ -13,14 +13,15 @@ import {
     puedeAgendar,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
+import { db_info } from "@/config/db";
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection({
-        host: "localhost",
-        port: 3306,
-        user: "root",
-        password: "",
-        database: "hadassa",
+        host: db_info.host,
+        port: db_info.port,
+        user: db_info.user,
+        password: db_info.password,
+        database: db_info.database,
     });
 
     try {
