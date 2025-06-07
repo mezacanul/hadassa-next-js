@@ -595,7 +595,7 @@ function SelectHorarios({ selectedDate }) {
                                 bg={"pink.500"}
                                 key={hr.hora}
                             >
-                                {hr.hora}
+                                {(hr.hora).replace("-", "*")}
                             </Button>
                             // <Heading key={hr.hora}>{hr.hora}</Heading>
                         );
@@ -647,10 +647,10 @@ function NuevaClienta({ setClientasState, setCurrentPaso }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
     const [nuevaClienta, setNuevaClienta] = useState({
         foto_clienta: null,
-        nombres: "José Eduardo",
-        apellidos: "Meza Canul",
+        nombres: "",
+        apellidos: "",
         lada: "52",
-        telefono: "9993524438",
+        telefono: "",
     });
 
     const handleChange = (e) => {
