@@ -15,44 +15,54 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { TfiReceipt } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
+import { loadHook } from "@/utils/lattice-design";
+import { getCurrentDateSpan } from "@/utils/detalles-citas";
 
 export default function Citas() {
+    const [loading, setLoading] = loadHook("useLoader");
+    const [lashistas, setLashistas] = useState(null);
+    const [currentLashista, setCurrentLashista] = useState(null);
     // const [citas, setCitas] = useState(null);
 
-    // useEffect(() => {
-    //     console.log("date", new Date());
+    useEffect(() => {
+        setLoading(false);
+        // console.log("date", new Date());
 
-    //     axios.get("/api/citas").then((citasResp) => {
-    //         // console.log(citasResp.data);
-    //         setCitas(citasResp.data);
-    //     });
-    // }, []);
+        axios
+            .get("/api/detalles-citas?action=lashistas")
+            .then((lashistasResp) => {
+                console.log(lashistasResp.data);
+                setLashistas(lashistasResp.data);
+                setCurrentLashista(lashistasResp.data[0]);
+            });
+    }, []);
 
     return (
         // <Box w={"100%"}>
         //     {citas && <CitasTable citas={citas} />}
         // </Box>
         <Grid w={"100%"} gap={"4rem"} gridTemplateColumns={"2fr 3fr"}>
-            <Lashistas />
-            <AgendaLashista nombre={"Hadassa"} foto={"hadassa.jpg"} />
+            <Lashistas lashistas={lashistas} />
+            <AgendaLashista current={currentLashista} />
         </Grid>
     );
 }
 
-function Lashistas() {
+function Lashistas({ lashistas }) {
     return (
         <VStack align={"start"} gap={"2rem"}>
             <Heading size={"2xl"}>Seleccionar Lashista:</Heading>
             <VStack w={"100%"} gap={"2rem"}>
-                <LashistaCard />
-                <LashistaCard />
-                <LashistaCard />
+                {lashistas &&
+                    lashistas.map((lashista, idx) => {
+                        return <LashistaCard key={idx} data={lashista} />;
+                    }, [])}
             </VStack>
         </VStack>
     );
 }
 
-function LashistaCard() {
+function LashistaCard({ data }) {
     return (
         <HStack
             shadow={"sm"}
@@ -69,18 +79,18 @@ function LashistaCard() {
             }}
         >
             <Image
-                src={`/img/lashistas/hadassa.jpg`}
+                src={`/img/lashistas/${data.foto}`}
                 w={"7rem"}
                 rounded={"full"}
             />
             <VStack align={"start"} w={"100%"}>
-                <Heading color={"pink.600"}>Hadassa</Heading>
+                <Heading color={"pink.600"}>{data.nombre}</Heading>
                 <HStack w={"100%"} justifyContent={"space-between"}>
                     <HStack>
                         <TfiReceipt size={"1.2rem"} />
                         <Text>Esta Semana:</Text>
                     </HStack>
-                    <Text>10</Text>
+                    {/* <Text>10</Text> */}
                 </HStack>
 
                 <HStack w={"100%"} justifyContent={"space-between"}>
@@ -88,37 +98,64 @@ function LashistaCard() {
                         <TfiReceipt size={"1.2rem"} />
                         <Text>Futuras:</Text>
                     </HStack>
-                    <Text>5</Text>
+                    {/* <Text>5</Text> */}
                 </HStack>
             </VStack>
         </HStack>
     );
 }
 
-function AgendaLashista({ nombre, foto }) {
+function AgendaLashista({ current }) {
+    const [dateInfo, setDateInfo] = useState(getCurrentDateSpan());
+
     return (
         <VStack gap={"2rem"} align={"end"}>
             <HStack justify={"space-between"} w={"100%"}>
-                <Heading size={"2xl"}>Hadassa</Heading>
-                <Button colorPalette={"green"}>
+                <Heading size={"2xl"}>{current?.nombre}</Heading>
+                {/* <Button colorPalette={"green"}>
                     <FaWhatsapp /> Enviar Recordatorios de Esta Semana
-                </Button>
+                </Button> */}
             </HStack>
-            <CitasInfo title={"Esta Semana"} dateInfo={"01/05 - 07/05"} />
-            <CitasInfo title={"Futuras"} dateInfo={"08/05 en adelante"} />
-            <CitasInfo title={"Pasadas"} dateInfo={"30/04 hacias atrás"} />
+            <CitasInfo
+                title={"Esta Semana"}
+                dateInfo={`${dateInfo?.thisWeek.startDate} - ${dateInfo?.thisWeek.endDate}`}
+                lashista={current}
+            />
+            <CitasInfo
+                title={"Futuras"}
+                dateInfo={`${dateInfo?.future} en adelante`}
+                lashista={current}
+            />
+            <CitasInfo
+                title={"Pasadas"}
+                dateInfo={`${dateInfo?.past} hacias atrás`}
+                lashista={current}
+            />
         </VStack>
     );
 }
 
-function CitasInfo({ title, dateInfo }) {
+function CitasInfo({ title, dateInfo, lashista }) {
+    // const [citas, setCitas] = useState();
+
+    useEffect(() => {
+        console.log(lashista);
+        
+        // if(current){
+        //     axios.get()
+        // }
+    }, [lashista]);
     return (
         <VStack gap={"1rem"} w={"100%"}>
             <HStack justify={"space-between"} w={"100%"}>
                 <Text>{title}</Text>
                 <Text>{dateInfo}</Text>
             </HStack>
-            <CitasTable citas={citas} />
+            {citas ? (
+                <CitasTable citas={citas} />
+            ) : (
+                <Heading mb={"2rem"}>Sin citas en este periodo</Heading>
+            )}
             {/* <Box bg={"gray"} w={"20rem"} h={"10rem"}/> */}
         </VStack>
     );
@@ -217,54 +254,3 @@ const citas = [
         confirmada: false,
     },
 ];
-
-function _CitasTable({ citas }) {
-    return (
-        <Table.Root
-            size="md"
-            striped
-            variant={"outline"}
-            bg={"white"}
-            w={"70%"}
-            m={"auto"}
-        >
-            <Table.Header>
-                <Table.Row bg={"pink.500"}>
-                    <Table.ColumnHeader color={"white"}></Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Nombre
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Servicio
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Fecha
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Hora
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Lashista
-                    </Table.ColumnHeader>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {citas.map((cita, i) => (
-                    <Table.Row key={i}>
-                        <Table.Cell>
-                            <TfiReceipt size={"1.7rem"} />
-                        </Table.Cell>
-                        <Table.Cell>{`${cita.nombres} ${cita.apellidos}`}</Table.Cell>
-                        <Table.Cell>{cita.servicio}</Table.Cell>
-                        {/* <Table.Cell>{cita.fecha}</Table.Cell> */}
-                        <Table.Cell>
-                            {formatHoyTitle(formatFechaDMY(cita.fecha))}
-                        </Table.Cell>
-                        <Table.Cell>{cita.hora}</Table.Cell>
-                        <Table.Cell>{cita.lashista}</Table.Cell>
-                    </Table.Row>
-                ))}
-            </Table.Body>
-        </Table.Root>
-    );
-}

@@ -1,3 +1,4 @@
+import { loadHook } from "@/utils/lattice-design";
 import { Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -5,11 +6,13 @@ import { AiFillPicture } from "react-icons/ai";
 
 export default function Servicios() {
     const [servicios, setServicios] = useState(null);
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         axios.get("/api/servicios").then((serviciosResp) => {
             console.log(serviciosResp.data);
             setServicios(serviciosResp.data);
+            setLoading(false)
         });
     }, []);
 

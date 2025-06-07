@@ -9,6 +9,7 @@ import {
     Heading,
     HStack,
     Link,
+    Spinner,
     Text,
     useSelect,
     VStack,
@@ -29,10 +30,16 @@ Nexus({
     useDOM: Singleton({ title: "Hadassa Cerón" }),
     useSelectedDate: Singleton(null),
     useEvents: Singleton([]),
+    useLoader: Singleton(true),
 });
 
 export default function App({ Component, pageProps }) {
     const [DOM] = loadHook("useDOM");
+    const [loading, setLoading] = loadHook("useLoader");
+
+    useEffect(() => {
+        setLoading(false)
+    }, []);
 
     return (
         <Provider>
@@ -41,13 +48,44 @@ export default function App({ Component, pageProps }) {
                 <link rel="icon" href="/favicon4.png" />
             </Head>
 
-            <Box bg={"#f1f5ff"}>
+            <Box
+                bg={"#f1f5ff"}
+                h={loading ? "100vh" : "initial"}
+                overflow={loading ? "hidden" : "default"}
+            >
                 <NavBar h={"10vh"} />
                 <VStack id="Body" px={"2rem"} py={"2.5rem"} minH={"90vh"}>
                     <Component {...pageProps} />
                 </VStack>
+                <Loader loading={loading} />
             </Box>
         </Provider>
+    );
+}
+
+function Loader({ loading }) {
+    return (
+        <Box
+            display={loading ? "block" : "none"}
+            position={"absolute"}
+            w={"100vw"}
+            h={"100vh"}
+            bg={"white"}
+            zIndex={10}
+            top={0}
+            left={0}
+        >
+            <HStack
+                justifyContent={"center"}
+                alignItems={"center"}
+                w={"100%"}
+                h={"100%"}
+            >
+                <Box transform={"scale(2)"}>
+                    <Spinner size="xl" color="pink.500" borderWidth={"2px"} />
+                </Box>
+            </HStack>
+        </Box>
     );
 }
 
@@ -57,6 +95,7 @@ function NavBar({ h }) {
     const router = useRouter();
     const [events] = loadHook("useEvents");
     const [currentPath, setCurrentPath] = useState(null);
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         console.log("route", router);
@@ -94,6 +133,7 @@ function NavBar({ h }) {
                     <Button
                         bg={"pink.500"}
                         onClick={() => {
+                            setLoading(true)
                             console.log("events", events);
 
                             const parsedDate = parse(
@@ -142,6 +182,7 @@ function NavBar({ h }) {
             >
                 <Link
                     onClick={() => {
+                        setLoading(true)
                         NextNav.push("/citas");
                     }}
                     color={"#ec4899"}
@@ -150,18 +191,31 @@ function NavBar({ h }) {
                 </Link>
                 <Link
                     onClick={() => {
+                        setLoading(true)
                         NextNav.push("/clientas");
                     }}
                     color={"#ec4899"}
                 >
                     Clientas
                 </Link>
-                <Link onClick={() => {
+                <Link
+                    onClick={() => {
+                        setLoading(true)
                         NextNav.push("/servicios");
-                    }} color={"#ec4899"}>Servicios</Link>
-                <Link onClick={() => {
+                    }}
+                    color={"#ec4899"}
+                >
+                    Servicios
+                </Link>
+                <Link
+                    onClick={() => {
+                        setLoading(true)
                         NextNav.push("/lashistas");
-                    }} color={"#ec4899"}>Lashistas</Link>
+                    }}
+                    color={"#ec4899"}
+                >
+                    Lashistas
+                </Link>
                 {/* <Button bg={"#ec4899"} size={"xs"}>
                     <RxHamburgerMenu />
                 </Button> */}
