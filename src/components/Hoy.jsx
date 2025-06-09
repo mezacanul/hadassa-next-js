@@ -194,6 +194,11 @@ export default function Hoy() {
 function CitaDialog({ setOpenDialogue, data }) {
     const NextNav = useNextNav();
     const citaData = { ...data.extendedProps };
+    const [loading, setLoading] = loadHook("useLoader")
+
+    useEffect(()=>{
+        console.log(data);
+    }, [])
     return (
         <Portal>
             <Dialog.Backdrop />
@@ -229,7 +234,7 @@ function CitaDialog({ setOpenDialogue, data }) {
                                             borderRadius={"50%"}
                                             src={`/img/clientas/${
                                                 citaData.foto
-                                                    ? clienta.foto
+                                                    ? citaData.foto
                                                     : "avatar-woman.png"
                                             }`}
                                             objectFit={"cover"}
@@ -290,7 +295,8 @@ function CitaDialog({ setOpenDialogue, data }) {
                                 <Button
                                     bg={"pink.600"}
                                     onClick={() => {
-                                        NextNav.push(`/citas/1`);
+                                        setLoading(true)
+                                        NextNav.push(`/citas/${citaData.cita_ID}`);
                                     }}
                                 >
                                     Abrir Ticket
@@ -356,7 +362,7 @@ function renderResourceLabel(info) {
 
 export function formatEvents(eventsData) {
     if (eventsData != null) {
-        // console.log(eventsData);
+        console.log("Formatted", eventsData);
 
         return eventsData.map((ed) => {
             // Split the date into parts and rearrange

@@ -1,5 +1,5 @@
 import { loadHook } from "@/utils/lattice-design";
-import { Grid, GridItem, Heading, VStack } from "@chakra-ui/react";
+import { Heading } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -13,7 +13,8 @@ export default function Clienta() {
     }, [])
 
     return (
-        <Heading>Clienta</Heading>
+        <div>
+            <Heading>Hola Clienta {clientaID}</Heading>
+        </div>
     );
 }
-

@@ -26,6 +26,36 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === "GET") {
+            if (req.query.id) {
+                const query = `SELECT 
+                            citas.id as cita_ID,
+                            servicios.image servicio_foto,
+                            lashistas.image as lashista_foto, 
+                            lashistas.nombre as lashista,
+                            citas.cama_id,
+                            servicios.servicio, 
+                            citas.fecha,
+                            citas.hora,
+                            citas.metodo_pago,
+                            servicios.precio,
+                            citas.status,
+                            citas.pagado,
+                            clientas.id as clienta_id, 
+                            clientas.foto_clienta, 
+                            clientas.nombres as clienta_nombres, 
+                            clientas.apellidos as clienta_apellidos, 
+                            clientas.lada, 
+                            clientas.telefono,
+                            clientas.detalles_cejas
+                        FROM 
+                            citas
+                        LEFT JOIN clientas ON citas.clienta_id = clientas.id
+                        LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
+                        LEFT JOIN servicios ON citas.servicio_id = servicios.id
+                        WHERE citas.id = ?`;
+                const [rows] = await connection.execute(query, [req.query.id])
+                res.status(200).json(rows[0]);
+            }
             // Map query params to database columns
             // Also defining which filters are allowed (+ at parseQueryFilters)
             const filterMap = {
@@ -40,14 +70,26 @@ export default async function handler(req, res) {
             );
             console.log(conditions, params);
 
-            let query = `SELECT clientas.nombres, clientas.apellidos, clientas.foto_clienta as foto, servicios.servicio, servicios.id as servicio_id, servicios.precio, servicios.minutos as duracion, fecha, hora, cama_id, lashistas.nombre as lashista 
+            let query = `SELECT 
+                        citas.id as cita_ID, 
+                        fecha, 
+                        hora, 
+                        cama_id, 
+                        clientas.nombres, 
+                        clientas.apellidos, 
+                        clientas.foto_clienta as foto, 
+                        servicios.id as servicio_id, 
+                        servicios.servicio, 
+                        servicios.precio, 
+                        servicios.minutos as duracion, 
+                        lashistas.nombre as lashista 
                     FROM 
                       citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     LEFT JOIN lashistas ON citas.lashista_id = lashistas.id`;
             let fullQuery = queryPlusFilters(query, conditions);
-            fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`
+            fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`;
 
             const [rows] = await connection.execute(fullQuery, params);
             res.status(200).json(rows);
@@ -59,6 +101,8 @@ export default async function handler(req, res) {
             //     -> horarios?filtro=disponibles&fecha&hora
             if (req.body.action == "agendar") {
                 const cita = req.body;
+                console.log(cita);
+                
                 try {
                     const [uuidResult] = await connection.execute(
                         `SELECT UUID() AS id`
@@ -69,8 +113,8 @@ export default async function handler(req, res) {
                         .replace("+", "");
 
                     const [mysql_response] = await connection.execute(
-                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, added) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, metodo_pago, status, added) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
                         [
                             uuid,
                             cita.clienta.id,
@@ -79,6 +123,8 @@ export default async function handler(req, res) {
                             cita.fecha,
                             hora,
                             cita.horario.cama,
+                            cita.metodoPago,
+                            1
                         ]
                     );
                     if (mysql_response.affectedRows > 0) {
@@ -116,7 +162,7 @@ export default async function handler(req, res) {
             let horariosDispPorCama = {};
             let disponibilidad = {};
             let camaDisponible = null;
-            let horarioLashista = []
+            let horarioLashista = [];
             const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
             const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
             const horarioDelDia = generarHorarioDelDia({
@@ -133,7 +179,7 @@ export default async function handler(req, res) {
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
-                    WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}'`
+                    WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}' AND citas.status != 0`
                 // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
             );
             [servicios] = await connection.execute(
@@ -162,12 +208,17 @@ export default async function handler(req, res) {
                 ])
             );
 
-            horarioLashista = ["Saturday", "Sunday"].includes(dayName) ? lashista.horarioSBD : lashista.horarioLV 
-            let horarioLashistaArray = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
+            horarioLashista = ["Saturday", "Sunday"].includes(dayName)
+                ? lashista.horarioSBD
+                : lashista.horarioLV;
+            let horarioLashistaArray = filterTimeSlotsByRange(
+                horarioDelDia,
+                horarioLashista
+            );
             // horarioDelDia = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
             // console.log(lashista.nombre, {horarioDelDia, lashista});
             // console.log("Filtrado", filterTimeSlotsByRange(horarioDelDia, horarioLashista));
-            
+
             citaDetalles = {
                 hora: cita.hora,
                 duracion: servicios[cita.servicio_id].minutos,
@@ -179,7 +230,8 @@ export default async function handler(req, res) {
             // para mas adelante filtrar y eliminar los horarios ocupados por citas
             camasKeys.forEach(
                 // (camaID) => (horariosDispPorCama[camaID] = [...horarioDelDia])
-                (camaID) => (horariosDispPorCama[camaID] = [...horarioLashistaArray])
+                (camaID) =>
+                    (horariosDispPorCama[camaID] = [...horarioLashistaArray])
             );
 
             if (citasDelDia.length > 0) {
@@ -225,7 +277,7 @@ export default async function handler(req, res) {
             }
         } else {
             // Handle unsupported methods
-            res.status(405).json({ error: "Method not allowed" });
+            res.status(405).json({ error });
         }
     } catch (error) {
         res.status(500).json({

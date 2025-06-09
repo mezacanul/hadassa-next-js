@@ -1,4 +1,4 @@
-// pages/api/lashistas.js
+// pages/api/servicios.js
 import mysql from "mysql2/promise";
 import { db_info } from "@/config/db";
 
@@ -12,16 +12,20 @@ export default async function handler(req, res) {
     });
 
     try {
-        // Query the lashistas table
-        const [rows] = await connection.execute(
-            "SELECT * FROM lashistas ORDER BY nombre ASC"
-        );
-        // Send the results as an array
-        res.status(200).json(rows);
+        // if (req.method == "GET") {
+            if (req.query.clientaID) {
+                const [rows] = await connection.execute(
+                    `SELECT 
+                        * 
+                    FROM fotos_cejas 
+                    WHERE id_clienta = ?`,
+                [req.query.clientaID]);
+                res.status(200).json(rows);
+            }
+        // }
     } catch (error) {
         res.status(500).json({ error });
     } finally {
-        // Close the connection
         await connection.end();
     }
 }

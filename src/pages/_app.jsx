@@ -124,6 +124,7 @@ function NavBar({ h }) {
                     {router.pathname == "/" && formatHoyTitle(selectedDate)}
                     {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
                     {router.pathname == "/citas" && "Citas"}
+                    {router.pathname == "/citas/[citaID]" && "Cita"}
                     {router.pathname == "/clientas" && "Clientas"}
                     {router.pathname == "/servicios" && "Servicios"}
                     {router.pathname == "/lashistas" && "Lashistas"}

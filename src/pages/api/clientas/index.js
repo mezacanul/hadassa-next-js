@@ -43,7 +43,7 @@ export default async function handler(req, res) {
                     inserted: mysql_response.affectedRows,
                 });
             } else {
-                res.status(500).json({ error: "Not added" });
+                res.status(500).json({ error});
             }
         }
     } catch (error) {

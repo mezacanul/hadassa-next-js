@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         );
         res.status(200).json(rows);
     } catch (error) {
-        res.status(500).json({ error: "Failed to load 'servicios' service" });
+        res.status(500).json({ error });
     } finally {
         await connection.end();
     }

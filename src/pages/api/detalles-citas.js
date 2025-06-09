@@ -36,10 +36,7 @@ export default async function handler(req, res) {
             res.status(200).json(req.body);
         }
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to fetch citas",
-            error: error,
-        });
+        res.status(500).json({ error });
     } finally {
         await connection.end();
     }
