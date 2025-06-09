@@ -38,6 +38,7 @@ export default async function handler(req, res) {
                             citas.hora,
                             citas.metodo_pago,
                             servicios.precio,
+                            servicios.precio_tarjeta,
                             citas.status,
                             citas.pagado,
                             clientas.id as clienta_id, 

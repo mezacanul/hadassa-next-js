@@ -23,6 +23,7 @@ import { useRouter as useNextNav } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { FaHouseChimney } from "react-icons/fa6";
+import { useAgendarLoading, useCitaID, useMetodoPago } from "@/components/agendar-cita/OrderSummary";
 
 // import Router from 'next/router';
 
@@ -38,14 +39,14 @@ export default function App({ Component, pageProps }) {
     const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
-        setLoading(false)
+        setLoading(false);
     }, []);
 
     return (
         <Provider>
             <Head>
                 <title>{DOM.title}</title>
-                <link rel="icon" href="/favicon4.png" />
+                <link rel="icon" href="/favicon.png" />
             </Head>
 
             <Box
@@ -97,6 +98,10 @@ function NavBar({ h }) {
     const [currentPath, setCurrentPath] = useState(null);
     const [loading, setLoading] = loadHook("useLoader");
 
+    const [citaID, setCitaID] = useCitaID();
+    const [mp, setMp] = useMetodoPago();
+    const [agendarLoading, setAgendarLoading] = useAgendarLoading();
+
     useEffect(() => {
         console.log("route", router);
     }, [router]);
@@ -135,7 +140,7 @@ function NavBar({ h }) {
                     <Button
                         bg={"pink.500"}
                         onClick={() => {
-                            setLoading(true)
+                            setLoading(true);
                             console.log("events", events);
 
                             const parsedDate = parse(
@@ -164,7 +169,10 @@ function NavBar({ h }) {
                 ) : (
                     <Button
                         onClick={() => {
-                            setLoading(true)
+                            setMp([])
+                            setCitaID(null)
+                            setAgendarLoading(null)
+                            setLoading(true);
                             NextNav.push("/");
                         }}
                         bg={"pink.500"}
@@ -185,7 +193,7 @@ function NavBar({ h }) {
             >
                 <Link
                     onClick={() => {
-                        setLoading(true)
+                        setLoading(true);
                         NextNav.push("/citas");
                     }}
                     color={"#ec4899"}
@@ -194,7 +202,7 @@ function NavBar({ h }) {
                 </Link>
                 <Link
                     onClick={() => {
-                        setLoading(true)
+                        setLoading(true);
                         NextNav.push("/clientas");
                     }}
                     color={"#ec4899"}
@@ -203,7 +211,7 @@ function NavBar({ h }) {
                 </Link>
                 <Link
                     onClick={() => {
-                        setLoading(true)
+                        setLoading(true);
                         NextNav.push("/servicios");
                     }}
                     color={"#ec4899"}
@@ -212,7 +220,7 @@ function NavBar({ h }) {
                 </Link>
                 <Link
                     onClick={() => {
-                        setLoading(true)
+                        setLoading(true);
                         NextNav.push("/lashistas");
                     }}
                     color={"#ec4899"}

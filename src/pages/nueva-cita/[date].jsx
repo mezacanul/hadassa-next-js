@@ -21,19 +21,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loadHook, Singleton } from "@/utils/lattice-design";
 import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
-import { sortHours } from "@/utils/disponibilidad";
 import axios from "axios";
-import { parse, format } from "date-fns";
-import { es } from "date-fns/locale";
 import { FaCreditCard } from "react-icons/fa6";
 import { FaMoneyBill } from "react-icons/fa";
-
-import { LuBedSingle, LuReceiptText, LuCalendar1 } from "react-icons/lu";
-import { FaRegClock } from "react-icons/fa";
-import { IoPersonOutline } from "react-icons/io5";
-import { PiCashRegisterBold } from "react-icons/pi";
-import { FaRegSquareMinus } from "react-icons/fa6";
-import { BsWhatsapp } from "react-icons/bs";
+import OrderSummary from "@/components/agendar-cita/OrderSummary";
 
 export const useCurrentCita = Singleton({
     servicio: null,
@@ -42,9 +33,6 @@ export const useCurrentCita = Singleton({
     clienta: null,
     fecha: null,
 });
-
-export const useMetodoPago = Singleton(null);
-export const useAgendarLoading = Singleton(null);
 
 export default function NuevaCita() {
     const router = useRouter();
@@ -222,7 +210,12 @@ export default function NuevaCita() {
     );
 }
 
+const useSearchTerm = Singleton("");
+
 function ActionsClienta({ clientasState, setClientasState }) {
+    const [searchTerm, setSearchTerm] = useSearchTerm();
+    const handleChange = (e) => setSearchTerm(e.target.value);
+
     return (
         <Grid
             w={"100%"}
@@ -236,6 +229,8 @@ function ActionsClienta({ clientasState, setClientasState }) {
                 bg={"white"}
                 size={"sm"}
                 placeholder="Buscar"
+                value={searchTerm}
+                onChange={handleChange}
             />
             <GridItem alignSelf={"start"}>
                 <Button
@@ -250,353 +245,6 @@ function ActionsClienta({ clientasState, setClientasState }) {
                 </Button>
             </GridItem>
         </Grid>
-    );
-}
-
-function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
-    const [citaID, setCitaID] = useState(null);
-    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
-    const [currentCita, setCurrentCita] = useCurrentCita();
-    const [mp, setMp] = useMetodoPago();
-    const [agendarLoading, setAgendarLoading] = useAgendarLoading();
-
-    const handleAgendar = () => {
-        setAgendarLoading(true);
-        console.log({ ...currentCita, metodoPago: mp[0] });
-
-        axios
-            .post("/api/citas", {
-                ...currentCita,
-                metodoPago: mp[0],
-                action: "agendar",
-            })
-            .then((citasResp) => {
-                console.log(citasResp);
-                if (citasResp.status == 201 && citasResp.data.uuid) {
-                    setCitaID(citasResp.data.uuid);
-                    setAgendarLoading(false);
-                }
-            });
-    };
-
-    const handleCurrentStage = (stage) => {
-        switch (stage) {
-            case "Servicio":
-                // setMp([])
-                setClientasState("buscar");
-                setCurrentCita({
-                    ...currentCita,
-                    servicio: null,
-                    lashista: null,
-                    horario: null,
-                    clienta: null,
-                });
-                break;
-            case "Lashista":
-                setClientasState("buscar");
-                setCurrentCita({
-                    ...currentCita,
-                    lashista: null,
-                    horario: null,
-                    clienta: null,
-                });
-                break;
-            case "Horario":
-                setClientasState("buscar");
-                setCurrentCita({
-                    ...currentCita,
-                    horario: null,
-                    clienta: null,
-                });
-                break;
-            case "Clienta":
-                setClientasState("buscar");
-                setCurrentCita({
-                    ...currentCita,
-                    clienta: null,
-                });
-                break;
-            default:
-                break;
-        }
-        setCurrentPaso(stage);
-        console.log(stage);
-    };
-
-    return (
-        <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
-            <Heading color={"pink.600"}>Resumen</Heading>
-
-            <VStack
-                w={"100%"}
-                align={"start"}
-                gap={"1.5rem"}
-                mt={"1rem"}
-                mb={"2rem"}
-            >
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <LuCalendar1 />
-                        <Text>Fecha: </Text>
-                    </HStack>
-                    <Text
-                        textDecor={"underline"}
-                        fontWeight={700}
-                        color={"pink.600"}
-                    >
-                        {/* {selectedDate && formatFechaDMY(selectedDate)} */}
-                        {selectedDate && formatHoyTitle(selectedDate)}
-                    </Text>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <LuReceiptText />
-                        <Text>Servicio: </Text>
-                    </HStack>
-                    <HStack>
-                        {currentCita.servicio && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Servicio");
-                                    }}
-                                />
-                            </Text>
-                        )}
-                        <Text
-                            textDecor={
-                                currentCita.servicio ? "underline" : "none"
-                            }
-                            fontWeight={700}
-                            color={"pink.600"}
-                        >
-                            {currentCita.servicio
-                                ? currentCita.servicio.servicio
-                                : "--"}
-                        </Text>
-                    </HStack>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <LuBedSingle />
-                        <Text>Lashista: </Text>
-                    </HStack>
-                    <HStack>
-                        {currentCita.lashista && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Lashista");
-                                    }}
-                                />
-                            </Text>
-                        )}
-                        <Text
-                            textDecor={
-                                currentCita.lashista ? "underline" : "none"
-                            }
-                            fontWeight={700}
-                            color={"pink.600"}
-                        >
-                            {currentCita.lashista
-                                ? currentCita.lashista.nombre
-                                : "--"}
-                        </Text>
-                    </HStack>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <FaRegClock />
-                        <Text>Hora: </Text>
-                    </HStack>
-                    <HStack>
-                        {currentCita.horario && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Horario");
-                                    }}
-                                />
-                            </Text>
-                        )}
-                        <Text
-                            textDecor={
-                                currentCita.horario ? "underline" : "none"
-                            }
-                            fontWeight={700}
-                            color={"pink.600"}
-                        >
-                            {currentCita.horario
-                                ? currentCita.horario.hora
-                                : "--"}
-                        </Text>
-                    </HStack>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <IoPersonOutline />
-                        <Text>Clienta: </Text>
-                    </HStack>
-                    <HStack>
-                        {currentCita.clienta && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Clienta");
-                                    }}
-                                />
-                            </Text>
-                        )}
-                        <Text
-                            truncate
-                            textDecor={
-                                currentCita.clienta ? "underline" : "none"
-                            }
-                            fontWeight={700}
-                            color={"pink.600"}
-                        >
-                            {currentCita.clienta
-                                ? `${currentCita.clienta.nombres} ${currentCita.clienta.apellidos}`
-                                : "--"}
-                        </Text>
-                    </HStack>
-                </HStack>
-
-                <HStack w={"100%"} justify={"space-between"}>
-                    <HStack>
-                        <PiCashRegisterBold />
-                        <Text>Total: </Text>
-                    </HStack>
-                    <Text
-                        textDecor={
-                            currentCita.servicio && mp ? "underline" : "none"
-                        }
-                        fontWeight={700}
-                        color={"pink.600"}
-                    >
-                        {currentCita.servicio &&
-                            mp == "efectivo" &&
-                            `$${currentCita.servicio.precio}`}
-                        {currentCita.servicio &&
-                            mp == "tarjeta" &&
-                            `$${currentCita.servicio.precio_tarjeta}`}
-                        {!mp && "--"}
-                    </Text>
-                </HStack>
-            </VStack>
-
-            <SelectMetodoPago />
-            <CitaExito />
-            {!citaID && agendarLoading != true && (
-                <Button
-                    disabled={mp ? false : true}
-                    onClick={handleAgendar}
-                    size={"lg"}
-                    bg={"pink.500"}
-                    w={"100%"}
-                >
-                    Confirmar y Agendar
-                </Button>
-            )}
-        </VStack>
-    );
-}
-
-function SelectMetodoPago() {
-    const [mp, setMp] = useMetodoPago();
-
-    const metodosPago = createListCollection({
-        items: [
-            { label: "Efectivo", value: "efectivo" },
-            { label: "Tarjeta", value: "tarjeta" },
-        ],
-    });
-
-    return (
-        <Select.Root
-            mb={"0.5rem"}
-            collection={metodosPago}
-            size="md"
-            width="100%"
-            value={mp ? mp : ""}
-            onValueChange={(e) => {
-                setMp(e.value);
-            }}
-        >
-            <Select.HiddenSelect />
-            <Select.Control>
-                <Select.Trigger>
-                    <Select.ValueText placeholder="Metodo de Pago" />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                    <Select.Indicator />
-                </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-                <Select.Positioner>
-                    <Select.Content>
-                        {metodosPago.items.map((metodoPago) => (
-                            <Select.Item
-                                item={metodoPago}
-                                key={metodoPago.value}
-                            >
-                                {metodoPago.label}
-                                <Select.ItemIndicator />
-                            </Select.Item>
-                        ))}
-                    </Select.Content>
-                </Select.Positioner>
-            </Portal>
-        </Select.Root>
-    );
-}
-
-function CitaExito() {
-    const [agendarLoading] = useAgendarLoading();
-
-    return (
-        <VStack gap={"1rem"} align={"center"} w={"100%"}>
-            {agendarLoading == true && (
-                <Spinner size={"md"} color={"pink.500"} />
-            )}
-            {agendarLoading == false && (
-                <>
-                    <Alert.Root
-                        status="success"
-                        w={"100%"}
-                        shadow={"md"}
-                        textAlign={"center"}
-                    >
-                        <Alert.Indicator />
-                        <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
-                    </Alert.Root>
-                    {/* <Button colorPalette={"green"}>
-                        Enviar Ticket
-                        <BsWhatsapp />
-                    </Button> */}
-                </>
-            )}
-        </VStack>
     );
 }
 
@@ -688,11 +336,15 @@ function SelectHorarios({ selectedDate }) {
     );
 }
 
+const useClientas = Singleton(null);
+
 function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
-    const [clientas, setClientas] = useState(null);
+    const [clientas, setClientas] = useClientas();
+    const [searchTerm, setSearchTerm] = useSearchTerm();
 
     useEffect(() => {
         axios.get("/api/clientas").then((clientasResp) => {
+            // console.log(clientasResp.data);
             setClientas(clientasResp.data);
         });
     }, []);
@@ -703,15 +355,21 @@ function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
                 {/* <Button bg={"pink.500"}>Nueva</Button> */}
                 {clientas &&
                     clientasState == "buscar" &&
-                    clientas.map((clienta) => {
-                        return (
-                            <ClientaCard
-                                key={clienta.id}
-                                data={clienta}
-                                setCurrentPaso={setCurrentPaso}
-                            />
-                        );
-                    })}
+                    clientas
+                        .filter((clienta) =>
+                            (clienta.nombres + " " + clienta.apellidos)
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase())
+                        )
+                        .map((clienta) => {
+                            return (
+                                <ClientaCard
+                                    key={clienta.id}
+                                    data={clienta}
+                                    setCurrentPaso={setCurrentPaso}
+                                />
+                            );
+                        })}
                 {clientas && clientasState == "nueva" && (
                     <NuevaClienta
                         setClientasState={setClientasState}
