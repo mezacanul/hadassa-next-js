@@ -1,9 +1,11 @@
 import { useCita } from "@/pages/citas/[citaID]";
 import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
 import { Badge, Heading, HStack, Text, VStack } from "@chakra-ui/react";
+import { SelectMetodoPago, useMetodoPago } from "../agendar-cita/OrderSummary";
 
 export default function DetallesTicket() {
     const [cita] = useCita();
+    const [mp, setMp] = useMetodoPago();
     let statusBadgeColor;
 
     switch (cita.status) {
@@ -35,13 +37,10 @@ export default function DetallesTicket() {
             </HStack>
 
             <HStack w={"100%"} justify={"space-between"}>
-                <Text>Método de Pago:</Text>
-                <Text fontWeight={800}>{cita.metodo_pago}</Text>
-            </HStack>
-
-            <HStack w={"100%"} justify={"space-between"}>
                 <Text>Precio:</Text>
-                <Text fontWeight={800}>${cita.precio}</Text>
+                <Text fontWeight={800}>
+                    ${mp == "efectivo" ? cita.precio : cita.precio_tarjeta}
+                </Text>
             </HStack>
 
             <HStack w={"100%"} justify={"space-between"}>
@@ -72,6 +71,11 @@ export default function DetallesTicket() {
                         {cita.pagado == 1 ? "Pagado" : "Pendiente"}
                     </Badge>
                 </Text>
+            </HStack>
+
+            <HStack w={"100%"} justify={"space-between"}>
+                <Text>Método de Pago:</Text>
+                <SelectMetodoPago value={cita.metodo_pago} w={"12rem"} />
             </HStack>
         </VStack>
     );

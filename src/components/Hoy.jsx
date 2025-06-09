@@ -297,6 +297,7 @@ function CitaDialog({ setOpenDialogue, data }) {
                                     bg={"pink.600"}
                                     onClick={() => {
                                         setLoading(true)
+                                        setOpenDialogue(false);
                                         NextNav.push(`/citas/${citaData.cita_ID}`);
                                     }}
                                 >
