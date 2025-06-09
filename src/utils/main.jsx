@@ -44,7 +44,7 @@ function queryPlusFilters(query, conditions){
                 : conditions[0]);
     }
 
-    return fullQuery
+    return `${fullQuery} AND citas.status != 0`
 }
 
 // Function to parse req.query and build conditions

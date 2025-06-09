@@ -3,6 +3,7 @@ import { Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { AiFillPicture } from "react-icons/ai";
+import { useRouter as useNextNav } from "next/navigation";
 
 export default function Clientas() {
     const [clientas, setClientas] = useState(null);
@@ -12,7 +13,7 @@ export default function Clientas() {
         axios.get("/api/clientas").then((clientasResp) => {
             console.log(clientasResp.data);
             setClientas(clientasResp.data);
-            setLoading(false)
+            setLoading(false);
         });
     }, []);
 
@@ -24,6 +25,9 @@ export default function Clientas() {
 }
 
 function ClientasTable({ clientas }) {
+    const NextNav = useNextNav();
+    const [loading, setLoading] = loadHook("useLoader");
+
     return (
         <Table.Root
             size="md"
@@ -68,9 +72,13 @@ function ClientasTable({ clientas }) {
                     <Table.Row key={i}>
                         <Table.Cell>
                             <Image
-                                w={"10rem"}
+                                // w={"20vw"}
                                 rounded={"md"}
-                                src={`/img/clientas/${clienta.foto_clienta ? clienta.foto_clienta : "avatar-woman.png"}`}
+                                src={`/img/clientas/${
+                                    clienta.foto_clienta
+                                        ? clienta.foto_clienta
+                                        : "avatar-woman.png"
+                                }`}
                             />
                         </Table.Cell>
                         <Table.Cell>{`${clienta.nombres} ${clienta.apellidos}`}</Table.Cell>
@@ -82,7 +90,15 @@ function ClientasTable({ clientas }) {
                         <Table.Cell>{clienta.detalles_cejas}</Table.Cell>
                         <Table.Cell>{clienta.fotos_cejas}</Table.Cell>
                         <Table.Cell>
-                            <Button bg={"pink.500"}>Editar</Button>
+                            <Button
+                                onClick={() => {
+                                    setLoading(true);
+                                    NextNav.push(`/clientas/${clienta.id}`);
+                                }}
+                                bg={"pink.500"}
+                            >
+                                Editar
+                            </Button>
                         </Table.Cell>
                     </Table.Row>
                 ))}

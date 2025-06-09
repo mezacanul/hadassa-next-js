@@ -1,0 +1,1 @@
+export const CDN = "https://joseeduardo1749289174459.2140068.misitiohostgator.com/hadassa"

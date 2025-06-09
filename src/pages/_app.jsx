@@ -124,9 +124,11 @@ function NavBar({ h }) {
                     {router.pathname == "/" && formatHoyTitle(selectedDate)}
                     {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
                     {router.pathname == "/citas" && "Citas"}
+                    {router.pathname == "/citas/[citaID]" && "Cita"}
                     {router.pathname == "/clientas" && "Clientas"}
                     {router.pathname == "/servicios" && "Servicios"}
                     {router.pathname == "/lashistas" && "Lashistas"}
+                    {router.pathname == "/dev" && "Developer"}
                 </Heading>
                 {/* format(info.date, "yyyy-MM-dd"); */}
                 {router.pathname == "/" ? (
@@ -162,6 +164,7 @@ function NavBar({ h }) {
                 ) : (
                     <Button
                         onClick={() => {
+                            setLoading(true)
                             NextNav.push("/");
                         }}
                         bg={"pink.500"}

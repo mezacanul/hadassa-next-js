@@ -13,6 +13,9 @@ import {
     Spinner,
     Input,
     Alert,
+    Select,
+    Portal,
+    createListCollection,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -22,6 +25,8 @@ import { sortHours } from "@/utils/disponibilidad";
 import axios from "axios";
 import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
+import { FaCreditCard } from "react-icons/fa6";
+import { FaMoneyBill } from "react-icons/fa";
 
 import { LuBedSingle, LuReceiptText, LuCalendar1 } from "react-icons/lu";
 import { FaRegClock } from "react-icons/fa";
@@ -38,7 +43,8 @@ export const useCurrentCita = Singleton({
     fecha: null,
 });
 
-// export const useCurrentCita = Singleton(null)
+export const useMetodoPago = Singleton(null);
+export const useAgendarLoading = Singleton(null);
 
 export default function NuevaCita() {
     const router = useRouter();
@@ -54,7 +60,7 @@ export default function NuevaCita() {
 
     const [currentPaso, setCurrentPaso] = useState("Servicio");
     const [clientasState, setClientasState] = useState("buscar");
-    const [loading, setLoading] = loadHook("useLoader")
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         setDOM({ title: "Agendar Cita" });
@@ -68,7 +74,7 @@ export default function NuevaCita() {
             console.log(serviciosResp.data, lashistasResp.data);
         });
 
-        setLoading(false)
+        setLoading(false);
         return () => {
             useCurrentCita.reset();
         };
@@ -251,15 +257,24 @@ function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
     const [citaID, setCitaID] = useState(null);
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
+    const [mp, setMp] = useMetodoPago();
+    const [agendarLoading, setAgendarLoading] = useAgendarLoading();
 
     const handleAgendar = () => {
-        console.log(currentCita);
+        setAgendarLoading(true);
+        console.log({ ...currentCita, metodoPago: mp[0] });
+
         axios
-            .post("/api/citas", { ...currentCita, action: "agendar" })
+            .post("/api/citas", {
+                ...currentCita,
+                metodoPago: mp[0],
+                action: "agendar",
+            })
             .then((citasResp) => {
                 console.log(citasResp);
                 if (citasResp.status == 201 && citasResp.data.uuid) {
                     setCitaID(citasResp.data.uuid);
+                    setAgendarLoading(false);
                 }
             });
     };
@@ -267,6 +282,7 @@ function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
     const handleCurrentStage = (stage) => {
         switch (stage) {
             case "Servicio":
+                // setMp([])
                 setClientasState("buscar");
                 setCurrentCita({
                     ...currentCita,
@@ -316,7 +332,7 @@ function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
                 align={"start"}
                 gap={"1.5rem"}
                 mt={"1rem"}
-                mb={"3rem"}
+                mb={"2rem"}
             >
                 <HStack w={"100%"} justify={"space-between"}>
                     <HStack>
@@ -472,25 +488,32 @@ function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
                         <Text>Total: </Text>
                     </HStack>
                     <Text
-                        textDecor={currentCita.servicio ? "underline" : "none"}
+                        textDecor={
+                            currentCita.servicio && mp ? "underline" : "none"
+                        }
                         fontWeight={700}
                         color={"pink.600"}
                     >
-                        {currentCita.servicio
-                            ? `$${currentCita.servicio.precio}`
-                            : "--"}
+                        {currentCita.servicio &&
+                            mp == "efectivo" &&
+                            `$${currentCita.servicio.precio}`}
+                        {currentCita.servicio &&
+                            mp == "tarjeta" &&
+                            `$${currentCita.servicio.precio_tarjeta}`}
+                        {!mp && "--"}
                     </Text>
                 </HStack>
             </VStack>
 
-            {citaID ? (
-                <CitaExito />
-            ) : (
+            <SelectMetodoPago />
+            <CitaExito />
+            {!citaID && agendarLoading != true && (
                 <Button
+                    disabled={mp ? false : true}
                     onClick={handleAgendar}
                     size={"lg"}
                     bg={"pink.500"}
-                    disabled={disabled}
+                    w={"100%"}
                 >
                     Confirmar y Agendar
                 </Button>
@@ -499,22 +522,80 @@ function OrderSummary({ disabled, setCurrentPaso, setClientasState }) {
     );
 }
 
+function SelectMetodoPago() {
+    const [mp, setMp] = useMetodoPago();
+
+    const metodosPago = createListCollection({
+        items: [
+            { label: "Efectivo", value: "efectivo" },
+            { label: "Tarjeta", value: "tarjeta" },
+        ],
+    });
+
+    return (
+        <Select.Root
+            mb={"0.5rem"}
+            collection={metodosPago}
+            size="md"
+            width="100%"
+            value={mp ? mp : ""}
+            onValueChange={(e) => {
+                setMp(e.value);
+            }}
+        >
+            <Select.HiddenSelect />
+            <Select.Control>
+                <Select.Trigger>
+                    <Select.ValueText placeholder="Metodo de Pago" />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                    <Select.Indicator />
+                </Select.IndicatorGroup>
+            </Select.Control>
+            <Portal>
+                <Select.Positioner>
+                    <Select.Content>
+                        {metodosPago.items.map((metodoPago) => (
+                            <Select.Item
+                                item={metodoPago}
+                                key={metodoPago.value}
+                            >
+                                {metodoPago.label}
+                                <Select.ItemIndicator />
+                            </Select.Item>
+                        ))}
+                    </Select.Content>
+                </Select.Positioner>
+            </Portal>
+        </Select.Root>
+    );
+}
+
 function CitaExito() {
+    const [agendarLoading] = useAgendarLoading();
+
     return (
         <VStack gap={"1rem"} align={"center"} w={"100%"}>
-            <Alert.Root
-                status="success"
-                w={"100%"}
-                shadow={"md"}
-                textAlign={"center"}
-            >
-                <Alert.Indicator />
-                <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
-            </Alert.Root>
-            <Button colorPalette={"green"}>
-                Enviar Ticket
-                <BsWhatsapp />
-            </Button>
+            {agendarLoading == true && (
+                <Spinner size={"md"} color={"pink.500"} />
+            )}
+            {agendarLoading == false && (
+                <>
+                    <Alert.Root
+                        status="success"
+                        w={"100%"}
+                        shadow={"md"}
+                        textAlign={"center"}
+                    >
+                        <Alert.Indicator />
+                        <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
+                    </Alert.Root>
+                    {/* <Button colorPalette={"green"}>
+                        Enviar Ticket
+                        <BsWhatsapp />
+                    </Button> */}
+                </>
+            )}
         </VStack>
     );
 }
@@ -595,7 +676,7 @@ function SelectHorarios({ selectedDate }) {
                                 bg={"pink.500"}
                                 key={hr.hora}
                             >
-                                {(hr.hora).replace("-", "*")}
+                                {hr.hora.replace("-", "*").replace("+", "*")}
                             </Button>
                             // <Heading key={hr.hora}>{hr.hora}</Heading>
                         );
@@ -848,8 +929,15 @@ function ServicioCard({ data }) {
                     mt="4"
                     alignItems={"end"}
                 >
-                    <HStack>
-                        <Badge colorPalette={"blue"}>${data.precio}</Badge>
+                    <HStack alignItems={"end"}>
+                        <VStack>
+                            <Badge colorPalette={"green"}>
+                                <FaMoneyBill />${data.precio}
+                            </Badge>
+                            <Badge colorPalette={"blue"}>
+                                <FaCreditCard />${data.precio_tarjeta}
+                            </Badge>
+                        </VStack>
                         <Badge colorPalette={"blue"}>
                             {data.minutos} minutos
                         </Badge>
