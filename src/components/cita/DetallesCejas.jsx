@@ -1,3 +1,4 @@
+import { CDN } from "@/config/cdn";
 import { useCita } from "@/pages/citas/[citaID]";
 import { Singleton } from "@/utils/lattice-design";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import InputFotos from "./InputFotos";
 
 const lorem =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut augue tellus, viverra consectetur blandit ac, euismod in tortor. In a bibendum felis, at ultricies tortor. Morbi ac leo et enim semper aliquam id id augue. Quisque sagittis hendrerit accumsan. Cras varius semper vehicula. ";
@@ -42,7 +44,7 @@ export default function DetallesCejas() {
         axios
             .patch(`/api/clientas/${cita.clienta_id}`, {
                 column: "detalles_cejas",
-                value: detallesCejas
+                value: detallesCejas,
             })
             .then((clientaResp) => {
                 console.log(clientaResp);
@@ -102,9 +104,11 @@ export default function DetallesCejas() {
     );
 }
 
+const useFotosCejas = Singleton(null)
+
 function FotosCejas({ setOpen }) {
     const [cita] = useCita();
-    const [fotosCejas, setFotosCejas] = useState(null);
+    const [fotosCejas, setFotosCejas] = useFotosCejas();
     const [fotoCeja, setFotoCeja] = useFotoCeja();
     const [loading, setLoading] = useState(true);
 
@@ -146,7 +150,7 @@ function FotosCejas({ setOpen }) {
                             rounded={"md"}
                             w={"5rem"}
                             h={"5rem"}
-                            src={`/img/cejas/${fotoCeja.foto}`}
+                            src={`${CDN}/img/cejas/${fotoCeja.foto}`}
                         />
                     );
                 })}
@@ -163,7 +167,62 @@ function FotosCejas({ setOpen }) {
 }
 
 function FotosDialog({ open, setOpen }) {
+    const [fotosCejas, setFotosCejas] = useFotosCejas();
+    const [cita] = useCita();
+    const [files, setFiles] = useState([]);
+    const [uploading, setUploading] = useState(false);
     const [fotoCeja, setFotoCeja] = useFotoCeja();
+    const [uploadError, setUploadError] = useState(null);
+    const [uploadSuccess, setUploadSuccess] = useState(null);
+
+    const handleFileChange = (acceptedFiles) => {
+        setFiles(acceptedFiles);
+        console.log("Selected files:", acceptedFiles);
+    };
+
+    const handleUpload = async () => {
+        if (!files.length) {
+            setUploadError("No files selected");
+            return;
+        }
+
+        setUploading(true);
+        setUploadError(null);
+        // return;
+
+        const formData = new FormData();
+        files.forEach((file) => formData.append("fotoCejas", file)); // Match PHP field name
+
+        try {
+            axios
+                .post(`${CDN}/uploadFotoCejas.php`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                })
+                .then((uploadResp) => {
+                    const resp = uploadResp.data;
+                    if (resp.success && resp.url) {
+                        setUploadSuccess(true)
+                        setFotosCejas([...fotosCejas, {foto: resp.fileName}])
+                        console.log({
+                            clientaID: cita.clienta_id,
+                            foto_url: resp.fileName,
+                        });
+                        axios.post("/api/fotos_cejas", {
+                            clientaID: cita.clienta_id,
+                            foto: resp.fileName,
+                        }).then((uploadResp)=>{
+                            console.log(uploadResp);
+                        })
+                    }
+                    setFiles([]);
+                    setUploading(false);
+                });
+        } catch (err) {
+            console.error("Upload error:", err.response?.data || err.message);
+            setUploadError(err.response?.data?.error || "Failed to upload");
+            setUploading(false);
+        }
+    };
 
     return (
         <Dialog.Root
@@ -180,20 +239,64 @@ function FotosDialog({ open, setOpen }) {
                         {/* <Dialog.Header>
                             <Dialog.Title>Dialog Title</Dialog.Title>
                         </Dialog.Header> */}
-                        <Dialog.Body display={"flex"} justifyContent={"center"}>
+                        <Dialog.Body
+                            display={"flex"}
+                            justifyContent={fotoCeja ? "center" : "start"}
+                        >
                             {fotoCeja ? (
                                 <Image
                                     my={"3rem"}
                                     w={"35rem"}
                                     objectFit={"cover"}
-                                    src={`/img/cejas/${fotoCeja}`}
+                                    src={`${CDN}/img/cejas/${fotoCeja}`}
                                 />
                             ) : (
-                                <Text>Subir Foto</Text>
+                                <Box px={"1rem"} py={"4rem"}>
+                                    <Heading mb={"1.5rem"}>
+                                        Agregar Imágenes:
+                                    </Heading>
+                                    <InputFotos
+                                        handleFileChange={handleFileChange}
+                                        uploading={uploading}
+                                    />
+                                    {!uploadSuccess && uploading == false && (
+                                        <Button
+                                            onClick={handleUpload}
+                                            disabled={
+                                                files?.length > 0 ? false : true
+                                            }
+                                            isLoading={uploading}
+                                            mt={4}
+                                            bg={"pink.500"}
+                                        >
+                                            Subir Foto
+                                        </Button>
+                                    )}
+                                    {uploading && (
+                                        <Spinner
+                                            mt={4}
+                                            borderWidth={"3px"}
+                                            size={"lg"}
+                                            color={"pink.500"}
+                                        />
+                                    )}
+                                    {uploadError && (
+                                        <p style={{ color: "red" }}>
+                                            Error: {uploadError}
+                                        </p>
+                                    )}
+                                    {uploadSuccess && <Text mt={4} color={"green"}>¡Foto agregada exitosamente!</Text>}
+                                </Box>
                             )}
                         </Dialog.Body>
                         <Dialog.CloseTrigger asChild>
-                            <CloseButton size="sm" />
+                            <CloseButton
+                                size="sm"
+                                onClick={() => {
+                                    console.log("closing");
+                                    setUploadSuccess(false)
+                                }}
+                            />
                         </Dialog.CloseTrigger>
                     </Dialog.Content>
                 </Dialog.Positioner>

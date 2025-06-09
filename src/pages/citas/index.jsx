@@ -15,13 +15,15 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { TfiReceipt } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
-import { loadHook } from "@/utils/lattice-design";
+import { loadHook, Singleton } from "@/utils/lattice-design";
 import { getCurrentDateSpan } from "@/utils/detalles-citas";
+
+const useCurrentLashista = Singleton(null)
 
 export default function Citas() {
     const [loading, setLoading] = loadHook("useLoader");
     const [lashistas, setLashistas] = useState(null);
-    const [currentLashista, setCurrentLashista] = useState(null);
+    const [currentLashista, setCurrentLashista] = useCurrentLashista();
     // const [citas, setCitas] = useState(null);
 
     useEffect(() => {
@@ -63,6 +65,8 @@ function Lashistas({ lashistas }) {
 }
 
 function LashistaCard({ data }) {
+    const [currentLashista, setCurrentLashista] = useCurrentLashista();
+
     return (
         <HStack
             shadow={"sm"}
@@ -76,6 +80,12 @@ function LashistaCard({ data }) {
                 transform: "scale(1.05)",
                 cursor: "pointer",
                 shadow: "md",
+            }}
+            borderWidth={currentLashista?.id == data.id ? "3px" : ""}
+            borderColor={"pink.500"}
+            rounded={"md"}
+            onClick={()=>{
+                setCurrentLashista(data)
             }}
         >
             <Image

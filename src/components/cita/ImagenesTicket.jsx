@@ -1,3 +1,4 @@
+import { CDN } from "@/config/cdn";
 import { useCita } from "@/pages/citas/[citaID]";
 import { Heading, HStack, Image, Text, VStack } from "@chakra-ui/react";
 
@@ -11,7 +12,7 @@ export default function ImagenesTicket() {
                     shadow={"sm"}
                     rounded={"md"}
                     w={"10rem"}
-                    src={`/img/servicios/${cita.servicio_foto}`}
+                    src={`${CDN}/img/servicios/${cita.servicio_foto}`}
                 />
                 <Lashista />
             </HStack>
@@ -36,7 +37,7 @@ function Lashista() {
                 shadow={"sm"}
                 rounded={"full"}
                 w={"5rem"}
-                src={`/img/lashistas/${cita.lashista_foto}`}
+                src={`${CDN}/img/lashistas/${cita.lashista_foto}`}
             />
             <VStack align={"end"} ms={"1rem"}>
                 <Text fontWeight={700}>{cita.lashista}</Text>

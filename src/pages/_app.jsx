@@ -128,6 +128,7 @@ function NavBar({ h }) {
                     {router.pathname == "/clientas" && "Clientas"}
                     {router.pathname == "/servicios" && "Servicios"}
                     {router.pathname == "/lashistas" && "Lashistas"}
+                    {router.pathname == "/dev" && "Developer"}
                 </Heading>
                 {/* format(info.date, "yyyy-MM-dd"); */}
                 {router.pathname == "/" ? (

@@ -26,6 +26,7 @@ import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { loadHook } from "@/utils/lattice-design";
 import { parse, format, addMinutes } from "date-fns";
 import { useRouter as useNextNav } from "next/navigation";
+import { CDN } from "@/config/cdn";
 
 export default function Hoy() {
     // const [events, setEvents] = useState([]);
@@ -232,7 +233,7 @@ function CitaDialog({ setOpenDialogue, data }) {
                                             w={"12rem"}
                                             h={"12rem"}
                                             borderRadius={"50%"}
-                                            src={`/img/clientas/${
+                                            src={`${CDN}/img/clientas/${
                                                 citaData.foto
                                                     ? citaData.foto
                                                     : "avatar-woman.png"
@@ -324,7 +325,7 @@ function renderResourceLabel(info) {
         <div style={{ padding: "8px", textAlign: "center" }}>
             <img
                 style={{ width: "3.5rem", marginBottom: "0.5rem" }}
-                src={"img/lashistas/" + info.resource.extendedProps.src}
+                src={`${CDN}/img/lashistas/` + info.resource.extendedProps.src}
             />
             <p
                 style={{

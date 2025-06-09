@@ -72,7 +72,7 @@ function ClientasTable({ clientas }) {
                     <Table.Row key={i}>
                         <Table.Cell>
                             <Image
-                                w={"5rem"}
+                                // w={"20vw"}
                                 rounded={"md"}
                                 src={`/img/clientas/${
                                     clienta.foto_clienta

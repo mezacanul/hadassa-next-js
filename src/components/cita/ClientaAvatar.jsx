@@ -1,3 +1,4 @@
+import { CDN } from "@/config/cdn";
 import { useCita } from "@/pages/citas/[citaID]";
 import { Heading, Image, Text, VStack } from "@chakra-ui/react";
 
@@ -11,7 +12,7 @@ export default function ClientaAvatar() {
                 mb={"1.7rem"}
                 rounded={"full"}
                 w={"10rem"}
-                src={`/img/clientas/${cita.foto_clienta || "avatar-woman.png"}`}
+                src={`${CDN}/img/clientas/${cita.foto_clienta || "avatar-woman.png"}`}
             />
             <Heading
                 color={"pink.700"}
