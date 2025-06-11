@@ -50,8 +50,8 @@ export default async function handler(req, res) {
                             clientas.detalles_cejas
                         FROM 
                             citas
-                        LEFT JOIN clientas ON citas.clienta_id = clientas.id
                         LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
+                        LEFT JOIN clientas ON citas.clienta_id = clientas.id
                         LEFT JOIN servicios ON citas.servicio_id = servicios.id
                         WHERE citas.id = ?`;
                 const [rows] = await connection.execute(query, [req.query.id])

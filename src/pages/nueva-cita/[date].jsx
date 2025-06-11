@@ -157,6 +157,7 @@ export default function NuevaCita() {
                                 <ActionsClienta
                                     clientasState={clientasState}
                                     setClientasState={setClientasState}
+                                    currentPaso={currentPaso}
                                 />
                             )}
 
@@ -186,6 +187,7 @@ export default function NuevaCita() {
                                         clientasState={clientasState}
                                         setClientasState={setClientasState}
                                         setCurrentPaso={setCurrentPaso}
+                                        currentPaso={currentPaso}
                                     />
                                 )}
                         </Box>
@@ -210,9 +212,13 @@ export default function NuevaCita() {
     );
 }
 
-const useSearchTerm = Singleton("");
+export const useSearchTerm = Singleton("");
 
-function ActionsClienta({ clientasState, setClientasState }) {
+export function ActionsClienta({
+    clientasState,
+    setClientasState,
+    currentPaso,
+}) {
     const [searchTerm, setSearchTerm] = useSearchTerm();
     const handleChange = (e) => setSearchTerm(e.target.value);
 
@@ -232,18 +238,20 @@ function ActionsClienta({ clientasState, setClientasState }) {
                 value={searchTerm}
                 onChange={handleChange}
             />
-            <GridItem alignSelf={"start"}>
-                <Button
-                    disabled={clientasState == "buscar" ? false : true}
-                    onClick={() => {
-                        setClientasState("nueva");
-                    }}
-                    size={"sm"}
-                    bg={"pink.500"}
-                >
-                    Nueva
-                </Button>
-            </GridItem>
+            {currentPaso != "Lista" && (
+                <GridItem alignSelf={"start"}>
+                    <Button
+                        disabled={clientasState == "buscar" ? false : true}
+                        onClick={() => {
+                            setClientasState("nueva");
+                        }}
+                        size={"sm"}
+                        bg={"pink.500"}
+                    >
+                        Nueva
+                    </Button>
+                </GridItem>
+            )}
         </Grid>
     );
 }
@@ -336,9 +344,14 @@ function SelectHorarios({ selectedDate }) {
     );
 }
 
-const useClientas = Singleton(null);
+export const useClientas = Singleton(null);
 
-function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
+export function SelectClientas({
+    clientasState,
+    setClientasState,
+    currentPaso,
+    setCurrentPaso,
+}) {
     const [clientas, setClientas] = useClientas();
     const [searchTerm, setSearchTerm] = useSearchTerm();
 
@@ -367,6 +380,7 @@ function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
                                     key={clienta.id}
                                     data={clienta}
                                     setCurrentPaso={setCurrentPaso}
+                                    currentPaso={currentPaso}
                                 />
                             );
                         })}
@@ -374,6 +388,7 @@ function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
                     <NuevaClienta
                         setClientasState={setClientasState}
                         setCurrentPaso={setCurrentPaso}
+                        currentPaso={currentPaso}
                     />
                 )}
             </Grid>
@@ -381,7 +396,11 @@ function SelectClientas({ clientasState, setClientasState, setCurrentPaso }) {
     );
 }
 
-function NuevaClienta({ setClientasState, setCurrentPaso }) {
+export function NuevaClienta({
+    setClientasState,
+    setCurrentPaso,
+    currentPaso,
+}) {
     const [insertedID, setInsertedID] = useState(null);
     const [currentCita, setCurrentCita] = useCurrentCita();
     const [nuevaClienta, setNuevaClienta] = useState({
@@ -419,7 +438,7 @@ function NuevaClienta({ setClientasState, setCurrentPaso }) {
 
     return (
         <>
-            <ClientaCard data={nuevaClienta} />
+            <ClientaCard data={nuevaClienta} currentPaso={currentPaso} />
             {insertedID && (
                 <VStack gap={"1rem"} align={"start"} w={"100%"}>
                     <Alert.Root status="success" w={"100%"} shadow={"md"}>
@@ -492,8 +511,10 @@ function NuevaClienta({ setClientasState, setCurrentPaso }) {
     );
 }
 
-function ClientaCard({ data, setCurrentPaso }) {
+export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
+    const [loading, setLoading] = loadHook("useLoader");
+    const router = useRouter();
 
     return (
         <Card.Root
@@ -527,7 +548,7 @@ function ClientaCard({ data, setCurrentPaso }) {
                     </Card.Description>
                 </Card.Body>
                 <Card.Footer>
-                    {data.id ? (
+                    {currentPaso != "Lista" && data.id && (
                         <Button
                             disabled={data.id ? false : true}
                             onClick={() => {
@@ -542,8 +563,20 @@ function ClientaCard({ data, setCurrentPaso }) {
                         >
                             Seleccionar
                         </Button>
-                    ) : (
+                    )}
+                    {currentPaso != "Lista" && !data.id && (
                         <Badge colorPalette={"green"}>Nueva Clienta</Badge>
+                    )}
+                    {currentPaso == "Lista" && (
+                        <Button
+                            onClick={() => {
+                                setLoading(true);
+                                router.push(`/clientas/${data.id}`);
+                            }}
+                            bg={"pink.500"}
+                        >
+                            Editar
+                        </Button>
                     )}
                 </Card.Footer>
             </Box>

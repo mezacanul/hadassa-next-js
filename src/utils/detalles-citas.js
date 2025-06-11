@@ -8,6 +8,7 @@ function getCurrentDateSpan() {
         timeZone: "America/Mexico_City",
         day: "2-digit",
         month: "2-digit",
+        year: "numeric",
     });
 
     // Start of this week (Monday)
