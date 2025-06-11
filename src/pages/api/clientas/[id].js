@@ -11,6 +11,7 @@ const dbConfig = {
 };
 
 export default async function handler(req, res) {
+    const id = req.query.id;
     let connection;
     let query;
     let result;
@@ -18,8 +19,14 @@ export default async function handler(req, res) {
     try {
         connection = await mysql.createConnection(dbConfig);
 
+        if (req.method == "GET") {
+            const [rows] = await connection.execute(
+                "SELECT * FROM clientas WHERE id = ?",
+                [id]
+            );
+            res.status(200).json(rows[0]);
+        }
         if (req.method == "PATCH") {
-            const id = req.query.id;
             const { column, value } = req.body; // Use req.body for PATCH payload
 
             // res.status(200).json({id, column, value})

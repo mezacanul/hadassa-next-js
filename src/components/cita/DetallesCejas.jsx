@@ -25,7 +25,7 @@ const lorem =
 
 const useFotoCeja = Singleton(null);
 
-export default function DetallesCejas() {
+export default function DetallesCejas({data = null}) {
     const [cita] = useCita();
     const [detallesCejas, setDetallesCejas] = useState(null);
     const [enableActualizar, setEnableActualizar] = useState(false);
@@ -36,8 +36,14 @@ export default function DetallesCejas() {
     useEffect(() => {
         if (cita.detalles_cejas) {
             setDetallesCejas(cita.detalles_cejas);
-        }
+        } 
     }, [cita]);
+
+    useEffect(()=>{
+        if(data){
+            // setDetallesCejas()
+        }
+    }, [])
 
     function actualizarDetallesCejas() {
         setLoadingActualizacion(true);
