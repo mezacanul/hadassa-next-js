@@ -221,7 +221,7 @@ export default function OrderSummary({
                             color={"pink.600"}
                         >
                             {currentCita.horario
-                                ? currentCita.horario.hora
+                                ? (currentCita.horario.hora).replace("+", "*").replace("-", "*")
                                 : "--"}
                         </Text>
                     </HStack>

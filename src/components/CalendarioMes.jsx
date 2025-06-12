@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
 import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { loadHook } from "@/utils/lattice-design";
+import { IoMdToday } from "react-icons/io";
 
 // import { useCalendarControl } from "@/pages";
 // import { useCalendarControl } from "./Hoy";
@@ -94,9 +95,11 @@ export default function CalendarioMes() {
                     // initialDate={new Date("25-04-2025")}
                     ref={calendarRef}
                     selectable={true}
-                    dayCellContent={renderDayCellContent(
+                    dayCellContent={DayBox(
                         router,
-                        displayedMonthIndex
+                        displayedMonthIndex,
+                        selectedDate,
+                        <IoMdToday />
                     )}
                     // events={events}
                     // eventContent={renderEventContent}
@@ -166,13 +169,11 @@ function renderEventContent(eventInfo) {
     );
 }
 
-const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
+const DayBox = (router) => (info) => {
     // console.log("day cell info", info);
-
-    // function renderDayCellContent(info) {
-    const calendarMonthIndex = info.date.getUTCMonth();
-    const isInCurrentMOnth =
-        calendarMonthIndex == displayedMonthIndex ? true : false;
+    const formattedDate = format(info.date, "yyyy-MM-dd");
+    const today = format(new Date(), "yyyy-MM-dd");
+    // console.log("today", today, formattedDate);
 
     // DEV:
     // We parse and format the Date to be URL friendly
@@ -182,12 +183,15 @@ const renderDayCellContent = (router, displayedMonthIndex) => (info) => {
         const formattedDate = format(date, "dd-MM-yyyy");
         console.log(formattedDate);
         // console.log(info.date.toLocaleDateString());
-        router.push(`/nueva-cita/${formattedDate}`);
+        // router.push(`/nueva-cita/${formattedDate}`);
     };
 
     return (
         <div>
-            <span>{info.dayNumberText}</span>
+            <p>{info.dayNumberText}</p>
+            <p style={{ fontSize: "1.2rem", marginTop: "0.5rem" }}>
+                {today == formattedDate && "Hoy"}
+            </p>
         </div>
     );
 };

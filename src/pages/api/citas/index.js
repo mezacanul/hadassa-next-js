@@ -6,11 +6,7 @@ import {
     generarHorarioDelDia,
     GenerarHorariosDisponibles,
     getAvailable,
-    getCamaAgendar,
-    getFamTree,
-    getHorariosOcupadosPorServicio,
     getSlots,
-    puedeAgendar,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 import { db_info } from "@/config/db";

@@ -12,34 +12,6 @@ function generarHorarioDelDia({ weekend = false }) {
     return workDayHours;
 }
 
-function getCamaAgendar(disponibilidad) {
-    const camasKeys = Object.keys(disponibilidad);
-
-    const todasDisponibles = camasKeys.every((camaID) => {
-        return disponibilidad[camaID] == true;
-    });
-
-    const noDisponible = camasKeys.every((camaID) => {
-        return disponibilidad[camaID] == false;
-    });
-
-    if (todasDisponibles == true) {
-        console.log("available");
-        return camasKeys[0];
-    } else if (noDisponible == true) {
-        console.log("not available");
-        return null;
-    } else {
-        let response = "";
-        camasKeys.forEach((camaID) => {
-            if (disponibilidad[camaID] == true) {
-                response = camaID;
-            }
-        });
-        return response;
-    }
-}
-
 /**
  * Returns a family tree object for a given bed, including current bed details and siblings.
  * @param {string[]} camasKeys - Array of bed identifiers.
@@ -410,7 +382,6 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
 
 export {
     generarHorarioDelDia,
-    getCamaAgendar,
     getFamTree,
     getHorariosOcupadosPorServicio,
     getSlots,
