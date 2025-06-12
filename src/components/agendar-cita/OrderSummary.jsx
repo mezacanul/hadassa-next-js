@@ -41,6 +41,7 @@ export default function OrderSummary({
     const handleAgendar = () => {
         setAgendarLoading(true);
         console.log({ ...currentCita, metodoPago: mp[0] });
+        // return
 
         axios
             .post("/api/citas", {

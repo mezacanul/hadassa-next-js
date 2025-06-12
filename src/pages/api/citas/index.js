@@ -54,7 +54,7 @@ export default async function handler(req, res) {
                         LEFT JOIN clientas ON citas.clienta_id = clientas.id
                         LEFT JOIN servicios ON citas.servicio_id = servicios.id
                         WHERE citas.id = ?`;
-                const [rows] = await connection.execute(query, [req.query.id])
+                const [rows] = await connection.execute(query, [req.query.id]);
                 res.status(200).json(rows[0]);
             }
             // Map query params to database columns
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
             if (req.body.action == "agendar") {
                 const cita = req.body;
                 console.log(cita);
-                
+
                 try {
                     const [uuidResult] = await connection.execute(
                         `SELECT UUID() AS id`
@@ -125,7 +125,7 @@ export default async function handler(req, res) {
                             hora,
                             cita.horario.cama,
                             cita.metodoPago,
-                            1
+                            1,
                         ]
                     );
                     if (mysql_response.affectedRows > 0) {
@@ -260,6 +260,14 @@ export default async function handler(req, res) {
                 );
             }
 
+            if (req.body.dev) {
+                res.status(200).json({
+                    horariosDispPorCama,
+                    cita,
+                    horarioDelDia,
+                });
+            }
+
             if (POST_Data.action == "getHorariosDisponibles") {
                 const available = getAvailable(
                     horariosDispPorCama,
@@ -268,6 +276,7 @@ export default async function handler(req, res) {
                     servicios
                 );
                 // console.log(horariosDispPorCama);
+                console.log(available);
 
                 // res.status(200).json({horariosDispPorCama, cita});
                 // res.status(200).json({horariosDispPorCama, available});

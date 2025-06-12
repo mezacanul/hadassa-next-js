@@ -329,6 +329,7 @@ function SelectHorarios({ selectedDate }) {
                                         ...currentCita,
                                         horario: hr,
                                     });
+                                    console.log(hr);
                                 }}
                                 bg={"pink.500"}
                                 key={hr.hora}

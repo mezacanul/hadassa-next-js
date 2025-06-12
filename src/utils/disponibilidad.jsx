@@ -152,7 +152,7 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
 
     if (directiva[0] == 1) {
         slots.forEach((slt) => {
-            if(pass != false){
+            if (pass != false) {
                 if (horariosCama.includes(slt)) {
                     pass = true;
                 } else {
@@ -168,14 +168,23 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
         slots.forEach((slt, idx) => {
             if (pass != false) {
                 if (idx == lastIdx) {
+                    // if(slots[0] == "09:30"){ console.log({slt, pass, lastIdx}) }
                     if (
                         horariosCama.includes(slt) ||
                         horariosCama.includes(`+${slt}`)
                     ) {
                         pass = true;
+                        // if(slots[0] == "09:30"){ console.log(slt, pass) }
+                    } else if (
+                        !horariosCama.includes(slt) ||
+                        !horariosCama.includes(`+${slt}`)
+                    ) {
+                        pass = false;
+                        // if(slots[0] == "09:30"){ console.log(slt, pass) }
                     }
                 } else if (horariosCama.includes(slt)) {
                     pass = true;
+                    // if(slots[0] == "09:30"){ console.log(slt, pass) }
                 } else {
                     pass = false;
                 }
@@ -184,6 +193,7 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
     }
 
     if (directiva[0] == 0 && directiva[1] == -1) {
+        // if(slots[0] == "09:30"){ console.log("testing") }
         let present = {
             first:
                 horariosCama.includes(slots[0]) ||
@@ -198,6 +208,10 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
             pass = false;
         }
     }
+
+    // if (slots[0] == "09:30") {
+    //     console.log(slots, pass);
+    // }
     return pass;
 }
 
@@ -339,6 +353,7 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
         // console.log(camaID, horariosCama);
 
         horariosCama.forEach((hora) => {
+            // console.log(hora);
             const horaClean = hora.replace("+", "").replace("-", "");
             const slots = getSlots(
                 { hora: horaClean, servicio_id: citaData.servicio_id },
@@ -348,6 +363,8 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
 
             if (puedeAgendar(horariosCama, slots, dirServicio)) {
                 if (!registry.includes(hora)) {
+                    // console.log({ cama: camaID, hora });
+
                     available.push({ cama: camaID, hora });
                     registry.push(hora);
                 }
