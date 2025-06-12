@@ -40,7 +40,9 @@ export default async function handler(req, res) {
                                         SUM(CASE WHEN STR_TO_DATE(fecha, '%d-%m-%Y') >= STR_TO_DATE(?, '%d-%m-%Y') AND STR_TO_DATE(fecha, '%d-%m-%Y') <= STR_TO_DATE(?, '%d-%m-%Y') THEN 1 ELSE 0 END) as thisWeekCount,
                                         SUM(CASE WHEN STR_TO_DATE(fecha, '%d-%m-%Y') >= STR_TO_DATE(?, '%d-%m-%Y') THEN 1 ELSE 0 END) as futureCount
                                     FROM citas
-                                    WHERE lashista_id = ? AND STR_TO_DATE(fecha, '%d-%m-%Y') >= STR_TO_DATE(?, '%d-%m-%Y')`;
+                                    WHERE lashista_id = ? 
+                                    AND STR_TO_DATE(fecha, '%d-%m-%Y') >= STR_TO_DATE(?, '%d-%m-%Y')
+                                    AND status != 0`;
                             params = [
                                 dateSQLParams.thisWeek.startDate,
                                 dateSQLParams.thisWeek.endDate,

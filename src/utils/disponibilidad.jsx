@@ -12,34 +12,6 @@ function generarHorarioDelDia({ weekend = false }) {
     return workDayHours;
 }
 
-function getCamaAgendar(disponibilidad) {
-    const camasKeys = Object.keys(disponibilidad);
-
-    const todasDisponibles = camasKeys.every((camaID) => {
-        return disponibilidad[camaID] == true;
-    });
-
-    const noDisponible = camasKeys.every((camaID) => {
-        return disponibilidad[camaID] == false;
-    });
-
-    if (todasDisponibles == true) {
-        console.log("available");
-        return camasKeys[0];
-    } else if (noDisponible == true) {
-        console.log("not available");
-        return null;
-    } else {
-        let response = "";
-        camasKeys.forEach((camaID) => {
-            if (disponibilidad[camaID] == true) {
-                response = camaID;
-            }
-        });
-        return response;
-    }
-}
-
 /**
  * Returns a family tree object for a given bed, including current bed details and siblings.
  * @param {string[]} camasKeys - Array of bed identifiers.
@@ -152,7 +124,7 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
 
     if (directiva[0] == 1) {
         slots.forEach((slt) => {
-            if(pass != false){
+            if (pass != false) {
                 if (horariosCama.includes(slt)) {
                     pass = true;
                 } else {
@@ -168,14 +140,23 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
         slots.forEach((slt, idx) => {
             if (pass != false) {
                 if (idx == lastIdx) {
+                    // if(slots[0] == "09:30"){ console.log({slt, pass, lastIdx}) }
                     if (
                         horariosCama.includes(slt) ||
                         horariosCama.includes(`+${slt}`)
                     ) {
                         pass = true;
+                        // if(slots[0] == "09:30"){ console.log(slt, pass) }
+                    } else if (
+                        !horariosCama.includes(slt) ||
+                        !horariosCama.includes(`+${slt}`)
+                    ) {
+                        pass = false;
+                        // if(slots[0] == "09:30"){ console.log(slt, pass) }
                     }
                 } else if (horariosCama.includes(slt)) {
                     pass = true;
+                    // if(slots[0] == "09:30"){ console.log(slt, pass) }
                 } else {
                     pass = false;
                 }
@@ -184,6 +165,7 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
     }
 
     if (directiva[0] == 0 && directiva[1] == -1) {
+        // if(slots[0] == "09:30"){ console.log("testing") }
         let present = {
             first:
                 horariosCama.includes(slots[0]) ||
@@ -198,6 +180,10 @@ function puedeAgendar(horariosCama, slots, directivaJSON) {
             pass = false;
         }
     }
+
+    // if (slots[0] == "09:30") {
+    //     console.log(slots, pass);
+    // }
     return pass;
 }
 
@@ -339,6 +325,7 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
         // console.log(camaID, horariosCama);
 
         horariosCama.forEach((hora) => {
+            // console.log(hora);
             const horaClean = hora.replace("+", "").replace("-", "");
             const slots = getSlots(
                 { hora: horaClean, servicio_id: citaData.servicio_id },
@@ -346,12 +333,10 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
                 servicios
             );
 
-            if (slots && slots[0] == "10:00") {
-                // console.log(camaID);
-                // console.log("puede agendar", slots, camaID, puedeAgendar(horariosCama, slots, dirServicio));
-            }
             if (puedeAgendar(horariosCama, slots, dirServicio)) {
                 if (!registry.includes(hora)) {
+                    // console.log({ cama: camaID, hora });
+
                     available.push({ cama: camaID, hora });
                     registry.push(hora);
                 }
@@ -397,7 +382,6 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
 
 export {
     generarHorarioDelDia,
-    getCamaAgendar,
     getFamTree,
     getHorariosOcupadosPorServicio,
     getSlots,

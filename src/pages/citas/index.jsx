@@ -129,7 +129,11 @@ function LashistaCard({ data }) {
                         <TfiReceipt size={"1.2rem"} />
                         <Text>Esta Semana:</Text>
                     </HStack>
-                    {citasCount && <Text>{citasCount.thisWeek}</Text>}
+                    {citasCount && (
+                        <Text fontWeight={600} color={"blue.600"}>
+                            {citasCount.thisWeek}
+                        </Text>
+                    )}
                 </HStack>
 
                 <HStack w={"100%"} justifyContent={"space-between"}>
@@ -137,7 +141,11 @@ function LashistaCard({ data }) {
                         <TfiReceipt size={"1.2rem"} />
                         <Text>Futuras:</Text>
                     </HStack>
-                    {citasCount && <Text>{citasCount.future}</Text>}
+                    {citasCount && (
+                        <Text fontWeight={600} color={"blue.600"}>
+                            {citasCount.future}
+                        </Text>
+                    )}
                 </HStack>
             </VStack>
         </HStack>
@@ -150,6 +158,10 @@ function AgendaLashista({ current }) {
     const [thisWeek, setThisWeek] = useState(null);
     const [future, setFuture] = useState(null);
     const [past, setPast] = useState(null);
+
+    useEffect(() => {
+        console.log("dateinfo", dateInfo);
+    }, []);
 
     useEffect(() => {
         setThisWeek(null);
@@ -168,6 +180,7 @@ function AgendaLashista({ current }) {
                 ),
             ]).then(([thisWeekResp, futureResp, pastResp]) => {
                 console.log(thisWeekResp.data.citas);
+
                 setThisWeek(thisWeekResp.data.citas);
                 setFuture(futureResp.data.citas);
                 setPast(pastResp.data.citas);
@@ -217,13 +230,16 @@ function CitasInfo({ title, dateInfo, lashista, data }) {
         //     axios.get()
         // }
     }, [lashista]);
+
     return (
         <VStack gap={"1rem"} w={"100%"}>
             <HStack justify={"space-between"} w={"100%"}>
                 <Text>
                     {title}: {data && data.length}
                 </Text>
-                <Text>{dateInfo}</Text>
+                <Text color={"pink.600"} fontWeight={"700"}>
+                    {dateInfo}
+                </Text>
             </HStack>
             {citas ? (
                 <CitasTable citas={data} lashista={lashista} />

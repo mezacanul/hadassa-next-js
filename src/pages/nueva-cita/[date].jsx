@@ -295,13 +295,14 @@ function SelectHorarios({ selectedDate }) {
             lashista_id: currentCita.lashista.id,
             action: "getHorariosDisponibles",
         };
+        console.log("send", send);
         console.log(JSON.stringify(send));
 
         axios.post("/api/citas", send).then((horariosResp) => {
             // const uniqueTimeSlots = getUniqueTimeSlots(
             //     horariosResp.data.horariosDispPorCama
             // );
-            // console.log(horariosResp.data);
+            console.log(horariosResp.data);
             // console.log(uniqueTimeSlots);
             setHorarios(horariosResp.data);
         });
@@ -328,6 +329,7 @@ function SelectHorarios({ selectedDate }) {
                                         ...currentCita,
                                         horario: hr,
                                     });
+                                    console.log(hr);
                                 }}
                                 bg={"pink.500"}
                                 key={hr.hora}
@@ -360,12 +362,16 @@ export function SelectClientas({
             // console.log(clientasResp.data);
             setClientas(clientasResp.data);
         });
+        return setSearchTerm("");
     }, []);
 
     return (
         <Box h={"100%"} w={"100%"} pb={"1rem"}>
             <Grid gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
                 {/* <Button bg={"pink.500"}>Nueva</Button> */}
+                {!clientas && (
+                    <Spinner color="pink.500" borderWidth="4px" size={"xl"} />
+                )}
                 {clientas &&
                     clientasState == "buscar" &&
                     clientas
