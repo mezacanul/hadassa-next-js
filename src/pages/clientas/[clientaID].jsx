@@ -1,5 +1,6 @@
+import DetallesCejas from "@/components/cita/DetallesCejas";
 import { loadHook } from "@/utils/lattice-design";
-import { Grid, GridItem, Heading, VStack } from "@chakra-ui/react";
+import { Box, Grid, GridItem, Heading, VStack } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -11,14 +12,19 @@ export default function Clienta() {
     const [clienta, setClienta] = useState(null);
 
     useEffect(() => {
-        setLoading(false);
         Promise.all([axios.get(`/api/clientas/${clientaID}`)]).then(
             ([clientaResp]) => {
                 console.log(clientaResp);
                 setClienta(clientaResp.data);
+                setLoading(false);
             }
         );
     }, []);
 
-    return <Heading>Clienta</Heading>;
+    return (
+        <Box w={"80%"}>
+            <Heading>{clienta && clienta.nombres}</Heading>
+            {clienta && <DetallesCejas data={clienta} />}
+        </Box>
+    );
 }

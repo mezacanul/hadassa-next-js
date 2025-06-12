@@ -295,13 +295,14 @@ function SelectHorarios({ selectedDate }) {
             lashista_id: currentCita.lashista.id,
             action: "getHorariosDisponibles",
         };
+        console.log("send", send);
         console.log(JSON.stringify(send));
 
         axios.post("/api/citas", send).then((horariosResp) => {
             // const uniqueTimeSlots = getUniqueTimeSlots(
             //     horariosResp.data.horariosDispPorCama
             // );
-            // console.log(horariosResp.data);
+            console.log(horariosResp.data);
             // console.log(uniqueTimeSlots);
             setHorarios(horariosResp.data);
         });

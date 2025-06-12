@@ -25,37 +25,35 @@ const lorem =
 
 const useFotoCeja = Singleton(null);
 
-export default function DetallesCejas({data = null}) {
+export default function DetallesCejas({ data = null }) {
     const [cita] = useCita();
-    const [detallesCejas, setDetallesCejas] = useState(null);
+    const [clientaID, setClientaID] = useState(data ? data.id : null);
+    const [detallesCejas, setDetallesCejas] = useState(
+        data ? data.detalles_cejas : null
+    );
     const [enableActualizar, setEnableActualizar] = useState(false);
     const [open, setOpen] = useState(false);
     const [loadingActualizacion, setLoadingActualizacion] = useState(false);
     const [updateSuccess, setUpdateSuccess] = useState(null);
 
     useEffect(() => {
-        if (cita.detalles_cejas) {
+        if (cita) {
             setDetallesCejas(cita.detalles_cejas);
-        } 
-    }, [cita]);
-
-    useEffect(()=>{
-        if(data){
-            // setDetallesCejas()
+            setClientaID(cita.clienta_id);
         }
-    }, [])
+    }, [cita]);
 
     function actualizarDetallesCejas() {
         setLoadingActualizacion(true);
         axios
-            .patch(`/api/clientas/${cita.clienta_id}`, {
+            .patch(`/api/clientas/${clientaID}`, {
                 column: "detalles_cejas",
                 value: detallesCejas,
             })
             .then((clientaResp) => {
                 console.log(clientaResp);
                 const resp = clientaResp.data;
-                console.log("clienta", cita.clienta_id);
+                console.log("clienta", clientaID);
                 console.log("texto", detallesCejas);
 
                 if (resp.success && resp.affectedRows == 1) {
@@ -72,7 +70,7 @@ export default function DetallesCejas({data = null}) {
         <VStack align={"start"} gap={"1.5rem"} w={"100%"}>
             <FotosDialog open={open} setOpen={setOpen} />
             <Heading size={"2xl"}>Detalles de Cejas:</Heading>
-            <FotosCejas setOpen={setOpen} />
+            <FotosCejas setOpen={setOpen} clientaID={clientaID} />
 
             <Heading>Descripción:</Heading>
             <Textarea
@@ -110,19 +108,21 @@ export default function DetallesCejas({data = null}) {
     );
 }
 
-const useFotosCejas = Singleton(null)
+const useFotosCejas = Singleton(null);
 
-function FotosCejas({ setOpen }) {
+function FotosCejas({ setOpen, clientaID = null }) {
     const [cita] = useCita();
     const [fotosCejas, setFotosCejas] = useFotosCejas();
     const [fotoCeja, setFotoCeja] = useFotoCeja();
     const [loading, setLoading] = useState(true);
 
+    // if (cita) {
     useEffect(() => {
         if (!loading) {
             setLoading(true);
         }
-        if (cita.clienta_id) {
+        if (cita) {
+            // setClientaID(cita.clienta_id)
             console.log(cita.clienta_id);
             axios
                 .get(`/api/fotos_cejas?clientaID=${cita.clienta_id}`)
@@ -132,7 +132,21 @@ function FotosCejas({ setOpen }) {
                     console.log(fcResp.data);
                 });
         }
-    }, [cita.cita_ID]);
+    }, [cita]);
+
+    useEffect(() => {
+        if (clientaID) {
+            axios
+                .get(`/api/fotos_cejas?clientaID=${clientaID}`)
+                .then((fcResp) => {
+                    setFotosCejas(fcResp.data);
+                    setLoading(false);
+                    console.log(fcResp.data);
+                });
+        }
+    }, [clientaID]);
+
+    // }
 
     return (
         <HStack gap={"1rem"} mb={"1.5rem"}>
@@ -172,14 +186,21 @@ function FotosCejas({ setOpen }) {
     );
 }
 
-function FotosDialog({ open, setOpen }) {
+function FotosDialog({ open, setOpen, data = null }) {
     const [fotosCejas, setFotosCejas] = useFotosCejas();
     const [cita] = useCita();
+    const [clientaID, setClientaID] = useState(data ? data.id : null);
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [fotoCeja, setFotoCeja] = useFotoCeja();
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(null);
+
+    useEffect(() => {
+        if (cita) {
+            setClientaID(cita.clienta_id);
+        }
+    }, [cita]);
 
     const handleFileChange = (acceptedFiles) => {
         setFiles(acceptedFiles);
@@ -207,18 +228,20 @@ function FotosDialog({ open, setOpen }) {
                 .then((uploadResp) => {
                     const resp = uploadResp.data;
                     if (resp.success && resp.url) {
-                        setUploadSuccess(true)
-                        setFotosCejas([...fotosCejas, {foto: resp.fileName}])
+                        setUploadSuccess(true);
+                        setFotosCejas([...fotosCejas, { foto: resp.fileName }]);
                         console.log({
-                            clientaID: cita.clienta_id,
+                            clientaID: clientaID,
                             foto_url: resp.fileName,
                         });
-                        axios.post("/api/fotos_cejas", {
-                            clientaID: cita.clienta_id,
-                            foto: resp.fileName,
-                        }).then((uploadResp)=>{
-                            console.log(uploadResp);
-                        })
+                        axios
+                            .post("/api/fotos_cejas", {
+                                clientaID: clientaID,
+                                foto: resp.fileName,
+                            })
+                            .then((uploadResp) => {
+                                console.log(uploadResp);
+                            });
                     }
                     setFiles([]);
                     setUploading(false);
@@ -291,7 +314,11 @@ function FotosDialog({ open, setOpen }) {
                                             Error: {uploadError}
                                         </p>
                                     )}
-                                    {uploadSuccess && <Text mt={4} color={"green"}>¡Foto agregada exitosamente!</Text>}
+                                    {uploadSuccess && (
+                                        <Text mt={4} color={"green"}>
+                                            ¡Foto agregada exitosamente!
+                                        </Text>
+                                    )}
                                 </Box>
                             )}
                         </Dialog.Body>
@@ -300,7 +327,7 @@ function FotosDialog({ open, setOpen }) {
                                 size="sm"
                                 onClick={() => {
                                     console.log("closing");
-                                    setUploadSuccess(false)
+                                    setUploadSuccess(false);
                                 }}
                             />
                         </Dialog.CloseTrigger>

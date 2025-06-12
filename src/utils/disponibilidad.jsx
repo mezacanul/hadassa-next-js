@@ -346,10 +346,6 @@ function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
                 servicios
             );
 
-            if (slots && slots[0] == "10:00") {
-                // console.log(camaID);
-                // console.log("puede agendar", slots, camaID, puedeAgendar(horariosCama, slots, dirServicio));
-            }
             if (puedeAgendar(horariosCama, slots, dirServicio)) {
                 if (!registry.includes(hora)) {
                     available.push({ cama: camaID, hora });

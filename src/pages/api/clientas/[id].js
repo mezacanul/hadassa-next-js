@@ -24,7 +24,7 @@ export default async function handler(req, res) {
                 "SELECT * FROM clientas WHERE id = ?",
                 [id]
             );
-            res.status(200).json(rows[0]);
+            res.status(200).json(rows);
         }
         if (req.method == "PATCH") {
             const { column, value } = req.body; // Use req.body for PATCH payload
