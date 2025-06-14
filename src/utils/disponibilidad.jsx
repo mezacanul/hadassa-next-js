@@ -445,5 +445,6 @@ export {
     GenerarHorariosDisponibles,
     sortHours,
     getAvailable,
-    refineHorarios
+    refineHorarios,
+    sortByHora
 };

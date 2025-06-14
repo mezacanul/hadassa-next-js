@@ -8,6 +8,7 @@ import {
     getAvailable,
     getSlots,
     refineHorarios,
+    sortByHora,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 import { db_info } from "@/config/db";
@@ -72,6 +73,7 @@ export default async function handler(req, res) {
                         citas.id as cita_ID, 
                         fecha, 
                         hora, 
+                        status,
                         cama_id, 
                         clientas.nombres, 
                         clientas.apellidos, 
@@ -267,6 +269,7 @@ export default async function handler(req, res) {
                 );
 
                 let availableArr = refineHorarios(available, camasKeys);
+                availableArr = sortByHora(availableArr)
 
                 res.status(200).json(availableArr);
             }

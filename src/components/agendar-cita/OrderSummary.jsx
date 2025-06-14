@@ -134,7 +134,7 @@ export default function OrderSummary({
                         <Text>Servicio: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.servicio && (
+                        {!citaID && currentCita.servicio && (
                             <Text
                                 _hover={{
                                     cursor: "pointer",
@@ -167,7 +167,7 @@ export default function OrderSummary({
                         <Text>Lashista: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.lashista && (
+                        {!citaID && currentCita.lashista && (
                             <Text
                                 _hover={{
                                     cursor: "pointer",
@@ -200,7 +200,7 @@ export default function OrderSummary({
                         <Text>Hora: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.horario && (
+                        {!citaID && currentCita.horario && (
                             <Text
                                 _hover={{
                                     cursor: "pointer",
@@ -233,7 +233,7 @@ export default function OrderSummary({
                         <Text>Clienta: </Text>
                     </HStack>
                     <HStack>
-                        {currentCita.clienta && (
+                        {!citaID && currentCita.clienta && (
                             <Text
                                 _hover={{
                                     cursor: "pointer",
@@ -284,7 +284,7 @@ export default function OrderSummary({
                 </HStack>
             </VStack>
 
-            <SelectMetodoPago />
+            <SelectMetodoPago citaID={citaID} />
             <CitaExito />
             {!citaID && agendarLoading != true && (
                 <Button
@@ -302,7 +302,7 @@ export default function OrderSummary({
     );
 }
 
-export function SelectMetodoPago({ w = "100%", value = null }) {
+export function SelectMetodoPago({ w = "100%", value = null, citaID = null }) {
     const [mp, setMp] = useMetodoPago();
 
     useEffect(() => {
@@ -320,6 +320,7 @@ export function SelectMetodoPago({ w = "100%", value = null }) {
 
     return (
         <Select.Root
+            disabled={citaID ? true : false}
             bg={"white"}
             mb={"0.5rem"}
             collection={metodosPago}
