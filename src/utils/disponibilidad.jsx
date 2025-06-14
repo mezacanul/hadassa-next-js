@@ -115,12 +115,11 @@ function getSlots(cita, horarioDelDia, servicios) {
  * @param {string[]} servicio.directiva - Reglas del servicio.
  * @returns {boolean} - True if slots are a consecutive part of horariosCama.
  */
-function puedeAgendar(horariosCama, slots, directivaJSON) {
+function puedeAgendar(horariosCama, slots, directiva) {
     if (!slots) {
         return false;
     }
     let pass = null;
-    const directiva = JSON.parse(directivaJSON);
 
     if (directiva[0] == 1) {
         slots.forEach((slt) => {
@@ -270,7 +269,7 @@ function GenerarHorariosDisponibles(
             if (cita.reglasDeServicio.includes(-1)) {
                 const ultimoHorario1aCama =
                     cita.horariosOcupados1aCama[
-                        cita.horariosOcupados1aCama.length - 1
+                    cita.horariosOcupados1aCama.length - 1
                     ];
                 const IDX_ultimoHorario1aCama =
                     horariosDispPorCama[siblingID].indexOf(ultimoHorario1aCama);
@@ -313,42 +312,99 @@ function sortHours(hours) {
     });
 }
 
-function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios) {
-    const camasKeys = Object.keys(horariosDispPorCama);
-    const dirServicio = servicios[citaData.servicio_id].regla;
-    let registry = [];
-    // let available = {};
-    let available = [];
+function getAvailable(horariosDispPorCama, citaData, horarioDelDia, servicios, dev = false) {
+    try {
+        const camasKeys = Object.keys(horariosDispPorCama);
+        const dirServicio = JSON.parse(servicios[citaData.servicio_id].regla)
+        let registry = [];
+        let available = {}
+        if (dev) {
+            available.dir = dirServicio
+            available.registry = []
+            available.camas = {}
+            camasKeys.forEach((key) => {
+                available.camas[key] = []
+            })
+        } else {
+            available = []
+        }
 
-    camasKeys.forEach((camaID) => {
-        const horariosCama = horariosDispPorCama[camaID];
-        // console.log(camaID, horariosCama);
+        // Loopeamos cada cama 
+        camasKeys.forEach((camaID) => {
+            const horariosCama = horariosDispPorCama[camaID];
+            // console.log(camaID, horariosCama);
 
-        horariosCama.forEach((hora) => {
-            // console.log(hora);
-            const horaClean = hora.replace("+", "").replace("-", "");
-            const slots = getSlots(
-                { hora: horaClean, servicio_id: citaData.servicio_id },
-                horarioDelDia,
-                servicios
-            );
+            // Loopeamos cada hora disponible 
+            horariosCama.forEach((hora) => {
+                // console.log(hora);
+                const horaClean = hora.replace("+", "").replace("-", "");
+                const slots = getSlots(
+                    { hora: horaClean, servicio_id: citaData.servicio_id },
+                    horarioDelDia,
+                    servicios
+                );
 
-            if (puedeAgendar(horariosCama, slots, dirServicio)) {
-                if (!registry.includes(hora)) {
-                    // console.log({ cama: camaID, hora });
-
-                    available.push({ cama: camaID, hora });
-                    registry.push(hora);
+                if (puedeAgendar(horariosCama, slots, dirServicio)) {
+                    // available.push(hora);
+                    if (!registry.includes(hora) && !dev) {
+                        // console.log({ cama: camaID, hora });
+                        available.push({ cama: camaID, hora });
+                        registry.push(hora);
+                    } else if (dev) {
+                        available.camas[camaID].push(hora)
+                        available.registry.push(hora);
+                    }
                 }
-                // available.push(hora);
-            }
+            });
         });
+
+        // available = [...new Set(available)];
+        // available = sortHours(available);
+        if (dev) {
+            available.registry = [...new Set(available.registry)];
+            return available
+        } else {
+            available = sortByHora(available);
+            return available;
+        }
+    } catch (error) {
+        console.log("error", error);
+        return "error in getAvailable"
+    }
+}
+
+function refineHorarios(available, camasKeys){
+    let availableArr = [];
+
+    available.registry.forEach((hr) => {
+        if (available.dir[0] == 0 && available.dir[1] == -1) {
+            if (
+                !availableArr.includes(hr) &&
+                available.camas[camasKeys[1]].includes(hr)
+            ) {
+                availableArr.push({hora: hr, cama: camasKeys[1]});
+            } else if (
+                !availableArr.includes(hr) &&
+                available.camas[camasKeys[0]].includes(hr)
+            ) {
+                availableArr.push({hora: hr, cama: camasKeys[0]});
+            }
+        } else {
+            if (
+                !availableArr.includes(hr) &&
+                available.camas[camasKeys[0]].includes(hr)
+            ) {
+                availableArr.push({hora: hr, cama: camasKeys[0]});
+            } else if (
+                !availableArr.includes(hr) &&
+                available.camas[camasKeys[1]].includes(hr)
+            ) {
+                availableArr.push({hora: hr, cama: camasKeys[1]});
+            }
+        }
     });
 
-    // available = [...new Set(available)];
-    // available = sortHours(available);
-    available = sortByHora(available);
-    return available;
+    return availableArr
 }
 
 /**
@@ -389,4 +445,6 @@ export {
     GenerarHorariosDisponibles,
     sortHours,
     getAvailable,
+    refineHorarios,
+    sortByHora
 };

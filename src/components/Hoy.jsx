@@ -37,6 +37,9 @@ export default function Hoy() {
     const calendarRef = useRef(null); // Create a ref for the calendar
     const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
 
+    const NextNav = useNextNav();
+    const [loading, setLoading] = loadHook("useLoader")
+
     useEffect(() => {
         const formattedToday = format(new Date(), "yyyy-MM-dd");
 
@@ -78,9 +81,15 @@ export default function Hoy() {
     }, []);
 
     const handleEventPreview = (info) => {
-        setOpenDialogue(true);
-        console.log(info.event.toPlainObject());
-        setCurrentEventDialogue(info.event.toPlainObject());
+        const { cita_ID } = info.event["_def"].extendedProps
+
+        setLoading(true)
+        NextNav.push(`/citas/${cita_ID}`);
+        // setOpenDialogue(false);
+
+        //     setOpenDialogue(true);
+        // console.log(info.event.toPlainObject());
+        // setCurrentEventDialogue(info.event.toPlainObject());
     };
 
     return (
@@ -122,9 +131,31 @@ export default function Hoy() {
                             }
 
                             #Hoy .fc-v-event {
+                                background-color: transparent;
+                                border: 2px solid black;
+                                opacity: 0.9;
+                            }
+
+                            #Hoy .fc-v-event:has(.confirmado) {
                                 background-color: #fce7f3 !important;
                                 border: 2px solid #ec4899 !important;
                                 opacity: 0.9;
+                            }
+                            
+                            #Hoy .fc-v-event:has(.pendiente) {
+                                background-color: #fefce8 !important;
+                                border: 2px solid #eab308 !important;
+                                opacity: 0.9;
+                            }
+
+                            .fc-timegrid-col:nth-child(3) .fc-timegrid-col-frame {
+                                border-right: 1px solid rgb(210, 210, 210) !important;
+                                z-index: 10;
+                            }
+                            
+                            .fc-timegrid-col:nth-child(5) .fc-timegrid-col-frame {
+                                border-right: 1px solid rgb(210, 210, 210) !important;
+                                z-index: 10;
                             }
                         `}
                     </style>
@@ -139,7 +170,7 @@ export default function Hoy() {
                         slotMinTime="09:00:00"
                         slotMaxTime="18:00:00"
                         expandRows={true}
-                        height="200vh"
+                        height="260vh"
                         // headerToolbar={{ left: "title", center: "", right: "" }}
                         headerToolbar={{ left: "", center: "", right: "" }}
                         allDaySlot={false} // Removes the all-day row
@@ -156,7 +187,7 @@ export default function Hoy() {
                         }}
                         eventContent={(arg) => {
                             return (
-                                <div style={{ marginLeft: "0.3rem" }}>
+                                <div style={{ marginLeft: "0.3rem" }} className={arg.event.extendedProps.status == 2 ? "confirmado" : "pendiente"}>
                                     <b
                                         style={{
                                             fontSize: "0.7rem",
@@ -176,15 +207,15 @@ export default function Hoy() {
                                 </div>
                             );
                         }}
-                        // viewDidMount={() => {
-                        //     console.log("viewDidMount hoyRef:", hoyRef);
-                        //     // Optionally test the API here
-                        //     if (hoyRef) {
-                        //         hoyRef.gotoDate("2025-04-30"); // Test navigation
-                        //     } else {
-                        //         console.log("No Hoy ref found");
-                        //     }
-                        // }}
+                    // viewDidMount={() => {
+                    //     console.log("viewDidMount hoyRef:", hoyRef);
+                    //     // Optionally test the API here
+                    //     if (hoyRef) {
+                    //         hoyRef.gotoDate("2025-04-30"); // Test navigation
+                    //     } else {
+                    //         console.log("No Hoy ref found");
+                    //     }
+                    // }}
                     />
                 </Box>
             </Dialog.Root>
@@ -197,7 +228,7 @@ function CitaDialog({ setOpenDialogue, data }) {
     const citaData = { ...data.extendedProps };
     const [loading, setLoading] = loadHook("useLoader")
 
-    useEffect(()=>{
+    useEffect(() => {
         console.log(data);
     }, [])
     return (
@@ -233,11 +264,10 @@ function CitaDialog({ setOpenDialogue, data }) {
                                             w={"12rem"}
                                             h={"12rem"}
                                             borderRadius={"50%"}
-                                            src={`${CDN}/img/clientas/${
-                                                citaData.foto
-                                                    ? citaData.foto
-                                                    : "avatar-woman.png"
-                                            }`}
+                                            src={`${CDN}/img/clientas/${citaData.foto
+                                                ? citaData.foto
+                                                : "avatar-woman.png"
+                                                }`}
                                             objectFit={"cover"}
                                         />
                                         <Text

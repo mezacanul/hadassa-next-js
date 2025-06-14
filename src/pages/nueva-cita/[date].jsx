@@ -107,10 +107,10 @@ export default function NuevaCita() {
             <Heading
                 textAlign={
                     currentCita.servicio &&
-                    currentCita.lashista &&
-                    currentCita.horario &&
-                    currentPaso == "Confirmar" &&
-                    currentCita.clienta
+                        currentCita.lashista &&
+                        currentCita.horario &&
+                        currentPaso == "Confirmar" &&
+                        currentCita.clienta
                         ? "center"
                         : "left"
                 }
@@ -122,10 +122,10 @@ export default function NuevaCita() {
             </Heading>
 
             {currentCita.servicio &&
-            currentCita.lashista &&
-            currentCita.horario &&
-            currentPaso == "Confirmar" &&
-            currentCita.clienta ? null : (
+                currentCita.lashista &&
+                currentCita.horario &&
+                currentPaso == "Confirmar" &&
+                currentCita.clienta ? null : (
                 <Heading color={"pink.600"} mb={"2rem"}>
                     Seleccionar {currentPaso}:
                 </Heading>
@@ -135,9 +135,9 @@ export default function NuevaCita() {
                 w={"100%"}
                 justify={
                     currentCita.servicio &&
-                    currentCita.lashista &&
-                    currentCita.horario &&
-                    currentCita.clienta
+                        currentCita.lashista &&
+                        currentCita.horario &&
+                        currentCita.clienta
                         ? "center"
                         : "space-between"
                 }
@@ -145,10 +145,10 @@ export default function NuevaCita() {
                 align={"start"}
             >
                 {currentCita.servicio &&
-                currentCita.lashista &&
-                currentCita.horario &&
-                currentPaso == "Confirmar" &&
-                currentCita.clienta ? null : (
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentPaso == "Confirmar" &&
+                    currentCita.clienta ? null : (
                     <VStack style={{ width: "65%" }} align={"start"}>
                         {currentCita.servicio &&
                             currentCita.lashista &&
@@ -160,9 +160,10 @@ export default function NuevaCita() {
                                     currentPaso={currentPaso}
                                 />
                             )}
+                        {!currentCita.servicio && <SearchServicio />}
 
                         <Box w={"100%"} maxH={"65vh"} overflowY={"scroll"}>
-                            {servicios && !currentCita.servicio && (
+                            {!currentCita.servicio && (
                                 <SelectServicios servicios={servicios} />
                             )}
                             {lashistas &&
@@ -200,9 +201,9 @@ export default function NuevaCita() {
                     stage={currentPaso}
                     disabled={
                         currentCita.servicio &&
-                        currentCita.lashista &&
-                        currentCita.horario &&
-                        currentCita.clienta
+                            currentCita.lashista &&
+                            currentCita.horario &&
+                            currentCita.clienta
                             ? false
                             : true
                     }
@@ -270,17 +271,50 @@ function SelectLashistas({ lashistas }) {
     );
 }
 
-function SelectServicios({ servicios }) {
+const useSearchServicio = Singleton("")
+
+function SearchServicio() {
+    const [searchServicio, setSearchServicio] = useSearchServicio()
+    const handleChange = (e) => setSearchServicio(e.target.value);
+
     return (
-        <Grid w="100%" gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
-            {servicios.map((servicio) => {
-                return (
-                    <GridItem key={servicio.id}>
-                        <ServicioCard data={servicio} />
-                    </GridItem>
-                );
-            })}
+        <Grid w="100%" mb={"1rem"} gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
+            <Input
+                shadow={"md"}
+                bg={"white"}
+                size={"sm"}
+                placeholder="Buscar Servicio"
+                value={searchServicio}
+                onChange={handleChange}
+            />
         </Grid>
+    )
+}
+
+function SelectServicios({ servicios }) {
+    const [searchServicio, setSearchServicio] = useSearchServicio()
+    useEffect(() => {
+        return (setSearchServicio(""))
+    }, [])
+    return (
+        <>
+            {!servicios && (
+                <Spinner color="pink.500" borderWidth="4px" size={"xl"} />
+            )}
+            <Grid w="100%" gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
+                {servicios && servicios
+                    .filter((servicio) =>
+                        (servicio.servicio).toLowerCase().includes(searchServicio.toLowerCase())
+                    )
+                    .map((servicio) => {
+                        return (
+                            <GridItem key={servicio.id}>
+                                <ServicioCard data={servicio} />
+                            </GridItem>
+                        );
+                    })}
+            </Grid>
+        </>
     );
 }
 
@@ -294,6 +328,7 @@ function SelectHorarios({ selectedDate }) {
             servicio_id: currentCita.servicio.id,
             lashista_id: currentCita.lashista.id,
             action: "getHorariosDisponibles",
+            dev: true
         };
         console.log("send", send);
         console.log(JSON.stringify(send));
@@ -309,12 +344,14 @@ function SelectHorarios({ selectedDate }) {
     }, []);
 
     return (
-        <HStack justify={"center"} h={"50vh"} align={"center"}>
+        <HStack justify={"center"} h={"50vh"} align={"center"} w={"100%"}>
             {!horarios && (
                 <Spinner color="pink.500" borderWidth="4px" size={"lg"} />
             )}
 
-            {horarios && (
+            {horarios && horarios.length == 0 && <Heading w={"100%"} textAlign={"center"}>No hay horarios disponibles</Heading>}
+
+            {horarios && horarios.length > 0 && (
                 <Grid
                     gridTemplateColumns={"repeat(4, 1fr)"}
                     gap={"1.5rem"}
@@ -618,6 +655,20 @@ function ServicioCard({ data }) {
                 <Card.Body>
                     <Card.Title mb="2" color={"pink.600"}>
                         {data.servicio}
+                        {data.tipo.includes("combo") && <Badge
+                            size={"md"}
+                            ms={"0.5rem"}
+                            colorPalette={"purple"}
+                        >
+                            Combo
+                        </Badge>}
+                        {data.tipo == "combo-hadassa" && <Badge
+                            size={"md"}
+                            ms={"0.5rem"}
+                            colorPalette={"purple"}
+                        >
+                            Hadassa
+                        </Badge>}
                     </Card.Title>
                     <Card.Description>{data.descripcion}</Card.Description>
                 </Card.Body>

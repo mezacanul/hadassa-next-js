@@ -7,6 +7,8 @@ import {
     GenerarHorariosDisponibles,
     getAvailable,
     getSlots,
+    refineHorarios,
+    sortByHora,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 import { db_info } from "@/config/db";
@@ -71,6 +73,7 @@ export default async function handler(req, res) {
                         citas.id as cita_ID, 
                         fecha, 
                         hora, 
+                        status,
                         cama_id, 
                         clientas.nombres, 
                         clientas.apellidos, 
@@ -257,11 +260,18 @@ export default async function handler(req, res) {
             }
 
             if (req.body.dev) {
-                res.status(200).json({
+                const available = getAvailable(
                     horariosDispPorCama,
                     cita,
                     horarioDelDia,
-                });
+                    servicios,
+                    req.body.dev
+                );
+
+                let availableArr = refineHorarios(available, camasKeys);
+                availableArr = sortByHora(availableArr)
+
+                res.status(200).json(availableArr);
             }
 
             if (POST_Data.action == "getHorariosDisponibles") {
@@ -271,11 +281,8 @@ export default async function handler(req, res) {
                     horarioDelDia,
                     servicios
                 );
-                // console.log(horariosDispPorCama);
-                console.log(available);
 
-                // res.status(200).json({horariosDispPorCama, cita});
-                // res.status(200).json({horariosDispPorCama, available});
+                // console.log(available);
                 res.status(200).json(available);
                 return;
             } else {
@@ -286,10 +293,7 @@ export default async function handler(req, res) {
             res.status(405).json({ error });
         }
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to fetch citas",
-            error: error,
-        });
+        res.status(500).json(error);
     } finally {
         await connection.end();
     }
