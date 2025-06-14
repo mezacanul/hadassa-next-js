@@ -294,6 +294,7 @@ function SelectHorarios({ selectedDate }) {
             servicio_id: currentCita.servicio.id,
             lashista_id: currentCita.lashista.id,
             action: "getHorariosDisponibles",
+            dev: true
         };
         console.log("send", send);
         console.log(JSON.stringify(send));
