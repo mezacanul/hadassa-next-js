@@ -12,12 +12,12 @@ import {
 } from "@chakra-ui/react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { CiSquarePlus } from "react-icons/ci";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
-import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { loadHook } from "@/utils/lattice-design";
 import { IoMdToday } from "react-icons/io";
 

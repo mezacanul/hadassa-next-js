@@ -67,4 +67,22 @@ function parseQueryFilters(query, filterMap) {
     return { conditions, params };
 }
 
-export { formatHoyTitle, formatFechaDMY, queryPlusFilters, parseQueryFilters }
+function formatCamaID(camaID) {
+    console.log(camaID.split("-"));
+
+    const camaArray = camaID.split("-");
+    return `${capitalizeFirst(camaArray[0])} ${camaArray[2]}`;
+}
+
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export { 
+    capitalizeFirst,
+    formatCamaID, 
+    formatHoyTitle, 
+    formatFechaDMY, 
+    queryPlusFilters, 
+    parseQueryFilters 
+}

@@ -81,13 +81,17 @@ export default function Hoy() {
     }, []);
 
     const handleEventPreview = (info) => {
-        const { cita_ID } = info.event["_def"].extendedProps
-
+        // const { cita_ID } = info.event["_def"].extendedProps
+        const cita = info.event["_def"].extendedProps 
+        const cama_arr = cita.cama_id.split("-")
+        // const new_cama = `${cama_arr[0]}-${cama_arr[1]}-${cama_arr[2] == "1" ? "2" : "1"}`
+        // console.log(`UPDATE citas SET cama_id = '${new_cama}' WHERE id = '${cita.cita_ID}';`);
+        
         setLoading(true)
-        NextNav.push(`/citas/${cita_ID}`);
+        NextNav.push(`/citas/${cita.cita_ID}`);
+        
         // setOpenDialogue(false);
-
-        //     setOpenDialogue(true);
+        // setOpenDialogue(true);
         // console.log(info.event.toPlainObject());
         // setCurrentEventDialogue(info.event.toPlainObject());
     };
@@ -394,7 +398,7 @@ function renderResourceLabel(info) {
 
 export function formatEvents(eventsData) {
     if (eventsData != null) {
-        console.log("Formatted", eventsData);
+        // console.log("Formatted", eventsData);
 
         return eventsData.map((ed) => {
             // Split the date into parts and rearrange
@@ -413,7 +417,7 @@ export function formatEvents(eventsData) {
             // Add minutes
             const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
             // Format the result
-            console.log(dateWithTime, ed.duracion);
+            // console.log(dateWithTime, ed.duracion);
 
             const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
 

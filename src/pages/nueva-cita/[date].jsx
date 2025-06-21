@@ -25,6 +25,7 @@ import axios from "axios";
 import { FaCreditCard } from "react-icons/fa6";
 import { FaMoneyBill } from "react-icons/fa";
 import OrderSummary from "@/components/agendar-cita/OrderSummary";
+import { CDN } from "@/config/cdn";
 
 export const useCurrentCita = Singleton({
     servicio: null,
@@ -572,8 +573,8 @@ export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
                 w={"8rem"}
                 src={
                     data.foto_clienta
-                        ? `/img/clientas/${data.foto_clienta}`
-                        : "/img/clientas/avatar-woman.png"
+                        ? `${CDN}/img/clientas/${data.foto_clienta}`
+                        : `${CDN}/img/clientas/avatar-woman.png`
                 }
                 alt=""
             />

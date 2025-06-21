@@ -1,5 +1,6 @@
 import { CDN } from "@/config/cdn";
 import { useCita } from "@/pages/citas/[citaID]";
+import { formatCamaID } from "@/utils/main";
 import { Heading, HStack, Image, Text, VStack } from "@chakra-ui/react";
 
 export default function ImagenesTicket() {
@@ -32,7 +33,7 @@ function Lashista() {
     const [cita] = useCita();
 
     return (
-        <HStack w={"100%"} justifyContent={"end"}>
+        <VStack w={"100%"} alignItems={"end"}>
             <Image
                 shadow={"sm"}
                 rounded={"full"}
@@ -43,17 +44,6 @@ function Lashista() {
                 <Text fontWeight={700}>{cita.lashista}</Text>
                 <Text>{formatCamaID(cita.cama_id)}</Text>
             </VStack>
-        </HStack>
+        </VStack>
     );
-}
-
-function formatCamaID(camaID) {
-    console.log(camaID.split("-"));
-
-    const camaArray = camaID.split("-");
-    return `${capitalizeFirst(camaArray[0])} ${camaArray[2]}`;
-}
-
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -37,6 +37,10 @@ export default function DetallesCejas({ data = null }) {
     const [updateSuccess, setUpdateSuccess] = useState(null);
 
     useEffect(() => {
+        console.log("TEST", data);
+    }, [])
+
+    useEffect(() => {
         if (cita) {
             setDetallesCejas(cita.detalles_cejas);
             setClientaID(cita.clienta_id);
@@ -68,8 +72,8 @@ export default function DetallesCejas({ data = null }) {
 
     return (
         <VStack align={"start"} gap={"1.5rem"} w={"100%"}>
-            <FotosDialog open={open} setOpen={setOpen} />
-            <Heading size={"2xl"}>Detalles de Cejas:</Heading>
+            <FotosDialog open={open} setOpen={setOpen} clientaID={clientaID} />
+            <Heading size={"2xl"}>Fotos y Detalles:</Heading>
             <FotosCejas setOpen={setOpen} clientaID={clientaID} />
 
             <Heading>Descripción:</Heading>
@@ -102,7 +106,7 @@ export default function DetallesCejas({ data = null }) {
                 </HStack>
             )}
             {loadingActualizacion && (
-                <Spinner borderWidth={"3px"} size={"lg"} color={"pink.500"} />
+                <Spinner borderWidth={"3px"} size={"lg"} color={"blue.500"} />
             )}
         </VStack>
     );
@@ -151,7 +155,7 @@ function FotosCejas({ setOpen, clientaID = null }) {
     return (
         <HStack gap={"1rem"} mb={"1.5rem"}>
             {loading && (
-                <Spinner borderWidth={"3px"} size={"xl"} color={"pink.500"} />
+                <Spinner borderWidth={"3px"} size={"xl"} color={"blue.500"} />
             )}
             {fotosCejas &&
                 !loading &&
@@ -186,10 +190,10 @@ function FotosCejas({ setOpen, clientaID = null }) {
     );
 }
 
-function FotosDialog({ open, setOpen, data = null }) {
+function FotosDialog({ open, setOpen, clientaID }) {
     const [fotosCejas, setFotosCejas] = useFotosCejas();
     const [cita] = useCita();
-    const [clientaID, setClientaID] = useState(data ? data.id : null);
+    // const [clientaID, setClientaID] = useState(data ? data.id : null);
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [fotoCeja, setFotoCeja] = useFotoCeja();
@@ -197,9 +201,9 @@ function FotosDialog({ open, setOpen, data = null }) {
     const [uploadSuccess, setUploadSuccess] = useState(null);
 
     useEffect(() => {
-        if (cita) {
-            setClientaID(cita.clienta_id);
-        }
+        // if (cita) {
+        //     setClientaID(cita.clienta_id);
+        // }
     }, [cita]);
 
     const handleFileChange = (acceptedFiles) => {
@@ -306,7 +310,7 @@ function FotosDialog({ open, setOpen, data = null }) {
                                             mt={4}
                                             borderWidth={"3px"}
                                             size={"lg"}
-                                            color={"pink.500"}
+                                            color={"blue.500"}
                                         />
                                     )}
                                     {uploadError && (
