@@ -140,6 +140,7 @@ function ClientaAvatar({ clienta, clientaID }) {
 
     return (
         <VStack alignItems={"start"} w={"60%"} gap={"1rem"} mb={"2rem"}>
+            <Heading color={"pink.600"} mb={"1rem"} size={"3xl"}>{`${clienta.nombres} ${clienta.apellidos}`}</Heading>
             <HStack align={"end"} gap={"1.5rem"}>
                 <Image shadow={"md"} rounded={"lg"} w={"10rem"}
                     src={

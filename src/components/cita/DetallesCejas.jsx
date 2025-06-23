@@ -25,6 +25,11 @@ const lorem =
 
 const useFotoCeja = Singleton(null);
 
+// TO DO: 
+// Recibir los detalles de las cejas completos
+// es decir:
+//    - detallesCejas
+//    - fotosCejas
 export default function DetallesCejas({ data = null }) {
     const [cita] = useCita();
     const [clientaID, setClientaID] = useState(data ? data.id : null);
@@ -115,31 +120,41 @@ export default function DetallesCejas({ data = null }) {
 const useFotosCejas = Singleton(null);
 
 function FotosCejas({ setOpen, clientaID = null }) {
-    const [cita] = useCita();
+    // const [cita, setCita] = useCita();
     const [fotosCejas, setFotosCejas] = useFotosCejas();
     const [fotoCeja, setFotoCeja] = useFotoCeja();
     const [loading, setLoading] = useState(true);
 
+    // useEffect(()=>{
+    //     return (
+    //         setFotosCejas(null)
+    //     )
+    // }, [])
+
     // if (cita) {
-    useEffect(() => {
-        if (!loading) {
-            setLoading(true);
-        }
-        if (cita) {
-            // setClientaID(cita.clienta_id)
-            console.log(cita.clienta_id);
-            axios
-                .get(`/api/fotos_cejas?clientaID=${cita.clienta_id}`)
-                .then((fcResp) => {
-                    setFotosCejas(fcResp.data);
-                    setLoading(false);
-                    console.log(fcResp.data);
-                });
-        }
-    }, [cita]);
+    // useEffect(() => {
+    //     if (!loading) {
+    //         setLoading(true);
+    //     }
+    //     if (cita) {
+    //         // setClientaID(cita.clienta_id)
+    //         console.log(cita.clienta_id);
+    //         axios
+    //             .get(`/api/fotos_cejas?clientaID=${cita.clienta_id}`)
+    //             .then((fcResp) => {
+    //                 setFotosCejas(fcResp.data);
+    //                 setLoading(false);
+    //                 console.log(fcResp.data);
+    //             });
+    //     }
+    // }, [cita]);
 
     useEffect(() => {
         if (clientaID) {
+            if (!loading) {
+                setFotosCejas(null);
+                setLoading(true);
+            }
             axios
                 .get(`/api/fotos_cejas?clientaID=${clientaID}`)
                 .then((fcResp) => {

@@ -21,12 +21,18 @@ export default function Citas() {
     useEffect(() => {
         if (citaID) {
             axios.get(`/api/citas?id=${citaID}`).then((citaResp) => {
-                console.log(citaResp.data);
+                // console.log("citaRESP", citaResp.data);
                 setCita(citaResp.data);
                 setLoading(false);
             });
         }
     }, [router.isReady, citaID]);
+
+    // useEffect(()=>{
+    //     return (
+    //         setCita(null)
+    //     )
+    // }, [])
 
     return (
         <Grid
@@ -37,7 +43,7 @@ export default function Citas() {
         >
             <GridItem>{cita ? <DetallesCita /> : <BrandLoader />}</GridItem>
 
-            <GridItem>{cita ? <DetallesClienta /> : <BrandLoader />}</GridItem>
+            <GridItem>{cita ? <DetallesClienta clientaID={cita.clienta_id}/> : <BrandLoader />}</GridItem>
         </Grid>
     );
 }
@@ -52,11 +58,11 @@ function DetallesCita() {
     );
 }
 
-function DetallesClienta() {
+function DetallesClienta({clientaID}) {
     return (
         <VStack gap={"2rem"} w={"100%"} align={"start"} ps={"2rem"}>
             <ClientaAvatar />
-            <DetallesCejas />
+            <DetallesCejas clientaID={clientaID}/>
         </VStack>
     );
 }
