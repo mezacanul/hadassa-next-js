@@ -3,8 +3,8 @@ import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
 import { Badge, Heading, HStack, Text, VStack } from "@chakra-ui/react";
 import { SelectMetodoPago, useMetodoPago } from "../agendar-cita/OrderSummary";
 
-export default function DetallesTicket() {
-    const [cita] = useCita();
+export default function DetallesTicket({cita}) {
+    // const [cita] = useCita();
     const [mp, setMp] = useMetodoPago();
     let statusBadgeColor;
 

@@ -3,8 +3,8 @@ import { useCita } from "@/pages/citas/[citaID]";
 import { formatCamaID } from "@/utils/main";
 import { Heading, HStack, Image, Text, VStack } from "@chakra-ui/react";
 
-export default function ImagenesTicket() {
-    const [cita] = useCita();
+export default function ImagenesTicket({cita}) {
+    // const [cita] = useCita();
 
     return (
         <VStack w={"100%"} gap={"2rem"} align={"start"}>
@@ -15,8 +15,13 @@ export default function ImagenesTicket() {
                     w={"10rem"}
                     src={`${CDN}/img/servicios/${cita.servicio_foto}`}
                 />
-                <Lashista />
+                <Lashista 
+                    nombre={cita.lashista} 
+                    foto={cita.lashista_foto}
+                    camaID={cita.cama_id}
+                />
             </HStack>
+            
             <Heading
                 color={"pink.700"}
                 // borderWidth={"0 0 2px"}
@@ -29,8 +34,8 @@ export default function ImagenesTicket() {
     );
 }
 
-function Lashista() {
-    const [cita] = useCita();
+function Lashista({foto, nombre, camaID}) {
+    // const [cita] = useCita();
 
     return (
         <VStack w={"100%"} alignItems={"end"}>
@@ -38,11 +43,11 @@ function Lashista() {
                 shadow={"sm"}
                 rounded={"full"}
                 w={"5rem"}
-                src={`${CDN}/img/lashistas/${cita.lashista_foto}`}
+                src={`${CDN}/img/lashistas/${foto}`}
             />
             <VStack align={"end"} ms={"1rem"}>
-                <Text fontWeight={700}>{cita.lashista}</Text>
-                <Text>{formatCamaID(cita.cama_id)}</Text>
+                <Text fontWeight={700}>{nombre}</Text>
+                <Text>{formatCamaID(camaID)}</Text>
             </VStack>
         </VStack>
     );
