@@ -16,8 +16,8 @@ const buttonStyles = {
     variant: "subtle",
 };
 
-export default function AccionesTicket() {
-    const [cita, setCita] = useCita();
+export default function AccionesTicket({cita, setCita}) {
+    // const [cita, setCita] = useCita();
     const [loadingUpdate, setLoadingUpdate] = useState(false);
 
     function confirmarCita() {

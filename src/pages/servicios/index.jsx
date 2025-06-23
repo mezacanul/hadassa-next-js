@@ -1,8 +1,10 @@
 import { loadHook } from "@/utils/lattice-design";
-import { Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
+import { Badge, Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { AiFillPicture } from "react-icons/ai";
+import { FaClock } from "react-icons/fa6";
+import { useRouter as useNextNav } from "next/navigation";
+import { CDN } from "@/config/cdn";
 
 export default function Servicios() {
     const [servicios, setServicios] = useState(null);
@@ -17,7 +19,7 @@ export default function Servicios() {
     }, []);
 
     return (
-        <Box w={"100%"}>
+        <Box w={"80%"}>
             {servicios && <ServiciosTable servicios={servicios} />}
         </Box>
     );
@@ -27,10 +29,10 @@ function ServiciosTable({ servicios }) {
     return (
         <Table.Root
             size="md"
-            striped
+            // striped
             variant={"outline"}
             bg={"white"}
-            w={"70%"}
+            // w={"70%"}
             m={"auto"}
         >
             <Table.Header>
@@ -43,9 +45,9 @@ function ServiciosTable({ servicios }) {
                     <Table.ColumnHeader color={"white"}>
                         Servicio
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
+                    {/* <Table.ColumnHeader color={"white"}>
                         Descripcion
-                    </Table.ColumnHeader>
+                    </Table.ColumnHeader> */}
                     <Table.ColumnHeader color={"white"}>
                         Duración
                     </Table.ColumnHeader>
@@ -55,14 +57,14 @@ function ServiciosTable({ servicios }) {
                     <Table.ColumnHeader color={"white"}>
                         Directiva
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
+                    {/* <Table.ColumnHeader color={"white"}>
                         Acciones
-                    </Table.ColumnHeader>
+                    </Table.ColumnHeader> */}
                 </Table.Row>
             </Table.Header>
             <Table.Body>
                 {servicios.map((servicio, i) => (
-                    <ServicioRow key={i} servicio={servicio}/>
+                    <ServicioRow key={i} servicio={servicio} />
                 ))}
             </Table.Body>
         </Table.Root>
@@ -70,37 +72,64 @@ function ServiciosTable({ servicios }) {
 }
 
 function ServicioRow({ servicio }) {
-    let reglaTitle = ""
     const reglasAgenda = JSON.parse(servicio.reglas_agenda)
-    switch (reglasAgenda[0]) {
-        case -1:
-            reglaTitle = "Puede agendar especial"
-            break;
-        case 0:
-            reglaTitle = "Especial"
-            break;
-        case 1:
-            reglaTitle = "No agenda especial"
-            break;
-        default: break;
-    }
+    const [loading, setLoading] = useState(null);
+    const NextNav = useNextNav();
+
     return (
-        <Table.Row>
-            <Table.Cell>
+        <Table.Row
+            _hover={{
+                bg: "pink.100",
+                textDecor: "underline",
+                cursor: "pointer",
+            }}
+            onClick={() => {
+                setLoading(true)
+                NextNav.push(`/servicios/${servicio.id}`)
+            }}
+        >
+            <Table.Cell py={"1.5rem"}>
                 <Image
-                    w={"20rem"}
-                    rounded={"md"}
-                    src={`/img/servicios/${servicio.image}`}
+                    // py={"1rem"}
+                    w={"150px"}
+                    rounded={"lg"}
+                    src={`${CDN}/img/servicios/${servicio.image}`}
                 />
             </Table.Cell>
-            <Table.Cell>{servicio.servicio}</Table.Cell>
-            <Table.Cell>{servicio.descripcion}</Table.Cell>
-            <Table.Cell>{servicio.minutos}</Table.Cell>
-            <Table.Cell>{`$${servicio.precio}`}</Table.Cell>
-            <Table.Cell>{reglaTitle}</Table.Cell>
             <Table.Cell>
-                <Button bg={"pink.500"}>Editar</Button>
+                <Heading overflow={"hidden"} w={"12rem"} size={"lg"} color={"pink.700"}>
+                    {servicio.servicio}
+                </Heading>
             </Table.Cell>
+            {/* <Table.Cell>{servicio.descripcion}</Table.Cell> */}
+            <Table.Cell>
+                <HStack gap={2} w={"7rem"}>
+                    <Heading size={"md"} color="pink.600">
+                        <FaClock />
+                    </Heading>
+                    {`${servicio.minutos} mins.`}
+                </HStack>
+            </Table.Cell>
+            <Table.Cell fontWeight={600} color={"green"}>{`$${servicio.precio}`}</Table.Cell>
+            <Table.Cell>
+                <Badge
+                    fontWeight={700}
+                    colorPalette={
+                        reglasAgenda[0] == -1 && "blue" ||
+                        reglasAgenda[0] == 0 && "purple" ||
+                        reglasAgenda[0] == 1 && "orange"
+                    }
+                    px={"0.5rem"}
+                    py={"0.2rem"}
+                >
+                    {reglasAgenda[0] == -1 && "Puede agendar especial"}
+                    {reglasAgenda[0] == 0 && "Especial"}
+                    {reglasAgenda[0] == 1 && "No agenda especial"}
+                </Badge>
+            </Table.Cell>
+            {/* <Table.Cell>
+                <Button bg={"pink.500"}>Editar</Button>
+            </Table.Cell> */}
         </Table.Row>
     );
 }

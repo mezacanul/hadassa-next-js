@@ -20,11 +20,12 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loadHook, Singleton } from "@/utils/lattice-design";
-import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
+import { formatFechaDMY, formatHoyTitle, getDateObject } from "@/utils/main";
 import axios from "axios";
 import { FaCreditCard } from "react-icons/fa6";
 import { FaMoneyBill } from "react-icons/fa";
 import OrderSummary from "@/components/agendar-cita/OrderSummary";
+import { CDN } from "@/config/cdn";
 
 export const useCurrentCita = Singleton({
     servicio: null,
@@ -49,6 +50,14 @@ export default function NuevaCita() {
     const [currentPaso, setCurrentPaso] = useState("Servicio");
     const [clientasState, setClientasState] = useState("buscar");
     const [loading, setLoading] = loadHook("useLoader");
+
+    const [dateObj, setDateObj] = useState(null)
+
+    useEffect(() => {
+        if (selectedDate) {
+            setDateObj(getDateObject(selectedDate))
+        }
+    }, [selectedDate])
 
     useEffect(() => {
         setDOM({ title: "Agendar Cita" });
@@ -118,7 +127,8 @@ export default function NuevaCita() {
                 size={"3xl"}
                 mb={"1rem"}
             >
-                {formatHoyTitle(selectedDate)}
+                {/* {formatHoyTitle(selectedDate)} */}
+                {dateObj && `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
             </Heading>
 
             {currentCita.servicio &&
@@ -196,6 +206,7 @@ export default function NuevaCita() {
                 )}
 
                 <OrderSummary
+                    dateObj={dateObj}
                     setClientasState={setClientasState}
                     setCurrentPaso={setCurrentPaso}
                     stage={currentPaso}
@@ -572,8 +583,8 @@ export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
                 w={"8rem"}
                 src={
                     data.foto_clienta
-                        ? `/img/clientas/${data.foto_clienta}`
-                        : "/img/clientas/avatar-woman.png"
+                        ? `${CDN}/img/clientas/${data.foto_clienta}`
+                        : `${CDN}/img/clientas/avatar-woman.png`
                 }
                 alt=""
             />
@@ -648,7 +659,7 @@ function ServicioCard({ data }) {
                 objectFit="cover"
                 // maxW="5rem"
                 maxH={"10rem"}
-                src={`/img/servicios/${data.image}`}
+                src={`${CDN}/img/servicios/${data.image}`}
                 alt="Caffe Latte"
             />
             <Box>

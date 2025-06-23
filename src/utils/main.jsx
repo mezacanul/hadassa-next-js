@@ -1,5 +1,8 @@
-function formatHoyTitle (date) {
-    if(date == null) return date
+import { es } from 'date-fns/locale';
+import { format, parse } from 'date-fns';
+
+function formatHoyTitle(date) {
+    if (date == null) return date
     // console.log("hoy title", date);
     // const gmtString = date.date.marker.toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
 
@@ -34,8 +37,8 @@ function formatFechaDMY(fecha) {
     return `${day}-${month}-${year}`;
 }
 
-function queryPlusFilters(query, conditions){
-    let fullQuery = query 
+function queryPlusFilters(query, conditions) {
+    let fullQuery = query
     if (conditions.length > 0) {
         fullQuery +=
             " WHERE " +
@@ -67,4 +70,33 @@ function parseQueryFilters(query, filterMap) {
     return { conditions, params };
 }
 
-export { formatHoyTitle, formatFechaDMY, queryPlusFilters, parseQueryFilters }
+function formatCamaID(camaID) {
+    console.log(camaID.split("-"));
+
+    const camaArray = camaID.split("-");
+    return `${capitalizeFirst(camaArray[0])} ${camaArray[2]}`;
+}
+
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function getDateObject(selectedDate) {
+    const parsedDate = parse(selectedDate, 'yyyy-MM-dd', new Date());
+
+    const obj = {
+        dayName: capitalizeFirst(format(parsedDate, "EEEE dd", { locale: es })), // "Jueves 19" 
+        monthYearFormat: capitalizeFirst(format(parsedDate, "MMMM 'de' yyyy", { locale: es })) // "Junio de 2025"
+    }
+    return obj
+}
+
+export {
+    capitalizeFirst,
+    getDateObject,
+    formatCamaID,
+    formatHoyTitle,
+    formatFechaDMY,
+    queryPlusFilters,
+    parseQueryFilters
+}

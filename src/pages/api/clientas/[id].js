@@ -27,30 +27,51 @@ export default async function handler(req, res) {
             res.status(200).json(rows);
         }
         if (req.method == "PATCH") {
-            const { column, value } = req.body; // Use req.body for PATCH payload
+            if (req.body.type == "batch") {
+                const { payload } = req.body;
+                query = `UPDATE clientas SET nombres = ?, apellidos = ?, lada = ?, telefono = ? WHERE id = ?`;
+                [result] = await connection.execute(query, [
+                    payload.nombres,
+                    payload.apellidos,
+                    payload.lada,
+                    payload.telefono,
+                    id,
+                ]);
+                res.status(200).json({
+                    success: true,
+                    affectedRows: result.affectedRows,
+                });
 
-            // res.status(200).json({id, column, value})
-            // return
+                // res.status(200).json(req.body.payload);
+            } else {
+                const { column, value } = req.body; // Use req.body for PATCH payload
+                // res.status(200).json({id, column, value})
+                // return
 
-            switch (column) {
-                case "detalles_cejas":
-                    query = `UPDATE clientas SET detalles_cejas = ? WHERE id = ?`;
-                    [result] = await connection.execute(query, [value, id]);
-                    break;
-                default:
-                    break;
+                switch (column) {
+                    case "detalles_cejas":
+                        query = `UPDATE clientas SET detalles_cejas = ? WHERE id = ?`;
+                        [result] = await connection.execute(query, [value, id]);
+                        break;
+                    case "foto_clienta":
+                        query = `UPDATE clientas SET foto_clienta = ? WHERE id = ?`;
+                        [result] = await connection.execute(query, [value, id]);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (result.affectedRows === 0) {
+                    return res
+                        .status(404)
+                        .json({ error: "Clienta not found or no change" });
+                }
+
+                res.status(200).json({
+                    success: true,
+                    affectedRows: result.affectedRows,
+                });
             }
-
-            if (result.affectedRows === 0) {
-                return res
-                    .status(404)
-                    .json({ error: "Clienta not found or no change" });
-            }
-
-            res.status(200).json({
-                success: true,
-                affectedRows: result.affectedRows,
-            });
         }
     } catch (error) {
         console.error("Error:", error); // Debug
