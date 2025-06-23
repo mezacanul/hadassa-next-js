@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { FaHouseChimney } from "react-icons/fa6";
 import { useAgendarLoading, useCitaID, useMetodoPago } from "@/components/agendar-cita/OrderSummary";
+import FechaLogo from "@/components/FechaLogo";
 
 // import Router from 'next/router';
 
@@ -125,17 +126,21 @@ function NavBar({ h }) {
             borderBottom={"2px solid #ec4899"}
         >
             <HStack gap={"0.5rem"} justify={"space-between"}>
-                <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
-                    {router.pathname == "/" && formatHoyTitle(selectedDate)}
-                    {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
-                    {router.pathname == "/citas" && "Citas"}
-                    {router.pathname == "/citas/[citaID]" && "Cita"}
-                    {router.pathname == "/clientas" && "Clientas"}
-                    {router.pathname == "/clientas/[clientaID]" && "Clienta"}
-                    {router.pathname == "/servicios" && "Servicios"}
-                    {router.pathname == "/lashistas" && "Lashistas"}
-                    {router.pathname == "/dev" && "Developer"}
-                </Heading>
+                {router.pathname == "/" 
+                    && <FechaLogo selectedDate={selectedDate}/>}
+                {router.pathname != "/" && (
+                    <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
+                        {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
+                        {router.pathname == "/citas" && "Citas"}
+                        {router.pathname == "/citas/[citaID]" && "Cita"}
+                        {router.pathname == "/clientas" && "Clientas"}
+                        {router.pathname == "/clientas/[clientaID]" && "Clienta"}
+                        {router.pathname == "/servicios" && "Servicios"}
+                        {router.pathname == "/servicios/[servicioID]" && "Servicio"}
+                        {router.pathname == "/lashistas" && "Lashistas"}
+                        {router.pathname == "/dev" && "Developer"}
+                    </Heading>
+                )}
                 {/* format(info.date, "yyyy-MM-dd"); */}
                 {router.pathname == "/" ? (
                     <Button

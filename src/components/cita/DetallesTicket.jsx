@@ -1,10 +1,12 @@
 import { useCita } from "@/pages/citas/[citaID]";
-import { formatFechaDMY, formatHoyTitle } from "@/utils/main";
+import { formatFechaDMY, formatHoyTitle, getDateObject } from "@/utils/main";
 import { Badge, Heading, HStack, Text, VStack } from "@chakra-ui/react";
 import { SelectMetodoPago, useMetodoPago } from "../agendar-cita/OrderSummary";
 
 export default function DetallesTicket({cita}) {
-    // const [cita] = useCita();
+    const fechaArr = cita.fecha.split("-")
+    const fechaFormatted = `${fechaArr[2]}-${fechaArr[1]}-${fechaArr[0]}`
+    const dateObj = getDateObject(fechaFormatted)
     const [mp, setMp] = useMetodoPago();
     let statusBadgeColor;
 
@@ -27,7 +29,8 @@ export default function DetallesTicket({cita}) {
             <HStack w={"100%"} justify={"space-between"}>
                 <Text>Fecha:</Text>
                 <Text fontWeight={800}>
-                    {formatHoyTitle(formatFechaDMY(cita.fecha))}
+                    {/* {formatHoyTitle(formatFechaDMY(cita.fecha))} */}
+                    {`${dateObj.dayName} de ${dateObj.monthYearFormat}`}
                 </Text>
             </HStack>
 

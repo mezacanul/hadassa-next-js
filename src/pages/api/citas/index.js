@@ -36,6 +36,7 @@ export default async function handler(req, res) {
                             citas.hora,
                             citas.metodo_pago,
                             servicios.precio,
+                            servicios.id as servicio_id,
                             servicios.precio_tarjeta,
                             citas.status,
                             citas.pagado,

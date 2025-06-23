@@ -1,6 +1,6 @@
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import { loadHook, Singleton } from "@/utils/lattice-design";
-import { formatHoyTitle } from "@/utils/main";
+import { formatHoyTitle, getDateObject } from "@/utils/main";
 import {
     Alert,
     Button,
@@ -31,11 +31,12 @@ export default function OrderSummary({
     disabled,
     setCurrentPaso,
     setClientasState,
+    dateObj
 }) {
     const [citaID, setCitaID] = useCitaID();
     const [mp, setMp] = useMetodoPago();
     const [agendarLoading, setAgendarLoading] = useAgendarLoading();
-    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
+    // const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
 
     const handleAgendar = () => {
@@ -119,12 +120,14 @@ export default function OrderSummary({
                         <Text>Fecha: </Text>
                     </HStack>
                     <Text
+                        textAlign={"right"}
                         textDecor={"underline"}
                         fontWeight={700}
                         color={"pink.600"}
                     >
                         {/* {selectedDate && formatFechaDMY(selectedDate)} */}
-                        {selectedDate && formatHoyTitle(selectedDate)}
+                        {/* {selectedDate && formatHoyTitle(selectedDate)} */}
+                        {dateObj && `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
                     </Text>
                 </HStack>
 
