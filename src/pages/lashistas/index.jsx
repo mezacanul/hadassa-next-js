@@ -1,8 +1,11 @@
 import { loadHook } from "@/utils/lattice-design";
+import { capitalizeFirst, formatHorario } from "@/utils/main";
 import { Box, Button, Heading, HStack, Image, Table, Text } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { AiFillPicture } from "react-icons/ai";
+import { useRouter as useNextNav } from "next/navigation";
+import { CDN } from "@/config/cdn";
 
 export default function Lashistas() {
     const [lashistas, setLashistas] = useState(null);
@@ -27,7 +30,7 @@ function LashistasTable({ lashistas }) {
     return (
         <Table.Root
             size="md"
-            striped
+            // striped
             variant={"outline"}
             bg={"white"}
             w={"70%"}
@@ -41,44 +44,80 @@ function LashistasTable({ lashistas }) {
                         Lashista
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Horario Lunes a Viernes
+                        Lunes a Viernes
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Horarios Sábado
+                        Sábado
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>Rol</Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
+                    {/* <Table.ColumnHeader color={"white"}>
                         Acciones
-                    </Table.ColumnHeader>
+                    </Table.ColumnHeader> */}
                 </Table.Row>
             </Table.Header>
             <Table.Body>
                 {lashistas.map((lashista, i) => (
-                    <Table.Row key={i}>
-                        <Table.Cell>
-                            <Image
-                                borderRadius={"50%"}
-                                w={"6rem"}
-                                // rounded={"md"}
-                                src={`/img/lashistas/${lashista.image}`}
-                            />
-                        </Table.Cell>
-                        <Table.Cell>{lashista.nombre}</Table.Cell>
-                        <Table.Cell>
-                            {JSON.parse(lashista.horarioLV).map((hr)=>{
-                                return (
-                                    <Text mb={"1rem"} key={hr}>{hr}</Text>
-                                )
-                            })}
-                        </Table.Cell>
-                        <Table.Cell>{lashista.horarioSBD}</Table.Cell>
-                        <Table.Cell>{lashista.rol}</Table.Cell>
-                        <Table.Cell>
-                            <Button bg={"pink.500"}>Editar</Button>
-                        </Table.Cell>
-                    </Table.Row>
+                    <LashistaRow key={i} lashista={lashista} />
                 ))}
             </Table.Body>
         </Table.Root>
     );
+}
+
+function LashistaRow({ lashista }) {
+    const [loading, setLoading] = loadHook("useLoader");
+    const NextNav = useNextNav();
+
+    const horariosLV = JSON.parse(lashista.horarioLV)
+
+    useEffect(() => {
+        console.log("lsh", lashista);
+
+    }, [])
+    return (
+        <Table.Row
+            _hover={{
+                bg: "pink.100",
+                textDecor: "underline",
+                cursor: "pointer",
+            }}
+
+            onClick={() => {
+                setLoading(true)
+                NextNav.push(`/lashistas/${lashista.id}`)
+            }}
+        >
+            <Table.Cell py={"1rem"}>
+                <Image
+                    borderRadius={"50%"}
+                    w={"6rem"}
+                    // rounded={"md"}
+                    src={`${CDN}/img/lashistas/${lashista.image}`}
+                />
+            </Table.Cell>
+            <Table.Cell>
+                <Heading size={"lg"}>
+                    {lashista.nombre}
+                </Heading>
+            </Table.Cell>
+            <Table.Cell>
+                {horariosLV.map((hr) => {
+                    return (
+                        <Text mb={horariosLV.length > 1 ? "1rem" : ""} key={hr}>
+                            {formatHorario(hr)}
+                        </Text>
+                    )
+                })}
+            </Table.Cell>
+            <Table.Cell>
+                {formatHorario(lashista.horarioSBD)}
+            </Table.Cell>
+            <Table.Cell fontWeight={700}>
+                {capitalizeFirst(lashista.rol)}
+            </Table.Cell>
+            {/* <Table.Cell>
+                            <Button bg={"pink.500"}>Editar</Button>
+                        </Table.Cell> */}
+        </Table.Row>
+    )
 }

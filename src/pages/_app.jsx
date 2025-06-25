@@ -138,6 +138,7 @@ function NavBar({ h }) {
                         {router.pathname == "/servicios" && "Servicios"}
                         {router.pathname == "/servicios/[servicioID]" && "Servicio"}
                         {router.pathname == "/lashistas" && "Lashistas"}
+                        {router.pathname == "/lashistas/[lashistaID]" && "Lashista"}
                         {router.pathname == "/dev" && "Developer"}
                     </Heading>
                 )}

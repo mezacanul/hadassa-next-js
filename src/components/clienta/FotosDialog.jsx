@@ -114,6 +114,7 @@ export function FotosDialog({
                                     <InputFotos
                                         handleFileChange={handleFileChange}
                                         uploading={uploading}
+                                        // maxFiles={5}
                                     />
                                     {!uploadSuccess && uploading == false && (
                                         <Button
@@ -125,7 +126,7 @@ export function FotosDialog({
                                             mt={4}
                                             bg={"pink.500"}
                                         >
-                                            Subir Foto
+                                            {"Subir Foto(s)"}
                                         </Button>
                                     )}
                                     {uploading && (

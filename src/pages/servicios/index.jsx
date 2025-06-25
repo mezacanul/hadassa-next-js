@@ -73,7 +73,7 @@ function ServiciosTable({ servicios }) {
 
 function ServicioRow({ servicio }) {
     const reglasAgenda = JSON.parse(servicio.reglas_agenda)
-    const [loading, setLoading] = useState(null);
+    const [loading, setLoading] = loadHook("useLoader");
     const NextNav = useNextNav();
 
     return (

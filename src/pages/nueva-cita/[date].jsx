@@ -26,13 +26,14 @@ import { FaCreditCard } from "react-icons/fa6";
 import { FaMoneyBill } from "react-icons/fa";
 import OrderSummary from "@/components/agendar-cita/OrderSummary";
 import { CDN } from "@/config/cdn";
+import LashistaCard from "@/components/lashista/LashistaCard";
 
 export const useCurrentCita = Singleton({
     servicio: null,
     lashista: null,
-    horario: null,
     clienta: null,
     fecha: null,
+    horario: null,
 });
 
 export default function NuevaCita() {
@@ -270,7 +271,7 @@ export function ActionsClienta({
 
 function SelectLashistas({ lashistas }) {
     return (
-        <Grid w="100%" gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
+        <Grid w="100%" gridTemplateColumns={"1fr 1fr 1fr"} gap={"2rem"} pb={"1rem"}>
             {lashistas.map((lashista) => {
                 return (
                     <GridItem key={lashista.id}>
@@ -706,49 +707,6 @@ function ServicioCard({ data }) {
                         bg={"pink.500"}
                         onClick={() => {
                             setCurrentCita({ ...currentCita, servicio: data });
-                        }}
-                    >
-                        Seleccionar
-                    </Button>
-                </Card.Footer>
-            </Box>
-        </Card.Root>
-    );
-}
-
-function LashistaCard({ data }) {
-    const [currentCita, setCurrentCita] = useCurrentCita();
-    const horariosLV = JSON.parse(data.horarioLV);
-
-    return (
-        <Card.Root flexDir={"row"} overflow="hidden" size="sm" shadow={"md"}>
-            <Image
-                objectFit="cover"
-                maxW="12rem"
-                // maxH={"10rem"}
-                src={`/img/lashistas/${data.image}`}
-                alt="Caffe Latte"
-            />
-            <Box my={"1rem"}>
-                <Card.Body>
-                    <Card.Title mb="2" color={"pink.600"}>
-                        {data.nombre}
-                    </Card.Title>
-                    {/* <Card.Description>{data.horarioLV[0]}</Card.Description> */}
-                    <Card.Description>Horario L-V</Card.Description>
-                    {horariosLV.map((hlv) => {
-                        return <Text key={hlv}>{hlv}</Text>;
-                    })}
-
-                    <Card.Description mt={"1rem"}>Sábado</Card.Description>
-                    <Text>{data.horarioSBD}</Text>
-                </Card.Body>
-                <Card.Footer>
-                    <Button
-                        size={"sm"}
-                        bg={"pink.500"}
-                        onClick={() => {
-                            setCurrentCita({ ...currentCita, lashista: data });
                         }}
                     >
                         Seleccionar

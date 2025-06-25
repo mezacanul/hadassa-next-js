@@ -74,6 +74,7 @@ export default async function handler(req, res) {
                         citas.id as cita_ID, 
                         fecha, 
                         hora, 
+                        duracion,
                         status,
                         cama_id, 
                         clientas.nombres, 
@@ -82,7 +83,7 @@ export default async function handler(req, res) {
                         servicios.id as servicio_id, 
                         servicios.servicio, 
                         servicios.precio, 
-                        servicios.minutos as duracion, 
+                        servicios.minutos as minutos, 
                         lashistas.nombre as lashista 
                     FROM 
                       citas 
@@ -114,8 +115,8 @@ export default async function handler(req, res) {
                         .replace("+", "");
 
                     const [mysql_response] = await connection.execute(
-                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, cama_id, metodo_pago, status, added) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+                        `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, duracion, cama_id, metodo_pago, status, added) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
                         [
                             uuid,
                             cita.clienta.id,
@@ -123,6 +124,7 @@ export default async function handler(req, res) {
                             cita.lashista.id,
                             cita.fecha,
                             hora,
+                            cita.servicio.minutos,
                             cita.horario.cama,
                             cita.metodoPago,
                             1,
@@ -174,7 +176,12 @@ export default async function handler(req, res) {
 
             let [citasDelDia] = await connection.execute(
                 `SELECT 
-                        servicio_id, servicios.servicio, servicios.minutos, fecha, hora, cama_id
+                        servicio_id, 
+                        servicios.servicio, 
+                        fecha, 
+                        hora, 
+                        duracion as minutos, 
+                        cama_id
                     FROM 
                         citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id
