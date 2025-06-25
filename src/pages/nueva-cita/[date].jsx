@@ -30,9 +30,9 @@ import { CDN } from "@/config/cdn";
 export const useCurrentCita = Singleton({
     servicio: null,
     lashista: null,
-    horario: null,
     clienta: null,
     fecha: null,
+    horario: null,
 });
 
 export default function NuevaCita() {

@@ -61,7 +61,8 @@ function getHorariosOcupadosPorServicio(
 
     const indexHoraCita = horarioDelDia.indexOf(cita.hora);
     // const indexHoraCita = horariosDeCama.indexOf(cita.hora);
-    const intervalosOcupados = detallesServicio.minutos / 30;
+    // const intervalosOcupados = detallesServicio.minutos / 30;
+    const intervalosOcupados = cita.minutos / 30;
     const horariosOcupados = horarioDelDia.slice(
         // const horariosOcupados = horariosDeCama.slice(
         indexHoraCita,
@@ -95,6 +96,7 @@ function getHorariosOcupadosPorServicio(
 
 function getSlots(cita, horarioDelDia, servicios) {
     const slotsCount = servicios[cita.servicio_id].minutos / 30;
+    // const slotsCount = cita.minutos / 30;
 
     let count = { start: horarioDelDia.indexOf(cita.hora) };
     const citaSlots = horarioDelDia.slice(
