@@ -91,7 +91,13 @@ function getDateObject(selectedDate) {
     return obj
 }
 
+function formatHorario(horario){
+    const horarioArr = horario.split("-")
+    return `${horarioArr[0]} a ${horarioArr[1]}`
+}
+
 export {
+    formatHorario,
     capitalizeFirst,
     getDateObject,
     formatCamaID,

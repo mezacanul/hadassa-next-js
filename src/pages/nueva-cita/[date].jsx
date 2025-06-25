@@ -726,7 +726,7 @@ function LashistaCard({ data }) {
                 objectFit="cover"
                 maxW="12rem"
                 // maxH={"10rem"}
-                src={`/img/lashistas/${data.image}`}
+                src={`${CDN}/img/lashistas/${data.image}`}
                 alt="Caffe Latte"
             />
             <Box my={"1rem"}>

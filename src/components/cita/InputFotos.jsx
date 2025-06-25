@@ -2,10 +2,10 @@ import { Button, FileUpload, useFileUpload } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { HiUpload } from "react-icons/hi";
 
-export default function InputFotos({ handleFileChange, uploading, uploadStatus = "iddle" }) {
+export default function InputFotos({ handleFileChange, uploading, uploadStatus = "iddle", maxFiles = 1 }) {
     const [acceptedFiles, setAcceptedFiles] = useState(0)
     const fileUpload = useFileUpload({
-        maxFiles: 1,
+        maxFiles,
     });
 
     useEffect(()=>{
