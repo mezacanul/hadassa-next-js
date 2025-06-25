@@ -219,6 +219,7 @@ function TimePickMUI({ label, value, onChange, loc, lashistaForm }) {
                     label={label}
                     value={valueMUI}
                     onChange={onChange}
+                    timeSteps={{ minutes: 30 }}
                 />
             </LocalizationProvider>
         </Box>

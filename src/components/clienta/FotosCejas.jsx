@@ -1,42 +1,14 @@
 import { CDN } from "@/config/cdn";
-import { useFotoCeja, useFotosCejas } from "../cita/DetallesFaciales";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Box, Heading, HStack, Image, Spinner } from "@chakra-ui/react";
 import { FotosDialog } from "./FotosDialog";
 
 export default function FotosCejas({ clientaID }) {
-    // const [cita, setCita] = useCita();
-    // const [fotosCejas, setFotosCejas] = useFotosCejas();
-    // const [fotoCeja, setFotoCeja] = useFotoCeja();
     const [fotosCejas, setFotosCejas] = useState(null);
     const [fotoCeja, setFotoCeja] = useState(null);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
-
-    // useEffect(()=>{
-    //     return (
-    //         setFotosCejas(null)
-    //     )
-    // }, [])
-
-    // if (cita) {
-    // useEffect(() => {
-    //     if (!loading) {
-    //         setLoading(true);
-    //     }
-    //     if (cita) {
-    //         // setClientaID(cita.clienta_id)
-    //         console.log(cita.clienta_id);
-    //         axios
-    //             .get(`/api/fotos_cejas?clientaID=${cita.clienta_id}`)
-    //             .then((fcResp) => {
-    //                 setFotosCejas(fcResp.data);
-    //                 setLoading(false);
-    //                 console.log(fcResp.data);
-    //             });
-    //     }
-    // }, [cita]);
 
     useEffect(() => {
         if (clientaID) {
@@ -53,8 +25,6 @@ export default function FotosCejas({ clientaID }) {
                 });
         }
     }, [clientaID]);
-
-    // }
 
     return (
         <Box>

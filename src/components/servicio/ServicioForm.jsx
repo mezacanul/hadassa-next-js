@@ -122,12 +122,17 @@ export default function ServicioForm({ servicio, setTitle }) {
                             disabled={actualizarStatus == "updating" ? true : false}
                             w={"5rem"}
                             textAlign={"center"}
-                            type="text"
+                            // type="text"
                             value={servicioForm.minutos}
                             onChange={(e) => {
                                 setServicioForm({ ...servicioForm, minutos: e.target.value })
                             }}
                             {...inputStyles}
+                            
+                            type="number"
+                            step={30} // Sets arrow increment to 30
+                            min={30}
+                            max={240} // Optional max (e.g., 4 hours)
                         />
                         <Text>minutos</Text>
                     </HStack>
