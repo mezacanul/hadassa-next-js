@@ -2,8 +2,9 @@ import { useCita } from "@/pages/citas/[citaID]";
 import { formatFechaDMY, formatHoyTitle, getDateObject } from "@/utils/main";
 import { Badge, Heading, HStack, Text, VStack } from "@chakra-ui/react";
 import { SelectMetodoPago, useMetodoPago } from "../agendar-cita/OrderSummary";
+import { useEffect } from "react";
 
-export default function DetallesTicket({cita}) {
+export default function DetallesTicket({ cita }) {
     const fechaArr = cita.fecha.split("-")
     const fechaFormatted = `${fechaArr[2]}-${fechaArr[1]}-${fechaArr[0]}`
     const dateObj = getDateObject(fechaFormatted)
@@ -42,7 +43,10 @@ export default function DetallesTicket({cita}) {
             <HStack w={"100%"} justify={"space-between"}>
                 <Text>Precio:</Text>
                 <Text fontWeight={800}>
-                    ${mp == "efectivo" ? cita.precio : cita.precio_tarjeta}
+                    {`$`}
+                    {!cita.pagado && mp == "efectivo" && cita.precio}
+                    {!cita.pagado && mp == "tarjeta" && cita.precio_tarjeta}
+                    {cita.pagado == 1 ? cita.monto_pagado : ""}
                 </Text>
             </HStack>
 
@@ -76,10 +80,20 @@ export default function DetallesTicket({cita}) {
                 </Text>
             </HStack>
 
-            <HStack w={"100%"} justify={"space-between"}>
-                <Text>Método de Pago:</Text>
-                <SelectMetodoPago value={cita.metodo_pago} w={"12rem"} />
-            </HStack>
+            {cita.pagado != 1 && (
+                <HStack w={"100%"} justify={"space-between"}>
+                    <Text>Método de Pago:</Text>
+                    <SelectMetodoPago value={cita.metodo_pago} w={"12rem"} />
+                </HStack>
+            )}
+
+            {cita.fecha_pagado && (
+                <HStack w={"100%"} justify={"space-between"}>
+                    <Text>Fecha de pago:</Text>
+                    {/* <Text fontWeight={800}>{cita.fecha_pagado}</Text> */}
+                    <Text fontWeight={800}>{formatHoyTitle(cita.fecha_pagado)}</Text>
+                </HStack>
+            )}
         </VStack>
     );
 }

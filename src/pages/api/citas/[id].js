@@ -24,15 +24,40 @@ export default async function handler(req, res) {
 
             switch (column) {
                 case "status":
-                    query = `UPDATE citas SET status = ? WHERE id = ?`;
+                    query = `UPDATE 
+                                citas 
+                            SET 
+                                status = ? 
+                            WHERE id = ?`;
                     [result] = await connection.execute(query, [value, id]);
                     break;
                 case "pagado":
-                    query = `UPDATE citas SET pagado = ?, fecha_pagado = NOW() WHERE id = ?`;
-                    [result] = await connection.execute(query, [value, id]);
+                    query = `UPDATE 
+                                citas 
+                            SET 
+                                pagado = ?, 
+                                fecha_pagado = NOW(),
+                                metodo_pago = ?,
+                                monto_pagado = ?
+                            WHERE 
+                                id = ?`;
+                    [result] = await connection.execute(
+                        query, 
+                        [
+                            value, 
+                            req.body.metodoPago,
+                            req.body.precio,
+                            id
+                        ]
+                    );
                     break;
                 case "cama_id":
-                    query = `UPDATE citas SET cama_id = ? WHERE id = ?`;
+                    query = `UPDATE 
+                                citas 
+                            SET 
+                                cama_id = ? 
+                            WHERE 
+                                id = ?`;
                     [result] = await connection.execute(query, [value, id]);
                     break;
                 default:
