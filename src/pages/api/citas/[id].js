@@ -31,6 +31,10 @@ export default async function handler(req, res) {
                     query = `UPDATE citas SET pagado = ?, fecha_pagado = NOW() WHERE id = ?`;
                     [result] = await connection.execute(query, [value, id]);
                     break;
+                case "cama_id":
+                    query = `UPDATE citas SET cama_id = ? WHERE id = ?`;
+                    [result] = await connection.execute(query, [value, id]);
+                    break;
                 default:
                     break;
             }

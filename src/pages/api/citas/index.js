@@ -28,6 +28,7 @@ export default async function handler(req, res) {
                 const query = `SELECT 
                             citas.id as cita_ID,
                             servicios.image servicio_foto,
+                            lashistas.id as lashista_id, 
                             lashistas.image as lashista_foto, 
                             lashistas.nombre as lashista,
                             citas.cama_id,

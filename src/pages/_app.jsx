@@ -55,7 +55,7 @@ export default function App({ Component, pageProps }) {
                 h={loading ? "100vh" : "initial"}
                 overflow={loading ? "hidden" : "default"}
             >
-                <NavBar h={"10vh"} />
+                <NavBar h={"12vh"} />
                 <VStack id="Body" px={"2rem"} py={"2.5rem"} minH={"90vh"}>
                     <Component {...pageProps} />
                 </VStack>
