@@ -1,5 +1,5 @@
 import { formatCamaID } from "@/utils/main";
-import { createListCollection, Heading, Portal, Select } from "@chakra-ui/react";
+import { createListCollection, Heading, Portal, Select, Spinner } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -32,6 +32,9 @@ export default function SelectCama({
     return (
         <>
             {/* <Heading>Select Camas</Heading> */}
+            {!camas && (
+                <Spinner color={"pink.500"}/>
+            )}
             {camas && cama && (
                 <Select.Root
                     bg={"white"}

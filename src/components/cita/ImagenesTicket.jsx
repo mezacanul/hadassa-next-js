@@ -2,11 +2,12 @@ import { CDN } from "@/config/cdn";
 import { useCita } from "@/pages/citas/[citaID]";
 import { loadHook } from "@/utils/lattice-design";
 import { formatCamaID } from "@/utils/main";
-import { Button, Heading, HStack, Image, Spinner, Text, VStack } from "@chakra-ui/react";
+import { Button, Dialog, Heading, HStack, Image, Spinner, Text, VStack } from "@chakra-ui/react";
 import { useRouter as useNextNav } from "next/navigation";
 import { useEffect, useState } from "react";
 import SelectCama from "./SelectCama";
 import axios from "axios";
+import DialogConfirmar from "./DialogConfirmar";
 
 export default function ImagenesTicket({ cita }) {
     const [loading, setLoading] = loadHook("useLoader")
@@ -21,12 +22,12 @@ export default function ImagenesTicket({ cita }) {
         <VStack w={"100%"} gap={"2rem"} align={"start"}>
             <HStack alignItems={"start"} w={"100%"} gap={"2rem"} justifyContent={"space-between"}>
                 {/* <VStack alignItems={"start"} gap={"2rem"} w={"100%"}> */}
-                    <Image
-                        shadow={"sm"}
-                        rounded={"md"}
-                        w={"10rem"}
-                        src={`${CDN}/img/servicios/${cita.servicio_foto}`}
-                    />
+                <Image
+                    shadow={"sm"}
+                    rounded={"md"}
+                    w={"10rem"}
+                    src={`${CDN}/img/servicios/${cita.servicio_foto}`}
+                />
                 {/* </VStack> */}
                 <Lashista
                     lashistaID={cita.lashista_id}
@@ -60,8 +61,11 @@ function Lashista({ lashistaID, foto, nombre, camaID, citaID }) {
     const [enabled, setEnabled] = useState(false)
     const [cama, setCama] = useState([])
     const [status, setStatus] = useState("iddle")
+    const [open, setOpen] = useState(false)
 
     function actualizarCama() {
+        // setOpen(true)
+        // return
         console.log(citaID, cama[0]);
         const send = {
             column: "cama_id",
@@ -81,11 +85,6 @@ function Lashista({ lashistaID, foto, nombre, camaID, citaID }) {
                     setStatus("error")
                 }
             })
-
-        // axios.patch(`/api/camas?lashista=${lashistaID}`)
-        //     .then((axiosResp) => {
-        //         console.log(axiosResp);
-        //     })
     }
 
     return (
@@ -118,7 +117,7 @@ function Lashista({ lashistaID, foto, nombre, camaID, citaID }) {
                         bg={"pink.500"}
                         w={"100%"}
                         size={"sm"}
-                        onClick={actualizarCama}
+                        onClick={() => { setOpen(true) }}
                     >
                         Actualizar
                     </Button>
@@ -127,6 +126,21 @@ function Lashista({ lashistaID, foto, nombre, camaID, citaID }) {
             {status == "updating" && <Spinner size={"md"} color={"pink.500"} />}
             {status == "success" && <Text color={"green"}>¡Actualizado!</Text>}
             {status == "error" && <Text color={"red"}>Error</Text>}
+
+            <DialogConfirmar
+                open={open}
+                setOpen={setOpen}
+                title={"Cambiar Cama"}
+                onConfirm={() => {
+                    setOpen(false)
+                    actualizarCama()
+                }}
+            >
+                <Heading textDecor={"underline"} size={"md"}>{nombre}</Heading>
+                {cama[0] && <Text>Nueva Cama:</Text>}
+
+                {cama[0] && <Heading my={"1.5rem"} size={"2xl"} textAlign={"center"}>{formatCamaID(cama[0])}</Heading>}
+            </DialogConfirmar>
         </VStack>
     );
 }
