@@ -83,7 +83,11 @@ export default function FotoLashistaInput({ lashista }) {
                     <Heading size={"md"}>Cambiar:</Heading>
 
                     <HStack align={"end"}>
-                        <InputFotos handleFileChange={handleFileChange} uploading={uploadStatus == "uploading"} uploadStatus={uploadStatus} />
+                        <InputFotos 
+                            handleFileChange={handleFileChange} 
+                            uploading={uploadStatus == "uploading"} 
+                            uploadStatus={uploadStatus} 
+                        />
                         {uploadStatus != "uploading" &&
                             <Button
                                 onClick={handleUpload}
