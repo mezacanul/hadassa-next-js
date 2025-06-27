@@ -23,7 +23,9 @@ export default async function handler(req, res) {
                 );
                 res.status(200).json(rows);
             }
-        } else if (req.method == "POST") {
+        }
+
+        if (req.method == "POST") {
             const { clientaID, fotos } = req.body;
             // res.status(200).json({ clientaID, fotos });
             // return;
@@ -51,6 +53,35 @@ export default async function handler(req, res) {
             }
 
             // res.status(200).json({ clientaID, foto });
+        }
+
+        if (req.method == "DELETE") {
+            // res.status(200).json({
+            //     ...req.query, 
+            //     success: true,
+            //     affectedRows: 1
+            // });
+            if (req.query.clienta_id && req.query.foto) {
+                const [mysql_response] = await connection.execute(
+                    `DELETE FROM 
+                        fotos_cejas
+                    WHERE 
+                        foto = ? 
+                    AND 
+                        id_clienta = ?`,
+                    [
+                        req.query.foto,
+                        req.query.clienta_id,
+                    ]
+                );
+                if(mysql_response.affectedRows > 0){
+                    res.status(200).json({
+                        success: true,
+                        affectedRows: mysql_response.affectedRows,
+                        foto: req.query.foto
+                    });
+                }
+            }
         }
     } catch (error) {
         res.status(500).json({ error });

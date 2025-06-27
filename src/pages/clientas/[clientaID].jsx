@@ -27,7 +27,7 @@ export default function Clienta() {
 
     return (
         <Box w={"80%"}>
-            {!clienta && <Spinner size={"lg"}/>}
+            {!clienta && <Spinner borderWidth={"3px"} size={"xl"} color={"pink.500"} />}
             {clienta && <ClientaForm clienta={clienta}/>}
             {clienta && <DetallesFaciales clientaID={clienta.id} detalles={clienta.detalles_cejas}/>}
         </Box>

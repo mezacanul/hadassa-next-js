@@ -22,12 +22,11 @@ export function FotosDialog({
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(null);
+    const [deleteStatus, setDeleteStatus] = useState("default")
 
-    // useEffect(() => {
-    //     // if (cita) {
-    //     //     setClientaID(cita.clienta_id);
-    //     // }
-    // }, [cita]);
+    useEffect(() => {
+        return (setDeleteStatus("default"))
+    }, []);
 
     const handleFileChange = (acceptedFiles) => {
         setFiles(acceptedFiles);
@@ -102,6 +101,41 @@ export function FotosDialog({
         }
     };
 
+    function handleEliminarFoto() {
+        setDeleteStatus("deleting")
+        console.log(fotoCeja, clientaID);
+        axios
+            .post(`${CDN}/deleteFotoCejas.php`, { fileName: fotoCeja }, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((axiosResp) => {
+                console.log(axiosResp);
+                const resp = axiosResp.data
+
+                if(resp.success){
+                    axios
+                        .delete(`/api/fotos_cejas?clienta_id=${clientaID}&foto=${resp.fileName}`)
+                        .then((deleteResp)=>{
+                            console.log(deleteResp);
+                            
+                            const resp2 = deleteResp.data
+                            if(resp2.success && resp2.affectedRows > 0){
+                                const filteredFotos = fotosCejas.filter((fc)=>{
+                                    return fc.foto != fotoCeja
+                                })
+                                setFotosCejas(filteredFotos)
+                                setOpen(false)
+                                console.log(
+                                    resp2.foto, 
+                                    filteredFotos,
+                                );
+                            }
+                            setDeleteStatus("default")
+                        })
+                }
+            })
+    }
+
     return (
         <Dialog.Root
             placement={"center"}
@@ -109,7 +143,7 @@ export function FotosDialog({
             lazyMount
             open={open}
             onOpenChange={(e) => setOpen(e.open)}
-            size="cover"
+            size={fotoCeja ? "cover" : "md"}
         >
             <Portal>
                 <Dialog.Backdrop />
@@ -123,7 +157,7 @@ export function FotosDialog({
                             // flexDir={"column"}
                             justifyContent={fotoCeja ? "center" : "start"}
                             alignItems={"center"}
-                            h={"100%"}
+                            h={fotoCeja ? "100%" : "initial"}
                             pt={"2rem"}
                         >
                             {fotoCeja ? (
@@ -139,8 +173,32 @@ export function FotosDialog({
                                         />
                                     </Box>
                                     <HStack mb={"1.5rem"}>
-                                        <Button shadow={"sm"} variant={"outline"} colorPalette={"orange"}>Eliminar</Button>
-                                        <Button shadow={"sm"} bg={"red.500"}>Confirmar</Button>
+                                        <Button
+                                            disabled={deleteStatus != "default"}
+                                            onClick={() => {
+                                                setDeleteStatus("confirmar")
+                                            }}
+                                            shadow={"sm"}
+                                            variant={"outline"}
+                                            colorPalette={"orange"}
+                                        >
+                                            Eliminar</Button>
+
+                                        {deleteStatus == "confirmar" && (
+                                            <Button
+                                                onClick={handleEliminarFoto}
+                                                shadow={"sm"}
+                                                bg={"red.500"}
+                                            >
+                                                Confirmar</Button>
+                                        )}
+                                        {deleteStatus == "deleting" && (
+                                            <Spinner
+                                                borderWidth={"2px"}
+                                                size={"md"}
+                                                color={"red.600"}
+                                            />
+                                        )}
                                     </HStack>
                                 </VStack>
                             ) : (
