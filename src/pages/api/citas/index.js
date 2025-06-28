@@ -153,21 +153,21 @@ export default async function handler(req, res) {
             // Detalles de la CITA a agendar.
             const POST_Data = req.body;
             const cita = {
-                hora: req.body.hora ? req.body.hora : null,
+                // hora: req.body.hora ? req.body.hora : null,
                 fecha: req.body.fecha,
                 servicio_id: req.body.servicio_id ? req.body.servicio_id : null,
                 lashista_id: req.body.lashista_id ? req.body.lashista_id : null,
-                clienta_id: req.body.clienta_id ? req.body.clienta_id : null,
+                // clienta_id: req.body.clienta_id ? req.body.clienta_id : null,
             };
 
-            let citaDetalles = {};
+            // let citaDetalles = {};
             let lashista = {};
             let servicios = [];
             let camasKeys = [];
             let citasPorCama = [];
             let horariosDispPorCama = {};
-            let disponibilidad = {};
-            let camaDisponible = null;
+            // let disponibilidad = {};
+            // let camaDisponible = null;
             let horarioLashista = [];
             const parsedDate = parse(cita.fecha, "dd-MM-yyyy", new Date());
             const dayName = format(parsedDate, "eeee", { locale: enUS }); // Use 'eeee' for English
@@ -230,12 +230,12 @@ export default async function handler(req, res) {
             // console.log(lashista.nombre, {horarioDelDia, lashista});
             // console.log("Filtrado", filterTimeSlotsByRange(horarioDelDia, horarioLashista));
 
-            citaDetalles = {
-                hora: cita.hora,
-                duracion: servicios[cita.servicio_id].minutos,
-                slots: getSlots(cita, horarioDelDia, servicios),
-                directiva: servicios[cita.servicio_id].regla,
-            };
+            // citaDetalles = {
+            //     hora: cita.hora,
+            //     duracion: servicios[cita.servicio_id].minutos,
+            //     slots: getSlots(cita, horarioDelDia, servicios),
+            //     directiva: servicios[cita.servicio_id].regla,
+            // };
 
             // Asignamos Horarios Del Dia completos por cama
             // para mas adelante filtrar y eliminar los horarios ocupados por citas
@@ -293,7 +293,7 @@ export default async function handler(req, res) {
                     servicios
                 );
 
-                // console.log(available);
+                // console.log("TEST", cita);
                 res.status(200).json(available);
                 return;
             } else {

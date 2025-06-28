@@ -41,7 +41,7 @@ export default function OrderSummary({
 
     const handleAgendar = () => {
         setAgendarLoading(true);
-        console.log({ ...currentCita, metodoPago: mp[0] });
+        console.log({ ...currentCita, metodoPago: mp[0], action: "agendar" });
         // return
 
         axios
@@ -104,7 +104,7 @@ export default function OrderSummary({
     };
 
     return (
-        <VStack style={{ width: "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
+        <VStack style={{ width: currentCita.clienta ? "50%" : "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
             <Heading color={"pink.600"}>Resumen</Heading>
 
             <VStack
@@ -151,6 +151,7 @@ export default function OrderSummary({
                             </Text>
                         )}
                         <Text
+                            textAlign={"right"}
                             textDecor={
                                 currentCita.servicio ? "underline" : "none"
                             }
@@ -250,6 +251,8 @@ export default function OrderSummary({
                             </Text>
                         )}
                         <Text
+                            textAlign={"right"}
+                            // w={"85%"}
                             truncate
                             textDecor={
                                 currentCita.clienta ? "underline" : "none"
