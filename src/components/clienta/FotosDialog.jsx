@@ -3,15 +3,15 @@ import { useFotoCeja, useFotosCejas } from "../cita/DetallesFaciales";
 import { useCita } from "@/pages/citas/[citaID]";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Button, CloseButton, Dialog, Heading, Image, Portal, Spinner, Text } from "@chakra-ui/react";
+import { Box, Button, CloseButton, Dialog, Heading, HStack, Image, Portal, Spinner, Text, VStack } from "@chakra-ui/react";
 import InputFotos from "../cita/InputFotos";
 
-export function FotosDialog({ 
-    open, 
-    setOpen, 
-    clientaID, 
-    fotosCejas, 
-    setFotosCejas, 
+export function FotosDialog({
+    open,
+    setOpen,
+    clientaID,
+    fotosCejas,
+    setFotosCejas,
     fotoCeja
 }) {
     // const [cita] = useCita();
@@ -22,12 +22,11 @@ export function FotosDialog({
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(null);
+    const [deleteStatus, setDeleteStatus] = useState("default")
 
-    // useEffect(() => {
-    //     // if (cita) {
-    //     //     setClientaID(cita.clienta_id);
-    //     // }
-    // }, [cita]);
+    useEffect(() => {
+        return (setDeleteStatus("default"))
+    }, []);
 
     const handleFileChange = (acceptedFiles) => {
         setFiles(acceptedFiles);
@@ -45,7 +44,14 @@ export function FotosDialog({
         // return;
 
         const formData = new FormData();
-        files.forEach((file) => formData.append("fotoCejas", file)); // Match PHP field name
+        // files.forEach((file) => formData.append(`fotoCejas`, file)); // Match PHP field name
+        files.forEach((file, i) => formData.append(`fotoCejas-${i}`, file)); // Match PHP field name
+        for (let [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`Key: ${key}, Name: ${value.name}, Size: ${value.size}, Type: ${value.type}`);
+            }
+        }
+        // return
 
         try {
             axios
@@ -54,31 +60,81 @@ export function FotosDialog({
                 })
                 .then((uploadResp) => {
                     const resp = uploadResp.data;
-                    if (resp.success && resp.url) {
-                        setUploadSuccess(true);
-                        setFotosCejas([...fotosCejas, { foto: resp.fileName }]);
-                        console.log({
-                            clientaID: clientaID,
-                            foto_url: resp.fileName,
-                        });
+                    // console.log(resp);
+                    // return
+                    // if (resp.success && resp.url) {
+                    if (resp.success) {
+                        const newFiles = resp.files.map((file) => (
+                            { foto: file.fileName }
+                            // { foto: "test.jpg" }
+                        ))
+                        console.log(newFiles);
+                        // setFotosCejas([...fotosCejas, { foto: resp.fileName }]);
+                        // console.log({
+                        //     clientaID: clientaID,
+                        //     foto_url: resp.fileName,
+                        // });
+                        // return
                         axios
                             .post("/api/fotos_cejas", {
                                 clientaID: clientaID,
-                                foto: resp.fileName,
+                                fotos: newFiles,
+                                // foto: resp.fileName,
                             })
                             .then((uploadResp) => {
                                 console.log(uploadResp);
+                                const resp = uploadResp.data
+                                if (resp.success) {
+                                    setFiles([]);
+                                    setUploading(false);
+                                    setUploadSuccess(true);
+                                    setFotosCejas([...fotosCejas, ...resp.inserted]);
+                                }
                             });
                     }
-                    setFiles([]);
-                    setUploading(false);
+                    // setUploading(false);
                 });
         } catch (err) {
-            console.error("Upload error:", err.response?.data || err.message);
-            setUploadError(err.response?.data?.error || "Failed to upload");
+            console.error("Error al subir:", err.response?.data || err.message);
+            setUploadError(err.response?.data?.error || "Error al cargar imágenes");
             setUploading(false);
         }
     };
+
+    function handleEliminarFoto() {
+        setDeleteStatus("deleting")
+        console.log(fotoCeja, clientaID);
+        axios
+            .post(`${CDN}/deleteFotoCejas.php`, { fileName: fotoCeja }, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((axiosResp) => {
+                console.log(axiosResp);
+                const resp = axiosResp.data
+
+                if(resp.success){
+                    axios
+                        .delete(`/api/fotos_cejas?clienta_id=${clientaID}&foto=${resp.fileName}`)
+                        .then((deleteResp)=>{
+                            console.log(deleteResp);
+                            
+                            const resp2 = deleteResp.data
+                            if(resp2.success && resp2.affectedRows > 0){
+                                const filteredFotos = fotosCejas.filter((fc)=>{
+                                    return fc.foto != fotoCeja
+                                })
+                                setFotosCejas(filteredFotos)
+                                setOpen(false)
+                                console.log(
+                                    resp2.foto, 
+                                    filteredFotos,
+                                );
+                            }
+                            setDeleteStatus("default")
+                        })
+                }
+            })
+    }
 
     return (
         <Dialog.Root
@@ -87,6 +143,7 @@ export function FotosDialog({
             lazyMount
             open={open}
             onOpenChange={(e) => setOpen(e.open)}
+            size={fotoCeja ? "cover" : "md"}
         >
             <Portal>
                 <Dialog.Backdrop />
@@ -97,24 +154,66 @@ export function FotosDialog({
                         </Dialog.Header> */}
                         <Dialog.Body
                             display={"flex"}
+                            // flexDir={"column"}
                             justifyContent={fotoCeja ? "center" : "start"}
+                            alignItems={"center"}
+                            h={fotoCeja ? "100%" : "initial"}
+                            pt={"2rem"}
                         >
                             {fotoCeja ? (
-                                <Image
-                                    my={"3rem"}
-                                    w={"35rem"}
-                                    objectFit={"cover"}
-                                    src={`${CDN}/img/cejas/${fotoCeja}`}
-                                />
+                                <VStack my={"3rem"} alignItems={"start"}>
+                                    <Box mb={"1rem"} h={"80vh"} pt={"1.5rem"}>
+                                        <Image
+                                            shadow={"md"}
+                                            w={"100%"}
+                                            height={"100%"}
+                                            // h={"60vh"}
+                                            objectFit={"cover"}
+                                            src={`${CDN}/img/cejas/${fotoCeja}`}
+                                        />
+                                    </Box>
+                                    <HStack mb={"1.5rem"}>
+                                        <Button
+                                            disabled={deleteStatus != "default"}
+                                            onClick={() => {
+                                                setDeleteStatus("confirmar")
+                                            }}
+                                            shadow={"sm"}
+                                            variant={"outline"}
+                                            colorPalette={"orange"}
+                                        >
+                                            Eliminar</Button>
+
+                                        {deleteStatus == "confirmar" && (
+                                            <Button
+                                                onClick={handleEliminarFoto}
+                                                shadow={"sm"}
+                                                bg={"red.500"}
+                                            >
+                                                Confirmar</Button>
+                                        )}
+                                        {deleteStatus == "deleting" && (
+                                            <Spinner
+                                                borderWidth={"2px"}
+                                                size={"md"}
+                                                color={"red.600"}
+                                            />
+                                        )}
+                                    </HStack>
+                                </VStack>
                             ) : (
                                 <Box px={"1rem"} py={"4rem"}>
-                                    <Heading mb={"1.5rem"}>
-                                        Agregar Imágenes:
-                                    </Heading>
+                                    <VStack alignItems={"start"} mb={"1rem"}>
+                                        <Heading>
+                                            Agregar Imágenes:
+                                        </Heading>
+                                        <Text>{"(Maximo 5 imágenes por carga)"}</Text>
+                                        <Text>{"JPG, JPEG, PNG"}</Text>
+                                    </VStack>
                                     <InputFotos
                                         handleFileChange={handleFileChange}
                                         uploading={uploading}
-                                        // maxFiles={5}
+                                        maxFiles={5}
                                     />
                                     {!uploadSuccess && uploading == false && (
                                         <Button
@@ -126,7 +225,7 @@ export function FotosDialog({
                                             mt={4}
                                             bg={"pink.500"}
                                         >
-                                            {"Subir Foto(s)"}
+                                            {"Subir"}
                                         </Button>
                                     )}
                                     {uploading && (
@@ -144,7 +243,7 @@ export function FotosDialog({
                                     )}
                                     {uploadSuccess && (
                                         <Text mt={4} color={"green"}>
-                                            ¡Foto agregada exitosamente!
+                                            ¡Fotos agregadas exitosamente!
                                         </Text>
                                     )}
                                 </Box>
@@ -156,6 +255,9 @@ export function FotosDialog({
                                 onClick={() => {
                                     console.log("closing");
                                     setUploadSuccess(false);
+                                    setTimeout(() => {
+                                        setUploading(false)
+                                    }, 500);
                                 }}
                             />
                         </Dialog.CloseTrigger>

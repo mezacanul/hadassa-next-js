@@ -20,10 +20,11 @@ export default function FechaLogo({ selectedDate }) {
                 fontWeight={300}
                 size={"3xl"}
                 fontStyle={"italic"}
+                mb={"-0.2rem"}
             >
                 {dateObj && dateObj.dayName}
             </Heading>
-            <Text color={"pink.600"}>{dateObj && dateObj.monthYearFormat}</Text>
+            <Text fontWeight={600} color={"pink.600"}>{dateObj && dateObj.monthYearFormat}</Text>
         </VStack>
     )
 }

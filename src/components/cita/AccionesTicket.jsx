@@ -1,4 +1,3 @@
-import { useCita } from "@/pages/citas/[citaID]";
 import {
     Button,
     Grid,
@@ -9,6 +8,8 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
+import { useMetodoPago } from "../agendar-cita/OrderSummary";
+import { format } from 'date-fns';
 
 const buttonStyles = {
     fontWeight: 700,
@@ -19,6 +20,7 @@ const buttonStyles = {
 export default function AccionesTicket({cita, setCita}) {
     // const [cita, setCita] = useCita();
     const [loadingUpdate, setLoadingUpdate] = useState(false);
+    const [mp, setMp] = useMetodoPago();
 
     function confirmarCita() {
         setLoadingUpdate(true);
@@ -54,13 +56,30 @@ export default function AccionesTicket({cita, setCita}) {
 
     function marcarComoPagada() {
         setLoadingUpdate(true);
+        const send = {
+            // citaID: cita.cita_ID,
+            column: "pagado",
+            value: 1,
+            metodoPago: mp[0],
+            precio: mp[0] == "efectivo" ? cita.precio : cita.precio_tarjeta
+        }
+        console.log(send)
+        // return
         axios
-            .patch(`/api/citas/${cita.cita_ID}`, { column: "pagado", value: 1 })
+            // .patch(`/api/citas/${cita.cita_ID}`, { column: "pagado", value: 1 })
+            .patch(`/api/citas/${cita.cita_ID}`, send)
             .then((updateResp) => {
                 console.log(updateResp);
                 const resp = updateResp.data;
                 if (resp.success && resp.affectedRows == 1) {
-                    setCita({ ...cita, pagado: 1 });
+                    setCita({ 
+                        ...cita, 
+                        pagado: 1,
+                        fecha_pagado: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        monto_pagado: mp[0] == "efectivo" ? cita.precio : cita.precio_tarjeta
+                    });
+                    console.log();
+                    
                 } else {
                     alert("Error");
                 }

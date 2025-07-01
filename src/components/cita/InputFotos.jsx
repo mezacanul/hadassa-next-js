@@ -1,15 +1,18 @@
-import { Button, FileUpload, useFileUpload } from "@chakra-ui/react";
+import { Button, FileUpload, Float, Grid, useFileUpload } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { HiUpload } from "react-icons/hi";
+import { LuX } from "react-icons/lu";
 
 export default function InputFotos({ handleFileChange, uploading, uploadStatus = "iddle", maxFiles = 1 }) {
     const [acceptedFiles, setAcceptedFiles] = useState(0)
     const fileUpload = useFileUpload({
         maxFiles,
-    });
+        accept: ["image/jpeg", "image/png"]
+    })
+    // const files = fileUpload.acceptedFiles
 
-    useEffect(()=>{
-        if(uploadStatus == "success" || uploadStatus == "error"){
+    useEffect(() => {
+        if (uploadStatus == "success" || uploadStatus == "error") {
             fileUpload.clearFiles()
         }
     }, [uploadStatus])
@@ -23,11 +26,36 @@ export default function InputFotos({ handleFileChange, uploading, uploadStatus =
     return (
         <FileUpload.RootProvider
             value={fileUpload}
-            // accept={["image/jpeg", "image/png", "image/heic"]}
-            accept={["image/jpeg", "image/png"]}
+        // accept={["image/jpeg", "image/png"]}
+        // accept={["image/jpeg", "image/png", "image/heic"]}
         >
             <FileUpload.HiddenInput />
-            {acceptedFiles == 0 && (
+            <FileUpload.ItemGroup>
+                <Grid gridTemplateColumns={maxFiles == 5 ? "1fr 1fr 1fr" : "1fr"} gap={"1rem"}>
+                    <FileUpload.Context>
+                        {({ acceptedFiles }) =>
+                            acceptedFiles.map((file, i) => (
+                                <FileUpload.Item
+                                    key={i}
+                                    file={file} w="auto"
+                                    boxSize="7rem"
+                                    p="2"
+                                // clearable
+                                // showSize
+                                >
+                                    <FileUpload.ItemPreviewImage />
+                                    <Float placement="top-end">
+                                        <FileUpload.ItemDeleteTrigger boxSize="4" layerStyle="fill.solid">
+                                            <LuX />
+                                        </FileUpload.ItemDeleteTrigger>
+                                    </Float>
+                                </FileUpload.Item>
+                            ))
+                        }
+                    </FileUpload.Context>
+                </Grid>
+            </FileUpload.ItemGroup>
+            {acceptedFiles < 5 && (
                 <FileUpload.Trigger asChild>
                     <Button
                         variant="outline"
@@ -36,18 +64,10 @@ export default function InputFotos({ handleFileChange, uploading, uploadStatus =
                         shadow={"sm"}
                         isDisabled={uploading}
                     >
-                        <HiUpload /> Seleccionar Foto
+                        <HiUpload /> Seleccionar Fotos
                     </Button>
                 </FileUpload.Trigger>
             )}
-            <FileUpload.ItemGroup>
-                <FileUpload.Items
-                    bg={"white"}
-                    shadow={"sm"}
-                    clearable
-                    showSize
-                />
-            </FileUpload.ItemGroup>
         </FileUpload.RootProvider>
     );
 }

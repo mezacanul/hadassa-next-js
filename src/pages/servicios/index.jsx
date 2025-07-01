@@ -1,5 +1,5 @@
 import { loadHook } from "@/utils/lattice-design";
-import { Badge, Box, Button, Heading, HStack, Image, Table } from "@chakra-ui/react";
+import { Badge, Box, Button, Heading, HStack, Image, Table, Text, VStack } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { FaClock } from "react-icons/fa6";
@@ -54,7 +54,7 @@ function ServiciosTable({ servicios }) {
                     <Table.ColumnHeader color={"white"}>
                         Precio
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
+                    <Table.ColumnHeader color={"white"} textAlign={"end"} pe={"2rem"}>
                         Directiva
                     </Table.ColumnHeader>
                     {/* <Table.ColumnHeader color={"white"}>
@@ -110,22 +110,29 @@ function ServicioRow({ servicio }) {
                     {`${servicio.minutos} mins.`}
                 </HStack>
             </Table.Cell>
-            <Table.Cell fontWeight={600} color={"green"}>{`$${servicio.precio}`}</Table.Cell>
+            <Table.Cell fontWeight={600}>
+                <VStack alignItems={"start"} me={"1.5rem"}>
+                    <Text color={"green"}>{`$${servicio.precio}`}</Text>
+                    <Text color={"blue.600"}>{`$${servicio.precio_tarjeta}`}</Text>
+                </VStack>
+            </Table.Cell>
             <Table.Cell>
-                <Badge
-                    fontWeight={700}
-                    colorPalette={
-                        reglasAgenda[0] == -1 && "blue" ||
-                        reglasAgenda[0] == 0 && "purple" ||
-                        reglasAgenda[0] == 1 && "orange"
-                    }
-                    px={"0.5rem"}
-                    py={"0.2rem"}
-                >
-                    {reglasAgenda[0] == -1 && "Puede agendar especial"}
-                    {reglasAgenda[0] == 0 && "Especial"}
-                    {reglasAgenda[0] == 1 && "No agenda especial"}
-                </Badge>
+                <HStack fontSize={"1rem"} justifyContent={"end"} me={"1rem"}>
+                    <Badge
+                        fontWeight={700}
+                        colorPalette={
+                            reglasAgenda[0] == -1 && "blue" ||
+                            reglasAgenda[0] == 0 && "purple" ||
+                            reglasAgenda[0] == 1 && "orange"
+                        }
+                        px={"0.5rem"}
+                        py={"0.2rem"}
+                    >
+                        {reglasAgenda[0] == -1 && "Puede agendar especial"}
+                        {reglasAgenda[0] == 0 && "Especial"}
+                        {reglasAgenda[0] == 1 && "No agenda especial"}
+                    </Badge>
+                </HStack>
             </Table.Cell>
             {/* <Table.Cell>
                 <Button bg={"pink.500"}>Editar</Button>

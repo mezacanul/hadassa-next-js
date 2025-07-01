@@ -1,12 +1,13 @@
-import { es } from 'date-fns/locale';
-import { format, parse } from 'date-fns';
+import { es } from "date-fns/locale"; // Spanish locale
+import { format, parse } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 function formatHoyTitle(date) {
-    if (date == null) return date
+    if (date == null) return date;
     // console.log("hoy title", date);
     // const gmtString = date.date.marker.toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
 
-    const gmtString = (new Date(date)).toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
+    const gmtString = new Date(date).toGMTString(); // e.g., "Thu, 04 Apr 2025 00:00:00 GMT"
     const parts = gmtString.split(" ");
     const day = parts[1]; // "04"
     const month = parts[2]; // "Apr"
@@ -30,7 +31,7 @@ function formatHoyTitle(date) {
 
     const spanishMonth = monthMap[month];
     return `${parseInt(day)} de ${spanishMonth} de ${year}`; // "4 de Abril de 2025"
-};
+}
 
 function formatFechaDMY(fecha) {
     const [year, month, day] = fecha.split("-");
@@ -38,7 +39,7 @@ function formatFechaDMY(fecha) {
 }
 
 function queryPlusFilters(query, conditions) {
-    let fullQuery = query
+    let fullQuery = query;
     if (conditions.length > 0) {
         fullQuery +=
             " WHERE " +
@@ -47,7 +48,7 @@ function queryPlusFilters(query, conditions) {
                 : conditions[0]);
     }
 
-    return `${fullQuery} AND citas.status != 0`
+    return `${fullQuery} AND citas.status != 0`;
 }
 
 // Function to parse req.query and build conditions
@@ -59,8 +60,11 @@ function parseQueryFilters(query, filterMap) {
     for (const [key, value] of Object.entries(query)) {
         // Only include if key is in filterMap and value exists
         if (filterMap[key] && value) {
-            // Custom date formatting 
-            const sendValue = key == "date" ? formatFechaDMY(value) : value;
+            // Custom date formatting
+            const sendValue =
+                key == "date"
+                    ? formatFechaDMY(value)
+                    : value;
 
             conditions.push(`${filterMap[key]} = ?`);
             params.push(sendValue);
@@ -74,7 +78,9 @@ function formatCamaID(camaID) {
     console.log(camaID.split("-"));
 
     const camaArray = camaID.split("-");
-    return `${capitalizeFirst(camaArray[0])} ${camaArray[2]}`;
+    return `${capitalizeFirst(camaArray[0])} ${
+        camaArray[2]
+    }`;
 }
 
 function capitalizeFirst(str) {
@@ -82,21 +88,89 @@ function capitalizeFirst(str) {
 }
 
 function getDateObject(selectedDate) {
-    const parsedDate = parse(selectedDate, 'yyyy-MM-dd', new Date());
+    const parsedDate = parse(
+        selectedDate,
+        "yyyy-MM-dd",
+        new Date()
+    );
 
     const obj = {
-        dayName: capitalizeFirst(format(parsedDate, "EEEE dd", { locale: es })), // "Jueves 19" 
-        monthYearFormat: capitalizeFirst(format(parsedDate, "MMMM 'de' yyyy", { locale: es })) // "Junio de 2025"
-    }
-    return obj
+        dayName: capitalizeFirst(
+            format(parsedDate, "EEEE dd", { locale: es })
+        ), // "Jueves 19"
+        monthYearFormat: capitalizeFirst(
+            format(parsedDate, "MMMM 'de' yyyy", {
+                locale: es,
+            })
+        ), // "Junio de 2025"
+    };
+    return obj;
 }
 
-function formatHorario(horario){
-    const horarioArr = horario.split("-")
-    return `${horarioArr[0]} a ${horarioArr[1]}`
+function formatHorario(horario) {
+    const horarioArr = horario.split("-");
+    return `${horarioArr[0]} a ${horarioArr[1]}`;
+}
+
+function getFechaLocal(fecha) {
+    const timeZone = "America/Mexico_City";
+    const fecha_zoned = toZonedTime(
+        new Date(`${fecha}T00:00:00`),
+        timeZone
+    );
+    const formatted = format(
+        new Date(fecha_zoned),
+        "dd 'de' MMMM",
+        { locale: es }
+    );
+    return formatted;
+}
+
+function formatEventType(type) {
+    const strArr = type.split("-");
+    return `${capitalizeFirst(strArr[0])} ${capitalizeFirst(
+        strArr[1]
+    )}`;
+}
+
+function formatEventos(eventsArr, lashistasArr) {
+    const lashistas = getIndexedCollection(lashistasArr);
+    // const fecha_init =
+    //     ev.tipo == "horas-libres"
+    //         ? `${ev.fecha_init}T${ev.hora_init}:00`
+    //         : "";
+
+    const eventos = eventsArr.map((ev) => {
+        return {
+            title: `${ev.titulo}`,
+            // start: fecha_init,
+            // end: `${ev.fecha_init}T${ev.hora_fin}:00`,
+            resourceId: `cama-${
+                lashistas[ev.id_lashista].nombre
+            }-1`,
+            extendedProps: {
+                status: 3,
+                ...ev,
+            },
+        };
+    });
+    // console.log(eventos);
+    return eventos;
+}
+
+function getIndexedCollection(arr) {
+    let indexedCollection = {};
+    arr.forEach((object) => {
+        indexedCollection[object.id] = object;
+    });
+    return indexedCollection;
 }
 
 export {
+    getIndexedCollection,
+    formatEventos,
+    formatEventType,
+    getFechaLocal,
     formatHorario,
     capitalizeFirst,
     getDateObject,
@@ -104,5 +178,5 @@ export {
     formatHoyTitle,
     formatFechaDMY,
     queryPlusFilters,
-    parseQueryFilters
-}
+    parseQueryFilters,
+};

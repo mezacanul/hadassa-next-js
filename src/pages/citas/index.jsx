@@ -20,6 +20,7 @@ import { loadHook, Singleton } from "@/utils/lattice-design";
 import { getCurrentDateSpan } from "@/utils/detalles-citas";
 import { useRouter as useNextNav } from "next/navigation";
 import { TbCircleDashedPlus } from "react-icons/tb";
+import { CDN } from "@/config/cdn";
 
 const useCurrentLashista = Singleton(null);
 const useDateInfo = Singleton(getCurrentDateSpan());
@@ -118,7 +119,7 @@ function LashistaCard({ data }) {
             }}
         >
             <Image
-                src={`/img/lashistas/${data.foto}`}
+                src={`${CDN}/img/lashistas/${data.foto}`}
                 w={"7rem"}
                 rounded={"full"}
             />
@@ -293,7 +294,7 @@ function CitasTable({ citas, lashista }) {
             position={"relative"}
             mb={showAll ? "6.5rem" : "initial"}
         >
-            {!loading && !showAll && (
+            {!loading && citas && !showAll && (
                 <Box
                     bottom={0}
                     position={"absolute"}

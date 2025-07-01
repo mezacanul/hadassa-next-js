@@ -180,7 +180,10 @@ export default function NuevaCita() {
                             {lashistas &&
                                 currentCita.servicio &&
                                 !currentCita.lashista && (
-                                    <SelectLashistas lashistas={lashistas} />
+                                    <SelectLashistas
+                                        lashistas={lashistas}
+                                        selectedDate={selectedDate}
+                                    />
                                 )}
                             {currentCita.servicio &&
                                 currentCita.lashista &&
@@ -269,12 +272,43 @@ export function ActionsClienta({
     );
 }
 
-function SelectLashistas({ lashistas }) {
+function SelectLashistas({ lashistas, selectedDate }) {
+    const [disponibles, setDisponibles] = useState(null)
+    const [currentCita, setCurrentCita] = useCurrentCita();
+    const send = {
+        fecha: formatFechaDMY(selectedDate),
+        servicio_id: currentCita.servicio.id,
+        action: "getHorariosDisponibles",
+        dev: true,
+        lashista_id: null,
+        // lashista_id: currentCita.lashista.id,
+    };
+
+    useEffect(() => {
+        const promises = []
+        lashistas.forEach(lsh => {
+            promises.push(axios.post("/api/citas", {...send, lashista_id: lsh.id}))
+        });
+        Promise.all(promises)
+            .then((responses)=>{
+                const available = responses.map((resp)=>{
+                    return resp.data.length
+                })
+                console.log(available);
+                setDisponibles(available)
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+        // console.log(promises);
+    }, [])
+
     return (
         <Grid w="100%" gridTemplateColumns={"1fr 1fr 1fr"} gap={"2rem"} pb={"1rem"}>
-            {lashistas.map((lashista) => {
+            {!disponibles && <Spinner color="pink.500" borderWidth="4px" size={"lg"} />}
+            {disponibles && lashistas.map((lashista, i) => {
                 return (
-                    <GridItem key={lashista.id}>
+                    <GridItem key={lashista.id} display={disponibles[i] > 0 ? "initial" : "none"}>
                         <LashistaCard data={lashista} />
                     </GridItem>
                 );

@@ -1,7 +1,7 @@
 import { CDN } from "@/config/cdn";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Heading, HStack, Image, Spinner } from "@chakra-ui/react";
+import { Box, Grid, Heading, HStack, Image, Spinner } from "@chakra-ui/react";
 import { FotosDialog } from "./FotosDialog";
 
 export default function FotosCejas({ clientaID }) {
@@ -33,41 +33,44 @@ export default function FotosCejas({ clientaID }) {
                 {loading && (
                     <Spinner borderWidth={"3px"} size={"xl"} color={"blue.500"} />
                 )}
-                {fotosCejas &&
-                    !loading &&
-                    fotosCejas.map((fotoCeja, idx) => {
-                        return (
-                            <Image
-                                onClick={() => {
-                                    setFotoCeja(fotoCeja.foto);
-                                    setOpen(true);
-                                }}
-                                key={idx}
-                                transition={hoverStyles.transition}
-                                _hover={{ ...hoverStyles.onHover }}
-                                objectFit={"cover"}
-                                shadow={"sm"}
-                                rounded={"md"}
-                                w={"5rem"}
-                                h={"5rem"}
-                                src={`${CDN}/img/cejas/${fotoCeja.foto}`}
-                            />
-                        );
-                    })}
-                {!loading && (
-                    <AddButton
-                        onClick={() => {
-                            setFotoCeja(null);
-                            setOpen(true);
-                        }}
-                    />
-                )}
+
+                <Grid gap={"1rem"} gridTemplateColumns={"1fr 1fr 1fr 1fr 1fr"}>
+                    {fotosCejas &&
+                        !loading &&
+                        fotosCejas.map((fotoCeja, idx) => {
+                            return (
+                                <Image
+                                    onClick={() => {
+                                        setFotoCeja(fotoCeja.foto);
+                                        setOpen(true);
+                                    }}
+                                    key={idx}
+                                    transition={hoverStyles.transition}
+                                    _hover={{ ...hoverStyles.onHover }}
+                                    objectFit={"cover"}
+                                    shadow={"sm"}
+                                    rounded={"md"}
+                                    w={"5rem"}
+                                    h={"5rem"}
+                                    src={`${CDN}/img/cejas/${fotoCeja.foto}`}
+                                />
+                            );
+                        })}
+                    {!loading && (
+                        <AddButton
+                            onClick={() => {
+                                setFotoCeja(null);
+                                setOpen(true);
+                            }}
+                        />
+                    )}
+                </Grid>
             </HStack>
-            
+
             <FotosDialog
-                open={open} 
-                setOpen={setOpen} 
-                clientaID={clientaID} 
+                open={open}
+                setOpen={setOpen}
+                clientaID={clientaID}
                 fotosCejas={fotosCejas}
                 setFotosCejas={setFotosCejas}
                 fotoCeja={fotoCeja}
