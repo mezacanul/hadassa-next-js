@@ -1,10 +1,13 @@
 // pages/api/clientas.js
 import mysql from "mysql2/promise";
 import { db_info } from "@/config/db";
-import { toZonedTime, format } from 'date-fns-tz';
+import { toZonedTime, format } from "date-fns-tz";
 
-const timeZone = 'America/Mexico_City';
-const today = format(toZonedTime(new Date(), timeZone), 'yyyy-MM-dd')
+const timeZone = "America/Mexico_City";
+const today = format(
+    toZonedTime(new Date(), timeZone),
+    "yyyy-MM-dd"
+);
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection(
@@ -13,46 +16,62 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === "GET") {
-            const { lashista, periodo } = req.query;
+            if (req.query.lashista) {
+                const { lashista } = req.query;
+                const [rows] = await connection.execute(
+                    `SELECT 
+                        * 
+                    FROM 
+                        eventos 
+                    WHERE 
+                        id_lashista = ?
+                        AND fecha_init >= ?
+                    ORDER BY status DESC, fecha_init ASC`,
+                    [lashista, today]
+                );
+                res.status(200).json(rows);
+            }
 
-            const [rows] = await connection.execute(
-                `SELECT 
-                    * 
-                FROM 
-                    eventos 
-                WHERE 
-                    id_lashista = ?
-                    AND fecha_init >= ?
-                ORDER BY status DESC, fecha_init ASC`,
-                [lashista, today]
-            );
-            res.status(200).json(rows);
+            if (req.query.fecha) {
+                const { fecha } = req.query;
+                const [rows] = await connection.execute(
+                    `SELECT 
+                        * 
+                    FROM 
+                        eventos 
+                    WHERE 
+                        fecha_init = ?
+                        AND status = 1`,
+                    [fecha]
+                );
+                res.status(200).json(rows);
+            }
         }
 
         if (req.method === "PATCH") {
-            const eventoID = req.query.id
+            const eventoID = req.query.id;
             // res.status(200).json({
             //     success: true,
             //     eventoID
             // });
             // return
 
-            let query = "UPDATE eventos SET status = 0 WHERE id = ?"
-            let [result] = await connection.execute(
-                query, 
-                [eventoID]
-            );
-            if(result.affectedRows > 0) {
+            let query =
+                "UPDATE eventos SET status = 0 WHERE id = ?";
+            let [result] = await connection.execute(query, [
+                eventoID,
+            ]);
+            if (result.affectedRows > 0) {
                 res.status(200).json({
                     success: true,
                     affectedRows: result.affectedRows,
-                    eventoID
+                    eventoID,
                 });
             } else {
                 res.status(200).json({
                     success: false,
                     affectedRows: 0,
-                    eventoID
+                    eventoID,
                 });
             }
         }

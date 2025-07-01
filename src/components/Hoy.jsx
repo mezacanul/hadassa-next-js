@@ -27,24 +27,35 @@ import { loadHook } from "@/utils/lattice-design";
 import { parse, format, addMinutes } from "date-fns";
 import { useRouter as useNextNav } from "next/navigation";
 import { CDN } from "@/config/cdn";
+import {
+    formatEventos,
+    getIndexedCollection,
+} from "@/utils/main";
 
 export default function Hoy() {
     // const [events, setEvents] = useState([]);
     const [events, setEvents] = loadHook("useEvents");
     const [resources, setResources] = useState(null);
     const [openDialogue, setOpenDialogue] = useState(false);
-    const [currentEventDialogue, setCurrentEventDialogue] = useState([]);
+    const [currentEventDialogue, setCurrentEventDialogue] =
+        useState([]);
     const calendarRef = useRef(null); // Create a ref for the calendar
-    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
+    const [selectedDate, setSelectedDate] = loadHook(
+        "useSelectedDate"
+    );
 
     const NextNav = useNextNav();
-    const [loading, setLoading] = loadHook("useLoader")
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
-        const formattedToday = format(new Date(), "yyyy-MM-dd");
+        const formattedToday = format(
+            new Date(),
+            "yyyy-MM-dd"
+        );
 
         if (calendarRef.current) {
-            const calendarApi = calendarRef.current.getApi();
+            const calendarApi =
+                calendarRef.current.getApi();
             // console.log("selectedDate:", selectedDate);
 
             // -- DEV: We set the current date to today's date
@@ -52,44 +63,82 @@ export default function Hoy() {
             if (selectedDate == null) {
                 setSelectedDate(formattedToday);
             } else {
-                console.log("Catched! Date updated ->", selectedDate);
+                console.log(
+                    "Catched! Date updated ->",
+                    selectedDate
+                );
                 // -- DEV: When selectDate updates for the first time, it is the same as today
                 try {
                     // Use setTimeout to defer the state update to a microtask
                     setTimeout(() => {
-                        axios
-                            .get(`/api/citas?date=${selectedDate}`)
-                            .then((citasResp) => {
+                        Promise.all([
+                            axios.get(
+                                `/api/citas?date=${selectedDate}`
+                            ),
+                            axios.get(
+                                `/api/eventos?fecha=${selectedDate}`
+                            ),
+                            axios.get(`/api/lashistas`),
+                        ]).then(
+                            ([
+                                citasResp,
+                                eventosResp,
+                                lashistasResp,
+                            ]) => {
+                                console.log(
+                                    eventosResp.data
+                                );
+                                console.log(
+                                    formatEventos(
+                                        eventosResp.data,
+                                        lashistasResp.data
+                                    )
+                                );
+
                                 console.log(citasResp.data);
-                                setEvents(formatEvents(citasResp.data));
-                                calendarApi.gotoDate(selectedDate);
-                                console.log("Updated Today's View");
+                                setEvents(
+                                    formatEvents(
+                                        citasResp.data
+                                    )
+                                );
+                                calendarApi.gotoDate(
+                                    selectedDate
+                                );
+                                console.log(
+                                    "Updated Today's View"
+                                );
                                 // console.log(citasResp.data);
-                            });
+                            }
+                        );
                     }, 0);
                 } catch (error) {
-                    console.error("Error navigating to date:", error);
+                    console.error(
+                        "Error navigating to date:",
+                        error
+                    );
                 }
             }
         }
     }, [selectedDate]);
 
     useEffect(() => {
-        Promise.all([axios.get("/api/camas")]).then(([camasResp]) => {
-            setResources(camasResp.data);
-        });
+        Promise.all([axios.get("/api/camas")]).then(
+            ([camasResp]) => {
+                setResources(camasResp.data);
+            }
+        );
     }, []);
 
     const handleEventPreview = (info) => {
         // const { cita_ID } = info.event["_def"].extendedProps
-        const cita = info.event["_def"].extendedProps 
-        const cama_arr = cita.cama_id.split("-")
+        const cita = info.event["_def"].extendedProps;
+        const cama_arr = cita.cama_id.split("-");
         // const new_cama = `${cama_arr[0]}-${cama_arr[1]}-${cama_arr[2] == "1" ? "2" : "1"}`
         // console.log(`UPDATE citas SET cama_id = '${new_cama}' WHERE id = '${cita.cita_ID}';`);
-        
-        setLoading(true)
+
+        setLoading(true);
         NextNav.push(`/citas/${cita.cita_ID}`);
-        
+
         // setOpenDialogue(false);
         // setOpenDialogue(true);
         // console.log(info.event.toPlainObject());
@@ -97,7 +146,10 @@ export default function Hoy() {
     };
 
     return (
-        <Box id="Hoy" bg={"white"}>
+        <Box
+            id="Hoy"
+            bg={"white"}
+        >
             <Dialog.Root
                 id="Hoy"
                 open={openDialogue}
@@ -165,7 +217,10 @@ export default function Hoy() {
                     </style>
                     <FullCalendar
                         ref={calendarRef} // Attach the ref to FullCalendar
-                        plugins={[timeGridPlugin, resourceTimeGridPlugin]}
+                        plugins={[
+                            timeGridPlugin,
+                            resourceTimeGridPlugin,
+                        ]}
                         initialView="resourceTimeGridDay"
                         resources={resources}
                         events={events}
@@ -176,11 +231,17 @@ export default function Hoy() {
                         expandRows={true}
                         height="260vh"
                         // headerToolbar={{ left: "title", center: "", right: "" }}
-                        headerToolbar={{ left: "", center: "", right: "" }}
+                        headerToolbar={{
+                            left: "",
+                            center: "",
+                            right: "",
+                        }}
                         allDaySlot={false} // Removes the all-day row
                         slotDuration="00:30:00"
                         slotLabelInterval="00:30:00"
-                        resourceLabelContent={renderResourceLabel}
+                        resourceLabelContent={
+                            renderResourceLabel
+                        }
                         eventClick={handleEventPreview}
                         locales={[esLocale]} // Include the Spanish locale
                         // titleFormat={formatHoyTitle}
@@ -190,11 +251,30 @@ export default function Hoy() {
                             hour12: true,
                         }}
                         eventContent={(arg) => {
+                            const { extendedProps } =
+                                arg.event;
                             return (
-                                <div style={{ marginLeft: "0.3rem" }} className={arg.event.extendedProps.status == 2 ? "confirmado" : "pendiente"}>
+                                <div
+                                    style={{
+                                        marginLeft:
+                                            "0.3rem",
+                                    }}
+                                    className={
+                                        (extendedProps.status ==
+                                            1 &&
+                                            "pendiente") ||
+                                        (extendedProps.status ==
+                                            2 &&
+                                            "confirmado") ||
+                                        (extendedProps.status ==
+                                            3 &&
+                                            "evento")
+                                    }
+                                >
                                     <b
                                         style={{
-                                            fontSize: "0.7rem",
+                                            fontSize:
+                                                "0.7rem",
                                             color: "black",
                                         }}
                                     >
@@ -202,24 +282,27 @@ export default function Hoy() {
                                     </b>
                                     <p
                                         style={{
-                                            fontSize: "0.7rem",
+                                            fontSize:
+                                                "0.7rem",
                                             color: "black",
                                         }}
                                     >
-                                        {arg.event.extendedProps.servicio}
+                                        {extendedProps.servicio
+                                            ? extendedProps.servicio
+                                            : extendedProps.notas}
                                     </p>
                                 </div>
                             );
                         }}
-                    // viewDidMount={() => {
-                    //     console.log("viewDidMount hoyRef:", hoyRef);
-                    //     // Optionally test the API here
-                    //     if (hoyRef) {
-                    //         hoyRef.gotoDate("2025-04-30"); // Test navigation
-                    //     } else {
-                    //         console.log("No Hoy ref found");
-                    //     }
-                    // }}
+                        // viewDidMount={() => {
+                        //     console.log("viewDidMount hoyRef:", hoyRef);
+                        //     // Optionally test the API here
+                        //     if (hoyRef) {
+                        //         hoyRef.gotoDate("2025-04-30"); // Test navigation
+                        //     } else {
+                        //         console.log("No Hoy ref found");
+                        //     }
+                        // }}
                     />
                 </Box>
             </Dialog.Root>
@@ -230,11 +313,11 @@ export default function Hoy() {
 function CitaDialog({ setOpenDialogue, data }) {
     const NextNav = useNextNav();
     const citaData = { ...data.extendedProps };
-    const [loading, setLoading] = loadHook("useLoader")
+    const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
         console.log(data);
-    }, [])
+    }, []);
     return (
         <Portal>
             <Dialog.Backdrop />
@@ -267,16 +350,23 @@ function CitaDialog({ setOpenDialogue, data }) {
                                         <Image
                                             w={"12rem"}
                                             h={"12rem"}
-                                            borderRadius={"50%"}
-                                            src={`${CDN}/img/clientas/${citaData.foto
-                                                ? citaData.foto
-                                                : "avatar-woman.png"
-                                                }`}
-                                            objectFit={"cover"}
+                                            borderRadius={
+                                                "50%"
+                                            }
+                                            src={`${CDN}/img/clientas/${
+                                                citaData.foto
+                                                    ? citaData.foto
+                                                    : "avatar-woman.png"
+                                            }`}
+                                            objectFit={
+                                                "cover"
+                                            }
                                         />
                                         <Text
                                             mt={"1rem"}
-                                            fontSize={"1rem"}
+                                            fontSize={
+                                                "1rem"
+                                            }
                                         >{`${citaData.nombres} ${citaData.apellidos}`}</Text>
                                     </VStack>
                                 </HStack>
@@ -290,31 +380,52 @@ function CitaDialog({ setOpenDialogue, data }) {
                                 </Card.Title>
 
                                 <Card.Description
-                                    justifyContent={"space-between"}
+                                    justifyContent={
+                                        "space-between"
+                                    }
                                     display={"flex"}
                                 >
-                                    <Text as="span">Hora:</Text>
-                                    <Text as="span" fontWeight={800}>
+                                    <Text as="span">
+                                        Hora:
+                                    </Text>
+                                    <Text
+                                        as="span"
+                                        fontWeight={800}
+                                    >
                                         {citaData.hora}
                                         {" a.m."}
                                     </Text>
                                 </Card.Description>
                                 <Card.Description
-                                    justifyContent={"space-between"}
+                                    justifyContent={
+                                        "space-between"
+                                    }
                                     display={"flex"}
                                 >
-                                    <Text as="span">Lashista:</Text>
-                                    <Text as="span" fontWeight={800}>
+                                    <Text as="span">
+                                        Lashista:
+                                    </Text>
+                                    <Text
+                                        as="span"
+                                        fontWeight={800}
+                                    >
                                         {citaData.lashista}
                                     </Text>
                                 </Card.Description>
                                 <Card.Description
-                                    justifyContent={"space-between"}
+                                    justifyContent={
+                                        "space-between"
+                                    }
                                     display={"flex"}
                                     w={"100%"}
                                 >
-                                    <Text as="span">Total a Pagar:</Text>
-                                    <Text as="span" fontWeight={800}>
+                                    <Text as="span">
+                                        Total a Pagar:
+                                    </Text>
+                                    <Text
+                                        as="span"
+                                        fontWeight={800}
+                                    >
                                         {/* <Badge
                                                 size={"md"}
                                                 me={"1rem"}
@@ -326,13 +437,20 @@ function CitaDialog({ setOpenDialogue, data }) {
                                     </Text>
                                 </Card.Description>
                             </Card.Body>
-                            <Card.Footer justifyContent="center" mt={"2rem"}>
+                            <Card.Footer
+                                justifyContent="center"
+                                mt={"2rem"}
+                            >
                                 <Button
                                     bg={"pink.600"}
                                     onClick={() => {
-                                        setLoading(true)
-                                        setOpenDialogue(false);
-                                        NextNav.push(`/citas/${citaData.cita_ID}`);
+                                        setLoading(true);
+                                        setOpenDialogue(
+                                            false
+                                        );
+                                        NextNav.push(
+                                            `/citas/${citaData.cita_ID}`
+                                        );
                                     }}
                                 >
                                     Abrir Ticket
@@ -340,7 +458,11 @@ function CitaDialog({ setOpenDialogue, data }) {
                             </Card.Footer>
                         </Card.Root>
                     </Dialog.Body>
-                    <Dialog.CloseTrigger top="0" insetEnd="-12" asChild>
+                    <Dialog.CloseTrigger
+                        top="0"
+                        insetEnd="-12"
+                        asChild
+                    >
                         <CloseButton
                             onClick={() => {
                                 setOpenDialogue(false);
@@ -357,10 +479,18 @@ function CitaDialog({ setOpenDialogue, data }) {
 
 function renderResourceLabel(info) {
     return (
-        <div style={{ padding: "8px", textAlign: "center" }}>
+        <div
+            style={{ padding: "8px", textAlign: "center" }}
+        >
             <img
-                style={{ width: "3.5rem", marginBottom: "0.5rem" }}
-                src={`${CDN}/img/lashistas/` + info.resource.extendedProps.src}
+                style={{
+                    width: "3.5rem",
+                    marginBottom: "0.5rem",
+                }}
+                src={
+                    `${CDN}/img/lashistas/` +
+                    info.resource.extendedProps.src
+                }
             />
             <p
                 style={{
@@ -379,7 +509,10 @@ function renderResourceLabel(info) {
                 }}
             >
                 <LuBedSingle
-                    style={{ fontSize: "1.2rem", color: "rgb(228, 129, 167)" }}
+                    style={{
+                        fontSize: "1.2rem",
+                        color: "rgb(228, 129, 167)",
+                    }}
                 />
                 <span
                     style={{
@@ -409,17 +542,27 @@ export function formatEvents(eventsData) {
             const start = `${formattedDate}T${ed.hora}:00`;
 
             // Parse the date and time into a Date object
-            const parsedDate = parse(ed.fecha, "dd-MM-yyyy", new Date());
+            const parsedDate = parse(
+                ed.fecha,
+                "dd-MM-yyyy",
+                new Date()
+            );
             const [hours, minutes] = ed.hora.split(":");
             const dateWithTime = new Date(
                 parsedDate.setHours(hours, minutes, 0)
             );
             // Add minutes
-            const dateWithAddedTime = addMinutes(dateWithTime, ed.duracion);
+            const dateWithAddedTime = addMinutes(
+                dateWithTime,
+                ed.duracion
+            );
             // Format the result
             // console.log(dateWithTime, ed.duracion);
 
-            const end = format(dateWithAddedTime, "yyyy-MM-dd'T'HH:mm:ss");
+            const end = format(
+                dateWithAddedTime,
+                "yyyy-MM-dd'T'HH:mm:ss"
+            );
 
             // console.log(start, end); // "2025-04-25T09:00:00"
             return {

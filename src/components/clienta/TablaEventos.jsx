@@ -76,18 +76,18 @@ export default function TablaEventos({
                 )}
 
                 {/* No hay eventos  */}
-                {!eventos && !loading && (
+                {eventos && eventos.length == 0 && !loading && (
                     <Heading
                         textAlign={"center"}
                         my={"2rem"}
                         size={"xl"}
                     >
-                        No hay eventos en este periodo.
+                        No hay eventos
                     </Heading>
                 )}
 
                 {/* Tabla de Eventos */}
-                {!loading && eventos && (
+                {!loading && eventos && eventos.length > 0 && (
                     <Table.Root
                         size="md"
                         striped
