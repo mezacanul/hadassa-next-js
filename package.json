@@ -23,6 +23,7 @@
     "axios": "^1.8.4",
     "browser-image-resizer": "^2.4.1",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
     "heic-convert": "^2.1.0",
     "heic2any": "^0.0.4",

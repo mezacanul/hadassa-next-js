@@ -294,7 +294,7 @@ function CitasTable({ citas, lashista }) {
             position={"relative"}
             mb={showAll ? "6.5rem" : "initial"}
         >
-            {!loading && !showAll && (
+            {!loading && citas && !showAll && (
                 <Box
                     bottom={0}
                     position={"absolute"}

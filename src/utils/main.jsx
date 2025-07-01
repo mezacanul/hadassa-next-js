@@ -1,5 +1,6 @@
-import { es } from 'date-fns/locale';
+import { es } from 'date-fns/locale'; // Spanish locale
 import { format, parse } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 function formatHoyTitle(date) {
     if (date == null) return date
@@ -96,7 +97,21 @@ function formatHorario(horario){
     return `${horarioArr[0]} a ${horarioArr[1]}`
 }
 
+function getFechaLocal(fecha){
+    const timeZone = 'America/Mexico_City';
+    const fecha_zoned = toZonedTime(new Date(`${fecha}T00:00:00`), timeZone);
+    const formatted = format(new Date(fecha_zoned), "dd 'de' MMMM", { locale: es })
+    return  formatted
+}
+
+function formatEventType(type){
+    const strArr = type.split("-")
+    return `${capitalizeFirst(strArr[0])} ${capitalizeFirst(strArr[1])}`
+}
+
 export {
+    formatEventType,
+    getFechaLocal,
     formatHorario,
     capitalizeFirst,
     getDateObject,
