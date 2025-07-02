@@ -137,9 +137,9 @@ export default function Hoy() {
     const handleEventPreview = (info) => {
         // const { cita_ID } = info.event["_def"].extendedProps
         const cita = info.event["_def"].extendedProps;
-        if(cita.status != 3){
+        if (cita.status != 3) {
             const cama_arr = cita.cama_id.split("-");
-    
+
             setLoading(true);
             NextNav.push(`/citas/${cita.cita_ID}`);
             // console.log(info.event.toPlainObject());
@@ -219,6 +219,10 @@ export default function Hoy() {
                             .fc-timegrid-col:nth-child(5) .fc-timegrid-col-frame {
                                 border-right: 1px solid rgb(210, 210, 210) !important;
                                 z-index: 10;
+                            }
+
+                            #Hoy .fc .fc-timegrid-slot-label {
+                                vertical-align: top;
                             }
                         `}
                     </style>
@@ -324,7 +328,7 @@ function CitaDialog({ setOpenDialogue, data }) {
     const [loading, setLoading] = loadHook("useLoader");
 
     useEffect(() => {
-        console.log(data);
+        // console.log(data);
     }, []);
     return (
         <Portal>

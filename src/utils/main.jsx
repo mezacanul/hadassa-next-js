@@ -38,6 +38,11 @@ function formatFechaDMY(fecha) {
     return `${day}-${month}-${year}`;
 }
 
+function formatFechaYMD(fecha) {
+    const [day, month, year] = fecha.split("-");
+    return `${year}-${month}-${day}`;
+}
+
 function queryPlusFilters(query, conditions) {
     let fullQuery = query;
     if (conditions.length > 0) {
@@ -75,7 +80,7 @@ function parseQueryFilters(query, filterMap) {
 }
 
 function formatCamaID(camaID) {
-    console.log(camaID.split("-"));
+    // console.log(camaID.split("-"));
 
     const camaArray = camaID.split("-");
     return `${capitalizeFirst(camaArray[0])} ${
@@ -141,45 +146,65 @@ function getHorarioArray(horarioStr) {
     return horarioArr;
 }
 
+function getHorarioByDayNumber(lashista, todayNumber) {
+    try {
+        let horarioJSON =
+            todayNumber > 4
+                ? getHorarioArray(lashista.horarioSBD)
+                : JSON.parse(lashista.horarioLV).map((hr) =>
+                      getHorarioArray(hr)
+                  );
+    
+        horarioJSON =
+            todayNumber > 4
+                ? horarioJSON
+                : horarioJSON.length > 1
+                ? [horarioJSON[0][0], horarioJSON[1][1]]
+                : horarioJSON[0];
+    
+        return horarioJSON;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function getMinutes(startTime, endTime) {
+    // Parse hours and minutes
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+  
+    // Convert to minutes since midnight
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+  
+    // Calculate difference
+    const diffMinutes = endTotalMinutes - startTotalMinutes;
+  
+    return diffMinutes;
+  }
+
 function getDayIndexNumber(date) {
     const timeZone = "America/Mexico_City";
     const zonedDate = toZonedTime(new Date(date), timeZone);
     return getDay(zonedDate);
 }
 
-function formatEventos(eventsArr, lashistasArr, selectedDate) {
+function formatEventos(
+    eventsArr,
+    lashistasArr,
+    selectedDate
+) {
     const lashistas = getIndexedCollection(lashistasArr);
     const todayNumber = getDayIndexNumber(selectedDate);
     // const hora_start = horario.length > 1 ? horario[1][0]
     // const fecha_init =
 
     const eventos = eventsArr.map((ev) => {
-        let horario =
-            todayNumber > 4
-                ? getHorarioArray(
-                      lashistas[ev.id_lashista].horarioSBD
-                  )
-                : JSON.parse(
-                      lashistas[ev.id_lashista].horarioLV
-                  ).map((hr) => getHorarioArray(hr));
-        horario =
-            todayNumber > 4
-                ? horario
-                : horario.length > 1
-                ? [horario[0][0], horario[1][1]]
-                : horario[0];
-
-        let horario_2 =
-            todayNumber > 4
-                ? getHorarioArray(
-                      lashistas[ev.id_lashista].horarioSBD
-                  )
-                : JSON.parse(
-                      lashistas[ev.id_lashista].horarioLV
-                  ).map((hr) => getHorarioArray(hr));
-
-        console.log(horario_2, todayNumber, selectedDate);
-
+        let horario = getHorarioByDayNumber(
+            lashistas[ev.id_lashista],
+            todayNumber
+        );
+        
         return {
             title: `${ev.titulo}`,
             horario,
@@ -222,6 +247,9 @@ function getIndexedCollection(arr) {
 }
 
 export {
+    getMinutes,
+    getDayIndexNumber,
+    getHorarioByDayNumber,
     getIndexedCollection,
     formatEventos,
     formatEventType,
@@ -231,6 +259,7 @@ export {
     getDateObject,
     formatCamaID,
     formatHoyTitle,
+    formatFechaYMD,
     formatFechaDMY,
     queryPlusFilters,
     parseQueryFilters,
