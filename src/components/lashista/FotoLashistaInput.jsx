@@ -75,7 +75,7 @@ export default function FotoLashistaInput({ lashista }) {
 
     return (
         <>
-            <HStack align={"end"} gap={"1.5rem"}>
+            <HStack w={"100%"} align={"end"} gap={"1.5rem"}>
                 <Image shadow={"md"} rounded={"lg"} w={"10rem"}
                     src={`${CDN}/img/lashistas/${fotoLashista}`}
                 />

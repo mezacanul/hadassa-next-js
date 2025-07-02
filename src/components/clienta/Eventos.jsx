@@ -172,18 +172,29 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                 w={"100%"}
                 gap={"1rem"}
             >
-                <HStack w={"100%"} alignItems={"end"} justifyContent={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    alignItems={"end"}
+                    justifyContent={"start"}
+                    gap={"1rem"}
+                >
                     <Heading
                         mt={"0.5rem"}
-                        size={"lg"}
+                        size={"md"}
+                        fontWeight={400}
+                        textDecor={"underline"}
                     >
-                        Nuevo Evento
+                        Nuevo Evento:
                     </Heading>
-                    <Text textDecor={"underline"}>
+                    <Heading
+                        size={"xl"}
+                        color={"pink.600"}
+                        // textDecor={"underline"}
+                    >
                         {getFechaLocal(
                             eventoForm.fecha_init
                         )}
-                    </Text>
+                    </Heading>
                 </HStack>
 
                 <VStack
