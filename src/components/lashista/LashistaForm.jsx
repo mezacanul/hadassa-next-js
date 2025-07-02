@@ -16,7 +16,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function LashistaForm({ lashista }) {
-    const [actualizarStatus, setActualizarStatus] = useState("iddle");
+    const [actualizarStatus, setActualizarStatus] =
+        useState("iddle");
     const [lashistaForm, setLashistaForm] = useState({
         nombre: "",
         email: "",
@@ -47,7 +48,9 @@ export default function LashistaForm({ lashista }) {
         setActualizarStatus("updating");
         const send = {
             ...lashistaForm,
-            horarioLV: JSON.stringify(lashistaForm.horarioLV),
+            horarioLV: JSON.stringify(
+                lashistaForm.horarioLV
+            ),
             horarioSBD: `${lashistaForm.horarioSBD[0]} - ${lashistaForm.horarioSBD[1]}`,
         };
         console.log("lashista", lashista);
@@ -128,16 +131,24 @@ export default function LashistaForm({ lashista }) {
                     gap={"1.5rem"}
                 >
                     {lashistaForm.horarioLV &&
-                        lashistaForm.horarioLV.map((horarios, i) => (
-                            <TimeSelector
-                                label={"Seleccionar hora"}
-                                key={i}
-                                index={i}
-                                horarios={horarios}
-                                lashistaForm={lashistaForm}
-                                setLashistaForm={setLashistaForm}
-                            />
-                        ))}
+                        lashistaForm.horarioLV.map(
+                            (horarios, i) => (
+                                <TimeSelector
+                                    label={
+                                        "Seleccionar hora"
+                                    }
+                                    key={i}
+                                    index={i}
+                                    horarios={horarios}
+                                    lashistaForm={
+                                        lashistaForm
+                                    }
+                                    setLashistaForm={
+                                        setLashistaForm
+                                    }
+                                />
+                            )
+                        )}
                 </VStack>
             </VStack>
 
@@ -155,23 +166,39 @@ export default function LashistaForm({ lashista }) {
                 </Text>
                 <HStack w={"100%"}>
                     {lashistaForm.horarioSBD &&
-                        lashistaForm.horarioSBD.map((hora, i) => (
-                            <TimePickMUI
-                                key={i}
-                                label={"Seleccionar hora"}
-                                value={hora}
-                                loc={{ i, period: "SBD" }}
-                                lashistaForm={lashistaForm}
-                                onChange={(newValue) => {
-                                    const newHorario = lashistaForm.horarioSBD;
-                                    newHorario[i] = newValue.format("HH:mm");
-                                    setLashistaForm({
-                                        ...lashistaForm,
-                                        horarioSBD: newHorario,
-                                    });
-                                }}
-                            />
-                        ))}
+                        lashistaForm.horarioSBD.map(
+                            (hora, i) => (
+                                <TimePickMUI
+                                    key={i}
+                                    label={
+                                        "Seleccionar hora"
+                                    }
+                                    value={hora}
+                                    loc={{
+                                        i,
+                                        period: "SBD",
+                                    }}
+                                    lashistaForm={
+                                        lashistaForm
+                                    }
+                                    onChange={(
+                                        newValue
+                                    ) => {
+                                        const newHorario =
+                                            lashistaForm.horarioSBD;
+                                        newHorario[i] =
+                                            newValue.format(
+                                                "HH:mm"
+                                            );
+                                        setLashistaForm({
+                                            ...lashistaForm,
+                                            horarioSBD:
+                                                newHorario,
+                                        });
+                                    }}
+                                />
+                            )
+                        )}
                 </HStack>
             </VStack>
 
@@ -196,7 +223,9 @@ export default function LashistaForm({ lashista }) {
                     </Text>
                 )}
                 {actualizarStatus == "error" && (
-                    <Text color={"red"}>Error al actualizar</Text>
+                    <Text color={"red"}>
+                        Error al actualizar
+                    </Text>
                 )}
             </HStack>
             {actualizarStatus == "updating" && (
@@ -219,7 +248,9 @@ function TimeSelector({
 }) {
     //Array of [ "HH:mm", ... ]
     const [horariosArr, setHorariosArr] = useState(
-        horarios.split("-").map((hora) => hora.replace(" ", ""))
+        horarios
+            .split("-")
+            .map((hora) => hora.replace(" ", ""))
     );
 
     function handleChange(newValue, index, i) {
@@ -229,7 +260,9 @@ function TimeSelector({
         newHorarioLV[i] = newValue.format("HH:mm");
 
         let newSlotsLV = lashistaForm.horarioLV;
-        newSlotsLV[index] = `${newHorarioLV[0]} - ${newHorarioLV[1]}`;
+        newSlotsLV[
+            index
+        ] = `${newHorarioLV[0]} - ${newHorarioLV[1]}`;
 
         // console.log(newSlotsLV);
         // console.log(lashistaForm.horarioLV);
@@ -256,7 +289,11 @@ function TimeSelector({
                         loc={{ index, i, period: "LV" }}
                         lashistaForm={lashistaForm}
                         onChange={(newValue) => {
-                            handleChange(newValue, index, i);
+                            handleChange(
+                                newValue,
+                                index,
+                                i
+                            );
                         }}
                     />
                 );
@@ -265,22 +302,33 @@ function TimeSelector({
     );
 }
 
-function TimePickMUI({ label, value, onChange, loc, lashistaForm }) {
+function TimePickMUI({
+    label,
+    value,
+    onChange,
+    loc,
+    lashistaForm,
+}) {
     // const formattedValue = dayjs(`2025-01-01T${value}`)
-    const [valueMUI, setValueMUI] = useState(formatHourMUI(value));
+    const [valueMUI, setValueMUI] = useState(
+        formatHourMUI(value)
+    );
 
     useEffect(() => {
         if (lashistaForm) {
             // console.log(lashistaForm.horarioLV);
 
             if (loc.period == "LV") {
-                const decodedHorarioLV = lashistaForm.horarioLV.map(
-                    (horario) => {
-                        return horario
-                            .split("-")
-                            .map((hora) => hora.replace(" ", ""));
-                    }
-                );
+                const decodedHorarioLV =
+                    lashistaForm.horarioLV.map(
+                        (horario) => {
+                            return horario
+                                .split("-")
+                                .map((hora) =>
+                                    hora.replace(" ", "")
+                                );
+                        }
+                    );
                 const newVal = formatHourMUI(
                     decodedHorarioLV[loc.index][loc.i]
                 );
@@ -289,7 +337,9 @@ function TimePickMUI({ label, value, onChange, loc, lashistaForm }) {
             }
 
             if (loc.period == "SBD") {
-                const newVal = formatHourMUI(lashistaForm.horarioSBD[loc.i]);
+                const newVal = formatHourMUI(
+                    lashistaForm.horarioSBD[loc.i]
+                );
                 // console.log(lashistaForm.horarioSBD[loc.i]);
                 setValueMUI(newVal);
                 // console.log(lashistaForm.horarioSBD[loc.i]);
@@ -302,9 +352,14 @@ function TimePickMUI({ label, value, onChange, loc, lashistaForm }) {
             {...inputStyles}
             w={"100%"}
         >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+            >
                 <TimePicker
-                    sx={{ width: "100%", backgroundColor: "white" }}
+                    sx={{
+                        width: "100%",
+                        backgroundColor: "white",
+                    }}
                     label={label}
                     value={valueMUI}
                     onChange={onChange}
@@ -321,14 +376,19 @@ function formatHourMUI(value) {
 
 function InputGroup({ label, value, onChange }) {
     return (
-        <VStack alignItems={"start"}>
+        <VStack
+            alignItems={"start"}
+            w={"100%"}
+        >
             <Text
+                w={"100%"}
                 fontWeight={600}
                 fontSize={"0.8rem"}
             >
                 {label}
             </Text>
             <Input
+                w={"100%"}
                 {...inputStyles}
                 value={value}
                 placeholder={label}

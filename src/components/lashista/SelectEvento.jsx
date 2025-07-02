@@ -10,7 +10,7 @@ export default function SelectEvento({
         items: [
             { label: "Horas Libres", value: "horas-libres" },
             { label: "Dia Libre", value: "dia-libre" },
-            { label: "Temporada Libre", value: "temporada-libre" },
+            // { label: "Temporada Libre", value: "temporada-libre" },
         ]
     })
 

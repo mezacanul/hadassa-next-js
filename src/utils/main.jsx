@@ -141,21 +141,21 @@ function getHorarioArray(horarioStr) {
     return horarioArr;
 }
 
-function getTodayIndexNumber() {
+function getDayIndexNumber(date) {
     const timeZone = "America/Mexico_City";
-    const zonedDate = toZonedTime(new Date(), timeZone);
-    return (getDay(zonedDate) + 6) % 7;
+    const zonedDate = toZonedTime(new Date(date), timeZone);
+    return getDay(zonedDate);
 }
 
-function formatEventos(eventsArr, lashistasArr) {
+function formatEventos(eventsArr, lashistasArr, selectedDate) {
     const lashistas = getIndexedCollection(lashistasArr);
-    const todayNumber = getTodayIndexNumber();
+    const todayNumber = getDayIndexNumber(selectedDate);
     // const hora_start = horario.length > 1 ? horario[1][0]
     // const fecha_init =
 
     const eventos = eventsArr.map((ev) => {
         let horario =
-            todayNumber > 5
+            todayNumber > 4
                 ? getHorarioArray(
                       lashistas[ev.id_lashista].horarioSBD
                   )
@@ -163,11 +163,22 @@ function formatEventos(eventsArr, lashistasArr) {
                       lashistas[ev.id_lashista].horarioLV
                   ).map((hr) => getHorarioArray(hr));
         horario =
-            todayNumber > 5
+            todayNumber > 4
                 ? horario
                 : horario.length > 1
                 ? [horario[0][0], horario[1][1]]
                 : horario[0];
+
+        let horario_2 =
+            todayNumber > 4
+                ? getHorarioArray(
+                      lashistas[ev.id_lashista].horarioSBD
+                  )
+                : JSON.parse(
+                      lashistas[ev.id_lashista].horarioLV
+                  ).map((hr) => getHorarioArray(hr));
+
+        console.log(horario_2, todayNumber, selectedDate);
 
         return {
             title: `${ev.titulo}`,

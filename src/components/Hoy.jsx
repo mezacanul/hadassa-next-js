@@ -88,12 +88,12 @@ export default function Hoy() {
                                 console.log(
                                     eventosResp.data
                                 );
-                                console.log(
-                                    formatEventos(
-                                        eventosResp.data,
-                                        lashistasResp.data
-                                    )
-                                );
+                                // console.log(
+                                //     formatEventos(
+                                //         eventosResp.data,
+                                //         lashistasResp.data
+                                //     )
+                                // );
 
                                 console.log(citasResp.data);
                                 setEvents([
@@ -102,7 +102,8 @@ export default function Hoy() {
                                     ),
                                     ...formatEventos(
                                         eventosResp.data,
-                                        lashistasResp.data
+                                        lashistasResp.data,
+                                        selectedDate
                                     ),
                                 ]);
                                 calendarApi.gotoDate(
@@ -257,7 +258,7 @@ export default function Hoy() {
                             hour12: true,
                         }}
                         eventContent={(arg) => {
-                            console.log(arg.event);
+                            // console.log(arg.event);
                             const { extendedProps } =
                                 arg.event;
                             return (

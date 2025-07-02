@@ -35,7 +35,7 @@ export default function Lashista() {
         <Grid w={"100%"} gridTemplateColumns={"1fr 1fr"} gap={"2rem"}>
             {!lashista && <Spinner size={"lg"} transform={"scale(1.2)"} color={"pink.500"} />}
             {lashista && (
-                <VStack alignItems={"start"} w={"50%"}>
+                <VStack alignItems={"start"}>
                     <LashistaTitle lashista={lashista} title={title} />
                     <FotoLashistaInput lashista={lashista} />
                     <LashistaForm lashista={lashista} />
@@ -49,7 +49,7 @@ export default function Lashista() {
 
 function LashistaTitle({ lashista, title }) {
     return (
-        <VStack alignItems={"start"} mb={"1rem"} gap={"0.5rem"}>
+        <VStack w={"100%"} alignItems={"start"} mb={"1rem"} gap={"0.5rem"}>
             <Heading size={"4xl"} color={"pink.500"}>{title}</Heading>
             {lashista && (
                 <Badge
