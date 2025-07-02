@@ -96,11 +96,15 @@ export default function Hoy() {
                                 );
 
                                 console.log(citasResp.data);
-                                setEvents(
-                                    formatEvents(
+                                setEvents([
+                                    ...formatEvents(
                                         citasResp.data
-                                    )
-                                );
+                                    ),
+                                    ...formatEventos(
+                                        eventosResp.data,
+                                        lashistasResp.data
+                                    ),
+                                ]);
                                 calendarApi.gotoDate(
                                     selectedDate
                                 );
@@ -132,17 +136,13 @@ export default function Hoy() {
     const handleEventPreview = (info) => {
         // const { cita_ID } = info.event["_def"].extendedProps
         const cita = info.event["_def"].extendedProps;
-        const cama_arr = cita.cama_id.split("-");
-        // const new_cama = `${cama_arr[0]}-${cama_arr[1]}-${cama_arr[2] == "1" ? "2" : "1"}`
-        // console.log(`UPDATE citas SET cama_id = '${new_cama}' WHERE id = '${cita.cita_ID}';`);
-
-        setLoading(true);
-        NextNav.push(`/citas/${cita.cita_ID}`);
-
-        // setOpenDialogue(false);
-        // setOpenDialogue(true);
-        // console.log(info.event.toPlainObject());
-        // setCurrentEventDialogue(info.event.toPlainObject());
+        if(cita.status != 3){
+            const cama_arr = cita.cama_id.split("-");
+    
+            setLoading(true);
+            NextNav.push(`/citas/${cita.cita_ID}`);
+            // console.log(info.event.toPlainObject());
+        }
     };
 
     return (
@@ -204,6 +204,12 @@ export default function Hoy() {
                                 opacity: 0.9;
                             }
 
+                            #Hoy .fc-v-event:has(.evento) {
+                                background-color:rgb(232, 241, 254) !important;
+                                border: 2px solid rgb(23, 46, 137) !important;
+                                opacity: 0.9;
+                            }
+
                             .fc-timegrid-col:nth-child(3) .fc-timegrid-col-frame {
                                 border-right: 1px solid rgb(210, 210, 210) !important;
                                 z-index: 10;
@@ -251,6 +257,7 @@ export default function Hoy() {
                             hour12: true,
                         }}
                         eventContent={(arg) => {
+                            console.log(arg.event);
                             const { extendedProps } =
                                 arg.event;
                             return (

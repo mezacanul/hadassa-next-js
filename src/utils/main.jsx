@@ -1,5 +1,5 @@
 import { es } from "date-fns/locale"; // Spanish locale
-import { format, parse } from "date-fns";
+import { format, parse, getDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 function formatHoyTitle(date) {
@@ -133,28 +133,72 @@ function formatEventType(type) {
     )}`;
 }
 
+function getHorarioArray(horarioStr) {
+    let horarioArr = horarioStr.split("-");
+    horarioArr = horarioArr.map((hr) => {
+        return hr.replace(" ", "");
+    });
+    return horarioArr;
+}
+
+function getTodayIndexNumber() {
+    const timeZone = "America/Mexico_City";
+    const zonedDate = toZonedTime(new Date(), timeZone);
+    return (getDay(zonedDate) + 6) % 7;
+}
+
 function formatEventos(eventsArr, lashistasArr) {
     const lashistas = getIndexedCollection(lashistasArr);
+    const todayNumber = getTodayIndexNumber();
+    // const hora_start = horario.length > 1 ? horario[1][0]
+    // const fecha_init =
+
+    const eventos = eventsArr.map((ev) => {
+        let horario =
+            todayNumber > 5
+                ? getHorarioArray(
+                      lashistas[ev.id_lashista].horarioSBD
+                  )
+                : JSON.parse(
+                      lashistas[ev.id_lashista].horarioLV
+                  ).map((hr) => getHorarioArray(hr));
+        horario =
+            todayNumber > 5
+                ? horario
+                : horario.length > 1
+                ? [horario[0][0], horario[1][1]]
+                : horario[0];
+
+        return {
+            title: `${ev.titulo}`,
+            horario,
+            start: `${ev.fecha_init}T${
+                ev.tipo == "horas-libres"
+                    ? ev.hora_init
+                    : horario[0]
+            }:00`,
+            end: `${ev.fecha_init}T${
+                ev.tipo == "horas-libres"
+                    ? ev.hora_fin
+                    : horario[1]
+            }:00`,
+            // end: ev.tipo == "horas-libres" ? ev.hora_fin : horario[1],
+            // end: `${ev.fecha_init}T${ev.hora_fin}:00`,
+            resourceId: `cama-${lashistas[
+                ev.id_lashista
+            ].nombre.toLowerCase()}-1`,
+            extendedProps: {
+                ...ev,
+                status: 3,
+            },
+        };
+    });
+
     // const fecha_init =
     //     ev.tipo == "horas-libres"
     //         ? `${ev.fecha_init}T${ev.hora_init}:00`
     //         : "";
 
-    const eventos = eventsArr.map((ev) => {
-        return {
-            title: `${ev.titulo}`,
-            // start: fecha_init,
-            // end: `${ev.fecha_init}T${ev.hora_fin}:00`,
-            resourceId: `cama-${
-                lashistas[ev.id_lashista].nombre
-            }-1`,
-            extendedProps: {
-                status: 3,
-                ...ev,
-            },
-        };
-    });
-    // console.log(eventos);
     return eventos;
 }
 
