@@ -76,7 +76,8 @@ export default function AccionesTicket({cita, setCita}) {
                         ...cita, 
                         pagado: 1,
                         fecha_pagado: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                        monto_pagado: mp[0] == "efectivo" ? cita.precio : cita.precio_tarjeta
+                        monto_pagado: mp[0] == "efectivo" ? cita.precio : cita.precio_tarjeta,
+                        metodo_pago: mp[0]
                     });
                     console.log();
                     
