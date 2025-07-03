@@ -105,7 +105,7 @@ export default function AccionesTicket({cita, setCita}) {
                                 {...buttonStyles}
                                 colorPalette={"orange"}
                             >
-                                Cancelar
+                                Cancelar Cita
                             </Button>
                         )}
                         {cita.status != 2 && cita.status != 0 && (
@@ -114,7 +114,7 @@ export default function AccionesTicket({cita, setCita}) {
                                 {...buttonStyles}
                                 colorPalette={"blue"}
                             >
-                                Confirmar
+                                Confirmar Cita
                             </Button>
                         )}
                     </Grid>
