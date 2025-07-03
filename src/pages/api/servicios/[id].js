@@ -41,8 +41,8 @@ export default async function handler(req, res) {
                             servicio = ?, 
                             descripcion = ?, 
                             minutos = ?, 
-                            precio_tarjeta = ?, 
-                            precio = ? 
+                            precio = ?,
+                            precio_tarjeta = ?
                         WHERE 
                             id = ?`;
                 let [result] = await connection.execute(query, [

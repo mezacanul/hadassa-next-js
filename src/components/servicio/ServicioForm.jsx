@@ -24,13 +24,11 @@ export default function ServicioForm({ servicio, setTitle }) {
     // }
 
     const actualizarServicio = () => {
-        // setActualizarStatus("updating")
-
         setActualizarStatus("updating")
+
+        console.log(servicioForm);
         // setActualizarStatus("success")
-        // console.log(servicioForm);
         // return
-        // console.log(servicioForm);
         axios
             .patch(`/api/servicios/${servicio.id}`, {
                 type: "batch",
