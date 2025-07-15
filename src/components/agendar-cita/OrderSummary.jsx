@@ -356,7 +356,7 @@ export default function OrderSummary({
                         )}
                         <Text
                             textAlign={"right"}
-                            w={"75%"}
+                            maxWidth={"75%"}
                             // truncate
                             textDecor={
                                 currentCita.clienta
