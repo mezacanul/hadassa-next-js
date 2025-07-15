@@ -33,14 +33,19 @@ export default function Clienta() {
                 setLoading(false);
 
                 console.log(citasResp.data);
-                setCitas(citasResp.data)
+                setCitas(citasResp.data);
             });
         }
     }, [router.isReady]);
 
     return (
-        <Grid gridTemplateColumns={"1fr 1fr"}>
-            <Box w={"80%"}>
+        <Grid
+            px={"2rem"}
+            gap={"2rem"}
+            w={"100%"}
+            gridTemplateColumns={"2fr 3fr"}
+        >
+            <Box>
                 {!clienta && (
                     <Spinner
                         borderWidth={"3px"}
@@ -59,7 +64,7 @@ export default function Clienta() {
                 )}
             </Box>
 
-            {citas && <CitasTracker citas={citas}/>}
+            {citas && <CitasTracker citas={citas} />}
         </Grid>
     );
 }

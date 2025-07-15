@@ -37,8 +37,19 @@ export default async function handler(req, res) {
         if (req.method === "GET") {
             if (req.query.clienta) {
                 const query = `
-                    SELECT * FROM citas
+                    SELECT 
+                        citas.id,
+                        servicios.servicio,
+                        citas.fecha, 
+                        citas.hora,
+                        citas.status,
+                        citas.pagado
+                    FROM citas
+                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
                     WHERE clienta_id = ?
+                    ORDER BY 
+                        citas.fecha DESC,
+                        citas.hora DESC
                 `;
                 const [rows] = await connection.execute(
                     query,
