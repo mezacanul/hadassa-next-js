@@ -38,6 +38,7 @@ import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { RiDiscountPercentLine } from "react-icons/ri";
 import { IoIosStar } from "react-icons/io";
+import { useRouter as useNextNav } from "next/navigation";
 
 export const useMetodoPago = Singleton(null);
 export const useAgendarLoading = Singleton(null);
@@ -59,6 +60,7 @@ export default function OrderSummary({
         useState(null);
     const [loadingDescuentos, setLoadingDescuentos] =
         useState(false);
+    const NextNav = useNextNav();
 
     useEffect(() => {
         if (currentCita.clienta) {
@@ -461,6 +463,28 @@ export default function OrderSummary({
                 >
                     Confirmar y Agendar
                 </Button>
+            )}
+
+<style>
+    {`
+        .link-to:hover {
+            cursor: pointer;
+        }
+    `}
+</style>
+            {citaID && (
+                <Heading
+                    className="link-to"
+                    fontWeight={500}
+                    textDecor={"underline"}
+                    size={"lg"}
+                    mt={"1rem"}
+                    onClick={() => {
+                        NextNav.push(`/citas/${citaID}`);
+                    }}
+                >
+                    Ir a Cita
+                </Heading>
             )}
         </VStack>
     );
