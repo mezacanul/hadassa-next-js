@@ -35,6 +35,29 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === "GET") {
+            if (req.query.clienta) {
+                const query = `
+                    SELECT 
+                        citas.id,
+                        servicios.servicio,
+                        citas.fecha, 
+                        citas.hora,
+                        citas.status,
+                        citas.pagado
+                    FROM citas
+                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
+                    WHERE clienta_id = ?
+                    ORDER BY 
+                        citas.fecha DESC,
+                        citas.hora DESC
+                `;
+                const [rows] = await connection.execute(
+                    query,
+                    [req.query.clienta]
+                );
+                res.status(200).json(rows);
+                // res.status(200).json(req.query.clienta);
+            }
             if (req.query.id) {
                 const query = `SELECT 
                             citas.id as cita_ID,
@@ -52,6 +75,7 @@ export default async function handler(req, res) {
                             citas.monto_pagado,
                             citas.pagado,
                             servicios.precio,
+                            servicios.minutos,
                             servicios.id as servicio_id,
                             servicios.precio_tarjeta,
                             clientas.id as clienta_id, 
@@ -366,11 +390,13 @@ export default async function handler(req, res) {
                         evento.hora,
                         evento.minutos
                     );
-                    const minutosCita = servicios[cita.servicio_id].minutos
-                    const eventSlotsBackwards = getEventSlotsBackwards(
-                        evento.hora,
-                        minutosCita,
-                    );
+                    const minutosCita =
+                        servicios[cita.servicio_id].minutos;
+                    const eventSlotsBackwards =
+                        getEventSlotsBackwards(
+                            evento.hora,
+                            minutosCita
+                        );
 
                     // console.log(availableArr, servicios[cita.servicio_id], eventSlotsBackwards);
 
@@ -391,14 +417,15 @@ export default async function handler(req, res) {
                 }
 
                 console.log("TEST - YES DEV");
-                console.log(
+                console
+                    .log
                     // eventos,
                     // servicios[cita.servicio_id],
                     // availableArr
                     // horariosDispPorCama
                     // citasDelDia[0],
                     // lashista
-                );
+                    ();
 
                 // Final response
                 res.status(200).json(availableArr);

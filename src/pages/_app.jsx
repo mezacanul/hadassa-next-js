@@ -98,6 +98,7 @@ function NavBar({ h }) {
     const [events] = loadHook("useEvents");
     const [currentPath, setCurrentPath] = useState(null);
     const [loading, setLoading] = loadHook("useLoader");
+    const [DOM, setDOM] = loadHook("useDOM")
 
     const [citaID, setCitaID] = useCitaID();
     const [mp, setMp] = useMetodoPago();
@@ -106,6 +107,39 @@ function NavBar({ h }) {
     useEffect(() => {
         console.log("route", router);
     }, [router]);
+    
+    useEffect(() => {
+        switch (router.pathname) {
+            case "/":
+                setDOM({title: "Hadassa Cerón | Inicio"})
+                break;
+            case "/citas":
+                setDOM({title: "Citas"})
+                break;
+            case "/citas/[citaID]":
+                setDOM({title: "Cita"})
+                break;
+            case "/clientas":
+                setDOM({title: "Clientas"})
+                break;
+            case "/clientas/[clientaID]":
+                setDOM({title: "Clienta"})
+                break;
+            case "/lashistas":
+                setDOM({title: "Lashistas"})
+                break;
+            case "/lashistas/[lashistaID]":
+                setDOM({title: "Lashista"})
+                break;
+            case "/servicios":
+                setDOM({title: "Servicios"})
+                break;
+            case "/servicios/[servicioID]":
+                setDOM({title: "Servicio"})
+                break;
+            default: break;
+        }
+    }, [router.pathname]);
 
     return (
         <Grid

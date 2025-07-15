@@ -1,8 +1,15 @@
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
-import { loadHook, Singleton } from "@/utils/lattice-design";
-import { formatHoyTitle, getDateObject } from "@/utils/main";
+import {
+    loadHook,
+    Singleton,
+} from "@/utils/lattice-design";
+import {
+    formatHoyTitle,
+    getDateObject,
+} from "@/utils/main";
 import {
     Alert,
+    Badge,
     Button,
     createListCollection,
     Heading,
@@ -15,13 +22,23 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { FaRegClock, FaRegSquareMinus } from "react-icons/fa6";
+import {
+    FaRegClock,
+    FaRegSquareMinus,
+} from "react-icons/fa6";
 import { IoPersonOutline } from "react-icons/io5";
-import { LuBedSingle, LuCalendar1, LuReceiptText } from "react-icons/lu";
+import {
+    LuBedSingle,
+    LuCalendar1,
+    LuReceiptText,
+} from "react-icons/lu";
 import { PiCashRegisterBold } from "react-icons/pi";
 import { sortHours } from "@/utils/disponibilidad";
 import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
+import { RiDiscountPercentLine } from "react-icons/ri";
+import { IoIosStar } from "react-icons/io";
+import { useRouter as useNextNav } from "next/navigation";
 
 export const useMetodoPago = Singleton(null);
 export const useAgendarLoading = Singleton(null);
@@ -31,17 +48,57 @@ export default function OrderSummary({
     disabled,
     setCurrentPaso,
     setClientasState,
-    dateObj
+    dateObj,
 }) {
     const [citaID, setCitaID] = useCitaID();
     const [mp, setMp] = useMetodoPago();
-    const [agendarLoading, setAgendarLoading] = useAgendarLoading();
+    const [agendarLoading, setAgendarLoading] =
+        useAgendarLoading();
     // const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     const [currentCita, setCurrentCita] = useCurrentCita();
+    const [tieneDescuento, setTieneDescuento] =
+        useState(null);
+    const [loadingDescuentos, setLoadingDescuentos] =
+        useState(false);
+    const NextNav = useNextNav();
+
+    useEffect(() => {
+        if (currentCita.clienta) {
+            setLoadingDescuentos(true);
+            const send = {
+                clienta: currentCita.clienta.id,
+                servicio: currentCita.servicio.id,
+            };
+            console.log(send);
+            axios
+                .post("/api/descuentos", send)
+                .then((axiosResp) => {
+                    console.log(axiosResp);
+                    const total = axiosResp.data.length;
+                    const newTotal = total + 1;
+                    // console.log(newTotal % 6 === 0);
+
+                    setTieneDescuento({
+                        aplica:
+                            newTotal % 6 === 0
+                                ? true
+                                : false,
+                        total: axiosResp.data.length,
+                    });
+                    setLoadingDescuentos(false);
+                });
+        } else {
+            setTieneDescuento(null);
+        }
+    }, [currentCita.clienta]);
 
     const handleAgendar = () => {
         setAgendarLoading(true);
-        console.log({ ...currentCita, metodoPago: mp[0], action: "agendar" });
+        console.log({
+            ...currentCita,
+            metodoPago: mp[0],
+            action: "agendar",
+        });
         // return
 
         axios
@@ -52,7 +109,10 @@ export default function OrderSummary({
             })
             .then((citasResp) => {
                 console.log(citasResp);
-                if (citasResp.status == 201 && citasResp.data.uuid) {
+                if (
+                    citasResp.status == 201 &&
+                    citasResp.data.uuid
+                ) {
                     setCitaID(citasResp.data.uuid);
                     setAgendarLoading(false);
                 }
@@ -104,7 +164,14 @@ export default function OrderSummary({
     };
 
     return (
-        <VStack style={{ width: currentCita.clienta ? "50%" : "35%" }} bg={"white"} p={"2rem"} shadow={"md"}>
+        <VStack
+            style={{
+                width: currentCita.clienta ? "50%" : "35%",
+            }}
+            bg={"white"}
+            p={"2rem"}
+            shadow={"md"}
+        >
             <Heading color={"pink.600"}>Resumen</Heading>
 
             <VStack
@@ -114,7 +181,10 @@ export default function OrderSummary({
                 mt={"1rem"}
                 mb={"2rem"}
             >
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <LuCalendar1 />
                         <Text>Fecha: </Text>
@@ -127,78 +197,100 @@ export default function OrderSummary({
                     >
                         {/* {selectedDate && formatFechaDMY(selectedDate)} */}
                         {/* {selectedDate && formatHoyTitle(selectedDate)} */}
-                        {dateObj && `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
+                        {dateObj &&
+                            `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
                     </Text>
                 </HStack>
 
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <LuReceiptText />
                         <Text>Servicio: </Text>
                     </HStack>
                     <HStack>
-                        {!citaID && currentCita.servicio && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Servicio");
+                        {!citaID &&
+                            currentCita.servicio && (
+                                <Text
+                                    _hover={{
+                                        cursor: "pointer",
                                     }}
-                                />
-                            </Text>
-                        )}
+                                >
+                                    <FaRegSquareMinus
+                                        onClick={() => {
+                                            handleCurrentStage(
+                                                "Servicio"
+                                            );
+                                        }}
+                                    />
+                                </Text>
+                            )}
                         <Text
                             textAlign={"right"}
                             textDecor={
-                                currentCita.servicio ? "underline" : "none"
+                                currentCita.servicio
+                                    ? "underline"
+                                    : "none"
                             }
                             fontWeight={700}
                             color={"pink.600"}
                         >
                             {currentCita.servicio
-                                ? currentCita.servicio.servicio
+                                ? currentCita.servicio
+                                      .servicio
                                 : "--"}
                         </Text>
                     </HStack>
                 </HStack>
 
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <LuBedSingle />
                         <Text>Lashista: </Text>
                     </HStack>
                     <HStack>
-                        {!citaID && currentCita.lashista && (
-                            <Text
-                                _hover={{
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <FaRegSquareMinus
-                                    onClick={() => {
-                                        handleCurrentStage("Lashista");
+                        {!citaID &&
+                            currentCita.lashista && (
+                                <Text
+                                    _hover={{
+                                        cursor: "pointer",
                                     }}
-                                />
-                            </Text>
-                        )}
+                                >
+                                    <FaRegSquareMinus
+                                        onClick={() => {
+                                            handleCurrentStage(
+                                                "Lashista"
+                                            );
+                                        }}
+                                    />
+                                </Text>
+                            )}
                         <Text
                             textDecor={
-                                currentCita.lashista ? "underline" : "none"
+                                currentCita.lashista
+                                    ? "underline"
+                                    : "none"
                             }
                             fontWeight={700}
                             color={"pink.600"}
                         >
                             {currentCita.lashista
-                                ? currentCita.lashista.nombre
+                                ? currentCita.lashista
+                                      .nombre
                                 : "--"}
                         </Text>
                     </HStack>
                 </HStack>
 
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <FaRegClock />
                         <Text>Hora: </Text>
@@ -212,31 +304,43 @@ export default function OrderSummary({
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentStage("Horario");
+                                        handleCurrentStage(
+                                            "Horario"
+                                        );
                                     }}
                                 />
                             </Text>
                         )}
                         <Text
                             textDecor={
-                                currentCita.horario ? "underline" : "none"
+                                currentCita.horario
+                                    ? "underline"
+                                    : "none"
                             }
                             fontWeight={700}
                             color={"pink.600"}
                         >
                             {currentCita.horario
-                                ? (currentCita.horario.hora).replace("+", "*").replace("-", "*")
+                                ? currentCita.horario.hora
+                                      .replace("+", "*")
+                                      .replace("-", "*")
                                 : "--"}
                         </Text>
                     </HStack>
                 </HStack>
 
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <IoPersonOutline />
                         <Text>Clienta: </Text>
                     </HStack>
-                    <HStack>
+                    <HStack
+                        w={"100%"}
+                        justifyContent={"end"}
+                    >
                         {!citaID && currentCita.clienta && (
                             <Text
                                 _hover={{
@@ -245,17 +349,21 @@ export default function OrderSummary({
                             >
                                 <FaRegSquareMinus
                                     onClick={() => {
-                                        handleCurrentStage("Clienta");
+                                        handleCurrentStage(
+                                            "Clienta"
+                                        );
                                     }}
                                 />
                             </Text>
                         )}
                         <Text
                             textAlign={"right"}
-                            // w={"85%"}
-                            truncate
+                            maxWidth={"75%"}
+                            // truncate
                             textDecor={
-                                currentCita.clienta ? "underline" : "none"
+                                currentCita.clienta
+                                    ? "underline"
+                                    : "none"
                             }
                             fontWeight={700}
                             color={"pink.600"}
@@ -267,14 +375,62 @@ export default function OrderSummary({
                     </HStack>
                 </HStack>
 
-                <HStack w={"100%"} justify={"space-between"}>
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
+                    <HStack>
+                        <RiDiscountPercentLine />
+                        <Text>Tiene Descuento: </Text>
+                    </HStack>
+                    <HStack>
+                        {loadingDescuentos && (
+                            <Spinner color={"pink.500"} />
+                        )}
+                        <Text
+                            textAlign={"right"}
+                            // w={"85%"}
+                            truncate
+                            fontWeight={700}
+                            color={"pink.600"}
+                        >
+                            {!tieneDescuento &&
+                                !loadingDescuentos &&
+                                "--"}
+                            {tieneDescuento &&
+                                tieneDescuento.aplica ==
+                                    false &&
+                                `No Aplica (${tieneDescuento.total} servicios)`}
+                        </Text>
+                        {tieneDescuento &&
+                            tieneDescuento.aplica && (
+                                <Badge
+                                    shadow={"sm"}
+                                    variant={"solid"}
+                                    colorPalette={"purple"}
+                                    px={"1rem"}
+                                    py={"0.2rem"}
+                                >
+                                    {`SI (${tieneDescuento.total} Servicios) `}
+                                    <IoIosStar />
+                                </Badge>
+                            )}
+                    </HStack>
+                </HStack>
+
+                <HStack
+                    w={"100%"}
+                    justify={"space-between"}
+                >
                     <HStack>
                         <PiCashRegisterBold />
                         <Text>Total: </Text>
                     </HStack>
                     <Text
                         textDecor={
-                            currentCita.servicio && mp ? "underline" : "none"
+                            currentCita.servicio && mp
+                                ? "underline"
+                                : "none"
                         }
                         fontWeight={700}
                         color={"pink.600"}
@@ -295,7 +451,11 @@ export default function OrderSummary({
             {!citaID && agendarLoading != true && (
                 <Button
                     // disabled={mp == []  ? false : true}
-                    disabled={mp?.length == 0 || mp == null ? true : false}
+                    disabled={
+                        mp?.length == 0 || mp == null
+                            ? true
+                            : false
+                    }
                     onClick={handleAgendar}
                     size={"lg"}
                     bg={"pink.500"}
@@ -304,11 +464,37 @@ export default function OrderSummary({
                     Confirmar y Agendar
                 </Button>
             )}
+
+<style>
+    {`
+        .link-to:hover {
+            cursor: pointer;
+        }
+    `}
+</style>
+            {citaID && (
+                <Heading
+                    className="link-to"
+                    fontWeight={500}
+                    textDecor={"underline"}
+                    size={"lg"}
+                    mt={"1rem"}
+                    onClick={() => {
+                        NextNav.push(`/citas/${citaID}`);
+                    }}
+                >
+                    Ir a Cita
+                </Heading>
+            )}
         </VStack>
     );
 }
 
-export function SelectMetodoPago({ w = "100%", value = null, citaID = null }) {
+export function SelectMetodoPago({
+    w = "100%",
+    value = null,
+    citaID = null,
+}) {
     const [mp, setMp] = useMetodoPago();
 
     useEffect(() => {
@@ -349,15 +535,17 @@ export function SelectMetodoPago({ w = "100%", value = null, citaID = null }) {
             <Portal>
                 <Select.Positioner>
                     <Select.Content>
-                        {metodosPago.items.map((metodoPago) => (
-                            <Select.Item
-                                item={metodoPago}
-                                key={metodoPago.value}
-                            >
-                                {metodoPago.label}
-                                <Select.ItemIndicator />
-                            </Select.Item>
-                        ))}
+                        {metodosPago.items.map(
+                            (metodoPago) => (
+                                <Select.Item
+                                    item={metodoPago}
+                                    key={metodoPago.value}
+                                >
+                                    {metodoPago.label}
+                                    <Select.ItemIndicator />
+                                </Select.Item>
+                            )
+                        )}
                     </Select.Content>
                 </Select.Positioner>
             </Portal>
@@ -369,9 +557,16 @@ function CitaExito() {
     const [agendarLoading] = useAgendarLoading();
 
     return (
-        <VStack gap={"1rem"} align={"center"} w={"100%"}>
+        <VStack
+            gap={"1rem"}
+            align={"center"}
+            w={"100%"}
+        >
             {agendarLoading == true && (
-                <Spinner size={"md"} color={"pink.500"} />
+                <Spinner
+                    size={"md"}
+                    color={"pink.500"}
+                />
             )}
             {agendarLoading == false && (
                 <>
@@ -382,7 +577,9 @@ function CitaExito() {
                         textAlign={"center"}
                     >
                         <Alert.Indicator />
-                        <Alert.Title>¡Cita Agendada Exitosamente!</Alert.Title>
+                        <Alert.Title>
+                            ¡Cita Agendada Exitosamente!
+                        </Alert.Title>
                     </Alert.Root>
                     {/* <Button colorPalette={"green"}>
                         Enviar Ticket
