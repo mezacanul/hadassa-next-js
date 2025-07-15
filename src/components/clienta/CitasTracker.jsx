@@ -25,7 +25,7 @@ export default function CitasTracker({ citas }) {
         const detalle = {};
 
         citas.forEach((cita) => {
-            if (cita.pagado == 1) {
+            if (cita.pagado == 1 && cita.status != 0) {
                 if (detalle[cita.servicio]) {
                     detalle[cita.servicio] += 1;
                 } else {
@@ -83,13 +83,21 @@ function CitasPagadas({ data }) {
             shadow={"sm"}
             p={"1rem"}
         >
-            <HStack mb={"1rem"}>
-                <Heading>
-                    <TfiReceipt />
-                </Heading>
-                <Heading color={"pink.500"}>
-                    {"Citas Pagadas"}
-                </Heading>
+            <HStack
+                mb={"1rem"}
+                w={"100%"}
+                justifyContent={"space-between"}
+            >
+                <HStack>
+                    <Heading>
+                        <TfiReceipt />
+                    </Heading>
+                    <Heading color={"pink.500"}>
+                        {"Citas Pagadas"}
+                    </Heading>
+                </HStack>
+
+                <Heading>{getTotal(data)}</Heading>
             </HStack>
             <VStack
                 alignItems={"start"}
@@ -233,4 +241,12 @@ function CitaRow({ cita }) {
             </Table.Cell>
         </Table.Row>
     );
+}
+
+function getTotal(indexedCitas){
+    let total = 0
+    Object.keys(indexedCitas).forEach((servicio)=>{
+        total = total + indexedCitas[servicio]
+    })
+    return total 
 }

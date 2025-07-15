@@ -16,8 +16,8 @@ export default async function handler(req, res) {
                 FROM citas
                 WHERE 
                     clienta_id = ? AND
-                    servicio_id = ? 
-                    AND pagado = 1`,
+                    servicio_id = ? AND 
+                    pagado = 1`,
                 [
                     clienta,
                     servicio
