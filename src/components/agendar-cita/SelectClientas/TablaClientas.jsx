@@ -1,5 +1,11 @@
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
-import { Button, Box, Spinner } from "@chakra-ui/react";
+import { CDN } from "@/config/cdn";
+import {
+    Button,
+    Box,
+    Spinner,
+    Image,
+} from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
 import "@/config/agGridSetup";
 
@@ -8,7 +14,30 @@ export default function TablaClientas({
     clientas,
     searchTerm,
 }) {
+    const flexStyle = {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    };
+
     const columnDefs = [
+        {
+            headerName: "Foto",
+            cellRenderer: ({ data }) => (
+                <Image
+                    src={`${CDN}/img/clientas/${
+                        data.foto_clienta ||
+                        "avatar-woman.png"
+                    }`}
+                    w={"3rem"}
+                    h={"3rem"}
+                    rounded={"full"}
+                    objectFit={"cover"}
+                />
+            ),
+            flex: 1,
+            cellStyle: flexStyle,
+        },
         {
             headerName: "Nombre Completo",
             // field: "nombres",
@@ -16,7 +45,9 @@ export default function TablaClientas({
                 `${params.data.nombres} ${params.data.apellidos}`,
             flex: 3,
             cellStyle: {
-                verticalAlign: "middle",
+                ...flexStyle,
+                justifyContent: "start",
+                marginLeft: "0.2rem",
             },
         },
         {
@@ -25,24 +56,21 @@ export default function TablaClientas({
                 `+${params.data.lada} ${params.data.telefono}`,
             flex: 2,
             cellStyle: {
-                verticalAlign: "middle",
+                ...flexStyle,
+                justifyContent: "start",
+                marginLeft: "0.2rem",
             },
         },
         {
             headerName: "Acciones",
+            flex: 3,
             cellRenderer: ({ data }) => (
                 <SelectClienta
                     data={data}
                     setCurrentPaso={setCurrentPaso}
                 />
             ),
-            cellStyle: {
-                textAlign: "center",
-                marginTop: "0.5rem",
-                marginBottom: "0.5rem",
-                verticalAlign: "middle",
-            },
-            flex: 1,
+            cellStyle: flexStyle,
         },
     ];
 
@@ -64,7 +92,6 @@ export default function TablaClientas({
                     rowData={clientas}
                     columnDefs={columnDefs}
                     rowHeight={60}
-                    // headerbackgroundColor={"#434343"}
                     quickFilterText={searchTerm}
                 />
             )}

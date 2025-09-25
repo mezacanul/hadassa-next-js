@@ -35,7 +35,10 @@ import OrderSummary from "@/components/agendar-cita/OrderSummary";
 import { CDN } from "@/config/cdn";
 import LashistaCard from "@/components/lashista/LashistaCard";
 import TablaClientas from "@/components/agendar-cita/SelectClientas/TablaClientas";
+import { SelectClientas } from "@/components/agendar-cita/SelectClientas";
 
+const useSearchServicio = Singleton("");
+export const useSearchTerm = Singleton("");
 export const useCurrentCita = Singleton({
     servicio: null,
     lashista: null,
@@ -284,8 +287,6 @@ export default function NuevaCita() {
     );
 }
 
-export const useSearchTerm = Singleton("");
-
 export function ActionsClienta({
     clientasState,
     setClientasState,
@@ -403,8 +404,6 @@ function SelectLashistas({ lashistas, selectedDate }) {
         </Grid>
     );
 }
-
-const useSearchServicio = Singleton("");
 
 function SearchServicio() {
     const [searchServicio, setSearchServicio] =
@@ -559,274 +558,6 @@ function SelectHorarios({ selectedDate }) {
     );
 }
 
-export function SelectClientas({
-    clientasState,
-    setClientasState,
-    currentPaso,
-    setCurrentPaso,
-}) {
-    // const [clientas, setClientas] = useClientas();
-    const [searchTerm, setSearchTerm] = useSearchTerm();
-    const [clientas] = loadHook("useClientas");
-
-    useEffect(() => {
-        return setSearchTerm("");
-    }, []);
-
-    return (
-        <Box
-            h={"100%"}
-            w={"100%"}
-            pb={"1rem"}
-        >
-            {clientas && clientasState == "buscar" && (
-                <TablaClientas
-                    clientas={clientas}
-                    setCurrentPaso={setCurrentPaso}
-                    searchTerm={searchTerm}
-                />
-            )}
-            <Grid
-                gridTemplateColumns={"repeat(2, 1fr)"}
-                gap={"2rem"}
-            >
-                {clientasState == "nueva" && (
-                    <NuevaClienta
-                        setClientasState={setClientasState}
-                        setCurrentPaso={setCurrentPaso}
-                        currentPaso={currentPaso}
-                    />
-                )}
-            </Grid>
-        </Box>
-    );
-}
-
-export function NuevaClienta({
-    setClientasState,
-    setCurrentPaso,
-    currentPaso,
-}) {
-    const [insertedID, setInsertedID] = useState(null);
-    const [currentCita, setCurrentCita] = useCurrentCita();
-    const [nuevaClienta, setNuevaClienta] = useState({
-        foto_clienta: null,
-        nombres: "",
-        apellidos: "",
-        lada: "52",
-        telefono: "",
-    });
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setNuevaClienta((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleAdd = () => {
-        console.log(nuevaClienta);
-        axios
-            .post("/api/clientas", nuevaClienta)
-            .then((nuevaClientaResp) => {
-                console.log(nuevaClientaResp.data);
-                if (
-                    nuevaClientaResp.status == 201 &&
-                    nuevaClientaResp.data.uuid
-                ) {
-                    setInsertedID(
-                        nuevaClientaResp.data.uuid
-                    );
-                    setCurrentCita({
-                        ...currentCita,
-                        clienta: {
-                            ...nuevaClienta,
-                            id: nuevaClientaResp.data.uuid,
-                        },
-                    });
-                }
-            });
-    };
-
-    return (
-        <>
-            <ClientaCard
-                data={nuevaClienta}
-                currentPaso={currentPaso}
-            />
-            {insertedID && (
-                <VStack
-                    gap={"1rem"}
-                    align={"start"}
-                    w={"100%"}
-                >
-                    <Alert.Root
-                        status="success"
-                        w={"100%"}
-                        shadow={"md"}
-                    >
-                        <Alert.Indicator />
-                        <Alert.Title>
-                            Clienta Agregada con Exito!
-                        </Alert.Title>
-                    </Alert.Root>
-                    <Button
-                        onClick={() => {
-                            setCurrentPaso("Confirmar");
-                        }}
-                        bg={"pink.500"}
-                    >
-                        Continuar
-                    </Button>
-                </VStack>
-            )}
-            {!insertedID && (
-                <VStack
-                    gap={"1rem"}
-                    align={"start"}
-                >
-                    <Input
-                        bg={"white"}
-                        shadow={"md"}
-                        name="nombres" // Added name attribute
-                        value={nuevaClienta.nombres}
-                        onChange={handleChange}
-                        placeholder="Nombres"
-                    />
-                    <Input
-                        bg={"white"}
-                        shadow={"md"}
-                        name="apellidos" // Added name attribute
-                        value={nuevaClienta.apellidos}
-                        onChange={handleChange}
-                        placeholder="Apellidos"
-                    />
-                    <HStack gap={"1rem"}>
-                        <Input
-                            bg={"white"}
-                            shadow={"md"}
-                            name="lada" // Added name attribute
-                            w={"25%"}
-                            value={nuevaClienta.lada}
-                            onChange={handleChange}
-                            placeholder="Lada"
-                        />
-                        <Input
-                            bg={"white"}
-                            shadow={"md"}
-                            name="telefono" // Added name attribute
-                            value={nuevaClienta.telefono}
-                            onChange={handleChange}
-                            placeholder="Telefono/Celular"
-                        />
-                    </HStack>
-                    <HStack gap={"1rem"}>
-                        <Button
-                            onClick={handleAdd}
-                            bg={"pink.500"}
-                        >
-                            Agregar y Seleccionar
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                setClientasState("buscar");
-                            }}
-                            bg={"gray.500"}
-                        >
-                            Cancelar
-                        </Button>
-                    </HStack>
-                </VStack>
-            )}
-        </>
-    );
-}
-
-export function ClientaCard({
-    data,
-    currentPaso,
-    setCurrentPaso,
-}) {
-    const [currentCita, setCurrentCita] = useCurrentCita();
-
-    return (
-        <Card.Root
-            bg={"white"}
-            shadow={"lg"}
-            flexDirection="row"
-            overflow="hidden"
-            maxW="xl"
-        >
-            <Image
-                objectFit="cover"
-                w={"8rem"}
-                src={
-                    data.foto_clienta
-                        ? `${CDN}/img/clientas/${data.foto_clienta}`
-                        : `${CDN}/img/clientas/avatar-woman.png`
-                }
-                alt=""
-            />
-            <Box>
-                <Card.Body>
-                    <Card.Title mb="2">
-                        {data.nombres || data.apellidos
-                            ? `${data.nombres} ${data.apellidos}`
-                            : "--"}
-                    </Card.Title>
-                    <Card.Description>
-                        {data.lada || data.telefono
-                            ? `+${data.lada} ${data.telefono}`
-                            : "--"}
-                    </Card.Description>
-                </Card.Body>
-                <Card.Footer>
-                    {/* {currentPaso != "Lista" && data.id && (
-                        <Button
-                            disabled={
-                                data.id ? false : true
-                            }
-                            onClick={() => {
-                                setCurrentPaso("Confirmar");
-                                setCurrentCita({
-                                    ...currentCita,
-                                    clienta: data,
-                                });
-                            }}
-                            bg={"pink.500"}
-                            size={"sm"}
-                        >
-                            Seleccionar
-                        </Button>
-                    )} */}
-                    {currentPaso != "Lista" && !data.id && (
-                        <Badge colorPalette={"green"}>
-                            Nueva Clienta
-                        </Badge>
-                    )}
-                </Card.Footer>
-            </Box>
-        </Card.Root>
-    );
-}
-
-function formatCurrentDate(date) {
-    // const { date } = router.query;
-    const [day, month, year] = date.split("-");
-    const USDate = new Date(`${month}-${day}-${year}`);
-    // console.log(USDate);
-    const formattedDate = USDate.toLocaleDateString(
-        "es-MX",
-        {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-        }
-    );
-    return formattedDate;
-}
-
 function ServicioCard({ data }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
     return (
@@ -909,18 +640,3 @@ function ServicioCard({ data }) {
         </Card.Root>
     );
 }
-
-function getUniqueTimeSlots(data) {
-    const allTimes = Object.values(data).flat();
-    return [...new Set(allTimes)];
-}
-
-// function sortHours(hours) {
-//     return hours.sort((a, b) => {
-//         const getTimeValue = (time) => {
-//             const [h, m] = time.replace(/[+-]/, '').split(':').map(Number);
-//             return h * 60 + m;
-//         };
-//         return getTimeValue(a) - getTimeValue(b);
-//     });
-// }
