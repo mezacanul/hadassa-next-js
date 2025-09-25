@@ -123,7 +123,8 @@ export default async function handler(req, res) {
                         servicios.servicio, 
                         servicios.precio, 
                         servicios.minutos as minutos, 
-                        lashistas.nombre as lashista 
+                        lashistas.nombre as lashista,
+                        pagado
                     FROM 
                       citas 
                     LEFT JOIN clientas ON citas.clienta_id = clientas.id

@@ -199,6 +199,12 @@ export default function Hoy() {
                                 opacity: 0.9;
                             }
                             
+                            #Hoy .fc-v-event:has(.pagado) {
+                                background-color:rgb(231, 252, 232) !important;
+                                border: 2px solid rgb(37, 136, 32) !important;
+                                opacity: 0.9;
+                            }
+                            
                             #Hoy .fc-v-event:has(.pendiente) {
                                 background-color: #fefce8 !important;
                                 border: 2px solid #eab308 !important;
@@ -265,23 +271,33 @@ export default function Hoy() {
                             // console.log(arg.event);
                             const { extendedProps } =
                                 arg.event;
+                            const getStatus = (
+                                pagado,
+                                status
+                            ) => {
+                                if (
+                                    pagado == 1 &&
+                                    status == 2
+                                ) {
+                                    return "pagado";
+                                } else if (status == 1) {
+                                    return "pendiente";
+                                } else if (status == 2) {
+                                    return "confirmado";
+                                } else if (status == 3) {
+                                    return "evento";
+                                }
+                            };
                             return (
                                 <div
                                     style={{
                                         marginLeft:
                                             "0.3rem",
                                     }}
-                                    className={
-                                        (extendedProps.status ==
-                                            1 &&
-                                            "pendiente") ||
-                                        (extendedProps.status ==
-                                            2 &&
-                                            "confirmado") ||
-                                        (extendedProps.status ==
-                                            3 &&
-                                            "evento")
-                                    }
+                                    className={`${getStatus(
+                                        extendedProps.pagado,
+                                        extendedProps.status
+                                    )}`}
                                 >
                                     <b
                                         style={{
@@ -290,7 +306,7 @@ export default function Hoy() {
                                             color: "black",
                                         }}
                                     >
-                                        {arg.event.title}
+                                        {arg.event.title || "AUSENTE"}
                                     </b>
                                     <p
                                         style={{
