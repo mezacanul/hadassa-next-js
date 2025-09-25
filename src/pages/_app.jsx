@@ -1,7 +1,11 @@
 // import "@/styles/globals.css";
 import { Provider } from "@/components/ui/provider";
 import Head from "next/head";
-import { loadHook, Nexus, Singleton } from "@/utils/lattice-design";
+import {
+    loadHook,
+    Nexus,
+    Singleton,
+} from "@/utils/lattice-design";
 import {
     Box,
     Button,
@@ -23,9 +27,14 @@ import { useRouter as useNextNav } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { FaHouseChimney } from "react-icons/fa6";
-import { useAgendarLoading, useCitaID, useMetodoPago } from "@/components/agendar-cita/OrderSummary";
+import {
+    useAgendarLoading,
+    useCitaID,
+    useMetodoPago,
+} from "@/components/agendar-cita/OrderSummary";
 import FechaLogo from "@/components/FechaLogo";
 import "@/styles/Tables.css";
+import API from "@/services/main";
 
 // import 'ag-grid-community/styles/ag-grid.css'
 // import 'ag-grid-community/styles/ag-theme-alpine.css'
@@ -37,21 +46,30 @@ Nexus({
     useSelectedDate: Singleton(null),
     useEvents: Singleton([]),
     useLoader: Singleton(true),
+    useClientas: Singleton(null),
 });
 
 export default function App({ Component, pageProps }) {
     const [DOM] = loadHook("useDOM");
     const [loading, setLoading] = loadHook("useLoader");
+    const [clientas, setClientas] = loadHook("useClientas");
 
     useEffect(() => {
         setLoading(false);
+        API.clientas.getClientas().then((clientasResp) => {
+            console.log("clientasResp", clientasResp);
+            setClientas(clientasResp.data);
+        });
     }, []);
 
     return (
         <Provider>
             <Head>
                 <title>{DOM.title}</title>
-                <link rel="icon" href="/favicon.png" />
+                <link
+                    rel="icon"
+                    href="/favicon.png"
+                />
             </Head>
 
             <Box
@@ -60,7 +78,12 @@ export default function App({ Component, pageProps }) {
                 overflow={loading ? "hidden" : "default"}
             >
                 <NavBar h={"11vh"} />
-                <VStack id="Body" px={"2rem"} py={"2.5rem"} minH={"90vh"}>
+                <VStack
+                    id="Body"
+                    px={"2rem"}
+                    py={"2.5rem"}
+                    minH={"90vh"}
+                >
                     <Component {...pageProps} />
                 </VStack>
                 <Loader loading={loading} />
@@ -88,7 +111,11 @@ function Loader({ loading }) {
                 h={"100%"}
             >
                 <Box transform={"scale(2)"}>
-                    <Spinner size="xl" color="pink.500" borderWidth={"2px"} />
+                    <Spinner
+                        size="xl"
+                        color="pink.500"
+                        borderWidth={"2px"}
+                    />
                 </Box>
             </HStack>
         </Box>
@@ -102,46 +129,48 @@ function NavBar({ h }) {
     const [events] = loadHook("useEvents");
     const [currentPath, setCurrentPath] = useState(null);
     const [loading, setLoading] = loadHook("useLoader");
-    const [DOM, setDOM] = loadHook("useDOM")
+    const [DOM, setDOM] = loadHook("useDOM");
 
     const [citaID, setCitaID] = useCitaID();
     const [mp, setMp] = useMetodoPago();
-    const [agendarLoading, setAgendarLoading] = useAgendarLoading();
+    const [agendarLoading, setAgendarLoading] =
+        useAgendarLoading();
 
     useEffect(() => {
         console.log("route", router);
     }, [router]);
-    
+
     useEffect(() => {
         switch (router.pathname) {
             case "/":
-                setDOM({title: "Hadassa Cerón | Inicio"})
+                setDOM({ title: "Hadassa Cerón | Inicio" });
                 break;
             case "/citas":
-                setDOM({title: "Citas"})
+                setDOM({ title: "Citas" });
                 break;
             case "/citas/[citaID]":
-                setDOM({title: "Cita"})
+                setDOM({ title: "Cita" });
                 break;
             case "/clientas":
-                setDOM({title: "Clientas"})
+                setDOM({ title: "Clientas" });
                 break;
             case "/clientas/[clientaID]":
-                setDOM({title: "Clienta"})
+                setDOM({ title: "Clienta" });
                 break;
             case "/lashistas":
-                setDOM({title: "Lashistas"})
+                setDOM({ title: "Lashistas" });
                 break;
             case "/lashistas/[lashistaID]":
-                setDOM({title: "Lashista"})
+                setDOM({ title: "Lashista" });
                 break;
             case "/servicios":
-                setDOM({title: "Servicios"})
+                setDOM({ title: "Servicios" });
                 break;
             case "/servicios/[servicioID]":
-                setDOM({title: "Servicio"})
+                setDOM({ title: "Servicio" });
                 break;
-            default: break;
+            default:
+                break;
         }
     }, [router.pathname]);
 
@@ -164,21 +193,45 @@ function NavBar({ h }) {
             zIndex={10}
             borderBottom={"2px solid #ec4899"}
         >
-            <HStack gap={"0.5rem"} justify={"space-between"}>
-                {router.pathname == "/" 
-                    && <FechaLogo selectedDate={selectedDate}/>}
+            <HStack
+                gap={"0.5rem"}
+                justify={"space-between"}
+            >
+                {router.pathname == "/" && (
+                    <FechaLogo
+                        selectedDate={selectedDate}
+                    />
+                )}
                 {router.pathname != "/" && (
-                    <Heading fontWeight={300} size={"4xl"} fontStyle={"italic"}>
-                        {router.pathname == "/nueva-cita/[date]" && "Agendar Cita"}
-                        {router.pathname == "/citas" && "Citas"}
-                        {router.pathname == "/citas/[citaID]" && "Cita"}
-                        {router.pathname == "/clientas" && "Clientas"}
-                        {router.pathname == "/clientas/[clientaID]" && "Clienta"}
-                        {router.pathname == "/servicios" && "Servicios"}
-                        {router.pathname == "/servicios/[servicioID]" && "Servicio"}
-                        {router.pathname == "/lashistas" && "Lashistas"}
-                        {router.pathname == "/lashistas/[lashistaID]" && "Lashista"}
-                        {router.pathname == "/dev" && "Developer"}
+                    <Heading
+                        fontWeight={300}
+                        size={"4xl"}
+                        fontStyle={"italic"}
+                    >
+                        {router.pathname ==
+                            "/nueva-cita/[date]" &&
+                            "Agendar Cita"}
+                        {router.pathname == "/citas" &&
+                            "Citas"}
+                        {router.pathname ==
+                            "/citas/[citaID]" && "Cita"}
+                        {router.pathname == "/clientas" &&
+                            "Clientas"}
+                        {router.pathname ==
+                            "/clientas/[clientaID]" &&
+                            "Clienta"}
+                        {router.pathname == "/servicios" &&
+                            "Servicios"}
+                        {router.pathname ==
+                            "/servicios/[servicioID]" &&
+                            "Servicio"}
+                        {router.pathname == "/lashistas" &&
+                            "Lashistas"}
+                        {router.pathname ==
+                            "/lashistas/[lashistaID]" &&
+                            "Lashista"}
+                        {router.pathname == "/dev" &&
+                            "Developer"}
                     </Heading>
                 )}
                 {/* format(info.date, "yyyy-MM-dd"); */}
@@ -204,27 +257,33 @@ function NavBar({ h }) {
                                 formattedDate
                             );
                             // console.log(formattedDate); // "26-04-2025"
-                            NextNav.push(`/nueva-cita/${formattedDate}`);
+                            NextNav.push(
+                                `/nueva-cita/${formattedDate}`
+                            );
                         }}
                     >
                         <HStack>
-                            <Text fontSize={"1rem"}>{`Agendar`}</Text>
+                            <Text
+                                fontSize={"1rem"}
+                            >{`Agendar`}</Text>
                             <LuCalendarPlus />
                         </HStack>
                     </Button>
                 ) : (
                     <Button
                         onClick={() => {
-                            setMp([])
-                            setCitaID(null)
-                            setAgendarLoading(null)
+                            setMp([]);
+                            setCitaID(null);
+                            setAgendarLoading(null);
                             setLoading(true);
                             NextNav.push("/");
                         }}
                         bg={"pink.500"}
                     >
                         <HStack>
-                            <Text fontSize={"1rem"}>{`Inicio`}</Text>
+                            <Text
+                                fontSize={"1rem"}
+                            >{`Inicio`}</Text>
                             <FaHouseChimney />
                         </HStack>
                     </Button>

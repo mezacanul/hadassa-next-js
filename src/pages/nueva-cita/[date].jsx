@@ -19,14 +19,22 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { loadHook, Singleton } from "@/utils/lattice-design";
-import { formatFechaDMY, formatHoyTitle, getDateObject } from "@/utils/main";
+import {
+    loadHook,
+    Singleton,
+} from "@/utils/lattice-design";
+import {
+    formatFechaDMY,
+    formatHoyTitle,
+    getDateObject,
+} from "@/utils/main";
 import axios from "axios";
 import { FaCreditCard } from "react-icons/fa6";
 import { FaMoneyBill } from "react-icons/fa";
 import OrderSummary from "@/components/agendar-cita/OrderSummary";
 import { CDN } from "@/config/cdn";
 import LashistaCard from "@/components/lashista/LashistaCard";
+import TablaClientas from "@/components/agendar-cita/SelectClientas/TablaClientas";
 
 export const useCurrentCita = Singleton({
     servicio: null,
@@ -40,7 +48,9 @@ export default function NuevaCita() {
     const router = useRouter();
     const { date } = router.query;
     const [DOM, setDOM] = loadHook("useDOM");
-    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
+    const [selectedDate, setSelectedDate] = loadHook(
+        "useSelectedDate"
+    );
     const [currentCita, setCurrentCita] = useCurrentCita();
 
     const [servicios, setServicios] = useState(null);
@@ -48,17 +58,19 @@ export default function NuevaCita() {
     // const [horarios, setHorarios] = useState(null);
     // const [clientas, setClientas] = useState(null);
 
-    const [currentPaso, setCurrentPaso] = useState("Servicio");
-    const [clientasState, setClientasState] = useState("buscar");
+    const [currentPaso, setCurrentPaso] =
+        useState("Servicio");
+    const [clientasState, setClientasState] =
+        useState("buscar");
     const [loading, setLoading] = loadHook("useLoader");
 
-    const [dateObj, setDateObj] = useState(null)
+    const [dateObj, setDateObj] = useState(null);
 
     useEffect(() => {
         if (selectedDate) {
-            setDateObj(getDateObject(selectedDate))
+            setDateObj(getDateObject(selectedDate));
         }
-    }, [selectedDate])
+    }, [selectedDate]);
 
     useEffect(() => {
         setDOM({ title: "Agendar Cita" });
@@ -69,7 +81,10 @@ export default function NuevaCita() {
         ]).then(([serviciosResp, lashistasResp]) => {
             setServicios(serviciosResp.data);
             setLashistas(lashistasResp.data);
-            console.log(serviciosResp.data, lashistasResp.data);
+            console.log(
+                serviciosResp.data,
+                lashistasResp.data
+            );
         });
 
         setLoading(false);
@@ -113,14 +128,18 @@ export default function NuevaCita() {
     }, [router.isReady, date]);
 
     return (
-        <Box w={"100%"} mb={"2rem"} h={"85vh"}>
+        <Box
+            w={"100%"}
+            mb={"2rem"}
+            h={"85vh"}
+        >
             <Heading
                 textAlign={
                     currentCita.servicio &&
-                        currentCita.lashista &&
-                        currentCita.horario &&
-                        currentPaso == "Confirmar" &&
-                        currentCita.clienta
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentPaso == "Confirmar" &&
+                    currentCita.clienta
                         ? "center"
                         : "left"
                 }
@@ -129,15 +148,19 @@ export default function NuevaCita() {
                 mb={"1rem"}
             >
                 {/* {formatHoyTitle(selectedDate)} */}
-                {dateObj && `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
+                {dateObj &&
+                    `${dateObj.dayName} de ${dateObj.monthYearFormat}`}
             </Heading>
 
             {currentCita.servicio &&
-                currentCita.lashista &&
-                currentCita.horario &&
-                currentPaso == "Confirmar" &&
-                currentCita.clienta ? null : (
-                <Heading color={"pink.600"} mb={"2rem"}>
+            currentCita.lashista &&
+            currentCita.horario &&
+            currentPaso == "Confirmar" &&
+            currentCita.clienta ? null : (
+                <Heading
+                    color={"pink.600"}
+                    mb={"2rem"}
+                >
                     Seleccionar {currentPaso}:
                 </Heading>
             )}
@@ -146,9 +169,9 @@ export default function NuevaCita() {
                 w={"100%"}
                 justify={
                     currentCita.servicio &&
-                        currentCita.lashista &&
-                        currentCita.horario &&
-                        currentCita.clienta
+                    currentCita.lashista &&
+                    currentCita.horario &&
+                    currentCita.clienta
                         ? "center"
                         : "space-between"
                 }
@@ -156,41 +179,66 @@ export default function NuevaCita() {
                 align={"start"}
             >
                 {currentCita.servicio &&
-                    currentCita.lashista &&
-                    currentCita.horario &&
-                    currentPaso == "Confirmar" &&
-                    currentCita.clienta ? null : (
-                    <VStack style={{ width: "65%" }} align={"start"}>
+                currentCita.lashista &&
+                currentCita.horario &&
+                currentPaso == "Confirmar" &&
+                currentCita.clienta ? null : (
+                    <VStack
+                        style={{ width: "65%" }}
+                        align={"start"}
+                    >
                         {currentCita.servicio &&
                             currentCita.lashista &&
                             currentCita.horario &&
                             !currentCita.clienta && (
                                 <ActionsClienta
-                                    clientasState={clientasState}
-                                    setClientasState={setClientasState}
-                                    currentPaso={currentPaso}
+                                    clientasState={
+                                        clientasState
+                                    }
+                                    setClientasState={
+                                        setClientasState
+                                    }
+                                    currentPaso={
+                                        currentPaso
+                                    }
                                 />
                             )}
-                        {!currentCita.servicio && <SearchServicio />}
+                        {!currentCita.servicio && (
+                            <SearchServicio />
+                        )}
 
-                        <Box w={"100%"} maxH={"65vh"} overflowY={"scroll"}>
+                        <Box
+                            w={"100%"}
+                            maxH={"65vh"}
+                            overflowY={"scroll"}
+                        >
                             {!currentCita.servicio && (
-                                <SelectServicios servicios={servicios} />
+                                <SelectServicios
+                                    servicios={servicios}
+                                />
                             )}
                             {lashistas &&
                                 currentCita.servicio &&
                                 !currentCita.lashista && (
                                     <SelectLashistas
-                                        lashistas={lashistas}
-                                        selectedDate={selectedDate}
+                                        lashistas={
+                                            lashistas
+                                        }
+                                        selectedDate={
+                                            selectedDate
+                                        }
                                     />
                                 )}
                             {currentCita.servicio &&
                                 currentCita.lashista &&
                                 !currentCita.horario && (
                                     <SelectHorarios
-                                        currentCita={currentCita}
-                                        selectedDate={selectedDate}
+                                        currentCita={
+                                            currentCita
+                                        }
+                                        selectedDate={
+                                            selectedDate
+                                        }
                                     />
                                 )}
 
@@ -199,10 +247,18 @@ export default function NuevaCita() {
                                 currentCita.horario && (
                                     // !currentCita.clienta && (
                                     <SelectClientas
-                                        clientasState={clientasState}
-                                        setClientasState={setClientasState}
-                                        setCurrentPaso={setCurrentPaso}
-                                        currentPaso={currentPaso}
+                                        clientasState={
+                                            clientasState
+                                        }
+                                        setClientasState={
+                                            setClientasState
+                                        }
+                                        setCurrentPaso={
+                                            setCurrentPaso
+                                        }
+                                        currentPaso={
+                                            currentPaso
+                                        }
                                     />
                                 )}
                         </Box>
@@ -216,9 +272,9 @@ export default function NuevaCita() {
                     stage={currentPaso}
                     disabled={
                         currentCita.servicio &&
-                            currentCita.lashista &&
-                            currentCita.horario &&
-                            currentCita.clienta
+                        currentCita.lashista &&
+                        currentCita.horario &&
+                        currentCita.clienta
                             ? false
                             : true
                     }
@@ -236,7 +292,8 @@ export function ActionsClienta({
     currentPaso,
 }) {
     const [searchTerm, setSearchTerm] = useSearchTerm();
-    const handleChange = (e) => setSearchTerm(e.target.value);
+    const handleChange = (e) =>
+        setSearchTerm(e.target.value);
 
     return (
         <Grid
@@ -246,7 +303,9 @@ export function ActionsClienta({
             gap={"2rem"}
         >
             <Input
-                disabled={clientasState == "buscar" ? false : true}
+                disabled={
+                    clientasState == "buscar" ? false : true
+                }
                 shadow={"md"}
                 bg={"white"}
                 size={"sm"}
@@ -257,7 +316,11 @@ export function ActionsClienta({
             {currentPaso != "Lista" && (
                 <GridItem alignSelf={"start"}>
                     <Button
-                        disabled={clientasState == "buscar" ? false : true}
+                        disabled={
+                            clientasState == "buscar"
+                                ? false
+                                : true
+                        }
                         onClick={() => {
                             setClientasState("nueva");
                         }}
@@ -273,7 +336,7 @@ export function ActionsClienta({
 }
 
 function SelectLashistas({ lashistas, selectedDate }) {
-    const [disponibles, setDisponibles] = useState(null)
+    const [disponibles, setDisponibles] = useState(null);
     const [currentCita, setCurrentCita] = useCurrentCita();
     const send = {
         fecha: formatFechaDMY(selectedDate),
@@ -285,46 +348,77 @@ function SelectLashistas({ lashistas, selectedDate }) {
     };
 
     useEffect(() => {
-        const promises = []
-        lashistas.forEach(lsh => {
-            promises.push(axios.post("/api/citas", {...send, lashista_id: lsh.id}))
+        const promises = [];
+        lashistas.forEach((lsh) => {
+            promises.push(
+                axios.post("/api/citas", {
+                    ...send,
+                    lashista_id: lsh.id,
+                })
+            );
         });
         Promise.all(promises)
-            .then((responses)=>{
-                const available = responses.map((resp)=>{
-                    return resp.data.length
-                })
+            .then((responses) => {
+                const available = responses.map((resp) => {
+                    return resp.data.length;
+                });
                 console.log(available);
-                setDisponibles(available)
+                setDisponibles(available);
             })
             .catch((error) => {
                 console.error("Error:", error);
             });
         // console.log(promises);
-    }, [])
+    }, []);
 
     return (
-        <Grid w="100%" gridTemplateColumns={"1fr 1fr 1fr"} gap={"2rem"} pb={"1rem"}>
-            {!disponibles && <Spinner color="pink.500" borderWidth="4px" size={"lg"} />}
-            {disponibles && lashistas.map((lashista, i) => {
-                return (
-                    <GridItem key={lashista.id} display={disponibles[i] > 0 ? "initial" : "none"}>
-                        <LashistaCard data={lashista} />
-                    </GridItem>
-                );
-            })}
+        <Grid
+            w="100%"
+            gridTemplateColumns={"1fr 1fr 1fr"}
+            gap={"2rem"}
+            pb={"1rem"}
+        >
+            {!disponibles && (
+                <Spinner
+                    color="pink.500"
+                    borderWidth="4px"
+                    size={"lg"}
+                />
+            )}
+            {disponibles &&
+                lashistas.map((lashista, i) => {
+                    return (
+                        <GridItem
+                            key={lashista.id}
+                            display={
+                                disponibles[i] > 0
+                                    ? "initial"
+                                    : "none"
+                            }
+                        >
+                            <LashistaCard data={lashista} />
+                        </GridItem>
+                    );
+                })}
         </Grid>
     );
 }
 
-const useSearchServicio = Singleton("")
+const useSearchServicio = Singleton("");
 
 function SearchServicio() {
-    const [searchServicio, setSearchServicio] = useSearchServicio()
-    const handleChange = (e) => setSearchServicio(e.target.value);
+    const [searchServicio, setSearchServicio] =
+        useSearchServicio();
+    const handleChange = (e) =>
+        setSearchServicio(e.target.value);
 
     return (
-        <Grid w="100%" mb={"1rem"} gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
+        <Grid
+            w="100%"
+            mb={"1rem"}
+            gridTemplateColumns={"repeat(2, 1fr)"}
+            gap={"2rem"}
+        >
             <Input
                 shadow={"md"}
                 bg={"white"}
@@ -334,31 +428,47 @@ function SearchServicio() {
                 onChange={handleChange}
             />
         </Grid>
-    )
+    );
 }
 
 function SelectServicios({ servicios }) {
-    const [searchServicio, setSearchServicio] = useSearchServicio()
+    const [searchServicio, setSearchServicio] =
+        useSearchServicio();
     useEffect(() => {
-        return (setSearchServicio(""))
-    }, [])
+        return setSearchServicio("");
+    }, []);
     return (
         <>
             {!servicios && (
-                <Spinner color="pink.500" borderWidth="4px" size={"xl"} />
+                <Spinner
+                    color="pink.500"
+                    borderWidth="4px"
+                    size={"xl"}
+                />
             )}
-            <Grid w="100%" gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
-                {servicios && servicios
-                    .filter((servicio) =>
-                        (servicio.servicio).toLowerCase().includes(searchServicio.toLowerCase())
-                    )
-                    .map((servicio) => {
-                        return (
-                            <GridItem key={servicio.id}>
-                                <ServicioCard data={servicio} />
-                            </GridItem>
-                        );
-                    })}
+            <Grid
+                w="100%"
+                gridTemplateColumns={"repeat(2, 1fr)"}
+                gap={"2rem"}
+            >
+                {servicios &&
+                    servicios
+                        .filter((servicio) =>
+                            servicio.servicio
+                                .toLowerCase()
+                                .includes(
+                                    searchServicio.toLowerCase()
+                                )
+                        )
+                        .map((servicio) => {
+                            return (
+                                <GridItem key={servicio.id}>
+                                    <ServicioCard
+                                        data={servicio}
+                                    />
+                                </GridItem>
+                            );
+                        })}
             </Grid>
         </>
     );
@@ -374,28 +484,46 @@ function SelectHorarios({ selectedDate }) {
             servicio_id: currentCita.servicio.id,
             lashista_id: currentCita.lashista.id,
             action: "getHorariosDisponibles",
-            dev: true
+            dev: true,
         };
         console.log("send", send);
         console.log(JSON.stringify(send));
 
-        axios.post("/api/citas", send).then((horariosResp) => {
-            // const uniqueTimeSlots = getUniqueTimeSlots(
-            //     horariosResp.data.horariosDispPorCama
-            // );
-            console.log(horariosResp.data);
-            // console.log(uniqueTimeSlots);
-            setHorarios(horariosResp.data);
-        });
+        axios
+            .post("/api/citas", send)
+            .then((horariosResp) => {
+                // const uniqueTimeSlots = getUniqueTimeSlots(
+                //     horariosResp.data.horariosDispPorCama
+                // );
+                console.log(horariosResp.data);
+                // console.log(uniqueTimeSlots);
+                setHorarios(horariosResp.data);
+            });
     }, []);
 
     return (
-        <HStack justify={"center"} h={"50vh"} align={"center"} w={"100%"}>
+        <HStack
+            justify={"center"}
+            h={"50vh"}
+            align={"center"}
+            w={"100%"}
+        >
             {!horarios && (
-                <Spinner color="pink.500" borderWidth="4px" size={"lg"} />
+                <Spinner
+                    color="pink.500"
+                    borderWidth="4px"
+                    size={"lg"}
+                />
             )}
 
-            {horarios && horarios.length == 0 && <Heading w={"100%"} textAlign={"center"}>No hay horarios disponibles</Heading>}
+            {horarios && horarios.length == 0 && (
+                <Heading
+                    w={"100%"}
+                    textAlign={"center"}
+                >
+                    No hay horarios disponibles
+                </Heading>
+            )}
 
             {horarios && horarios.length > 0 && (
                 <Grid
@@ -417,7 +545,9 @@ function SelectHorarios({ selectedDate }) {
                                 bg={"pink.500"}
                                 key={hr.hora}
                             >
-                                {hr.hora.replace("-", "*").replace("+", "*")}
+                                {hr.hora
+                                    .replace("-", "*")
+                                    .replace("+", "*")}
                             </Button>
                             // <Heading key={hr.hora}>{hr.hora}</Heading>
                         );
@@ -429,51 +559,38 @@ function SelectHorarios({ selectedDate }) {
     );
 }
 
-export const useClientas = Singleton(null);
-
 export function SelectClientas({
     clientasState,
     setClientasState,
     currentPaso,
     setCurrentPaso,
 }) {
-    const [clientas, setClientas] = useClientas();
+    // const [clientas, setClientas] = useClientas();
     const [searchTerm, setSearchTerm] = useSearchTerm();
+    const [clientas] = loadHook("useClientas");
 
     useEffect(() => {
-        axios.get("/api/clientas").then((clientasResp) => {
-            // console.log(clientasResp.data);
-            setClientas(clientasResp.data);
-        });
         return setSearchTerm("");
     }, []);
 
     return (
-        <Box h={"100%"} w={"100%"} pb={"1rem"}>
-            <Grid gridTemplateColumns={"repeat(2, 1fr)"} gap={"2rem"}>
-                {/* <Button bg={"pink.500"}>Nueva</Button> */}
-                {!clientas && (
-                    <Spinner color="pink.500" borderWidth="4px" size={"xl"} />
-                )}
-                {clientas &&
-                    clientasState == "buscar" &&
-                    clientas
-                        .filter((clienta) =>
-                            (clienta.nombres + " " + clienta.apellidos)
-                                .toLowerCase()
-                                .includes(searchTerm.toLowerCase())
-                        )
-                        .map((clienta) => {
-                            return (
-                                <ClientaCard
-                                    key={clienta.id}
-                                    data={clienta}
-                                    setCurrentPaso={setCurrentPaso}
-                                    currentPaso={currentPaso}
-                                />
-                            );
-                        })}
-                {clientas && clientasState == "nueva" && (
+        <Box
+            h={"100%"}
+            w={"100%"}
+            pb={"1rem"}
+        >
+            {clientas && clientasState == "buscar" && (
+                <TablaClientas
+                    clientas={clientas}
+                    setCurrentPaso={setCurrentPaso}
+                    searchTerm={searchTerm}
+                />
+            )}
+            <Grid
+                gridTemplateColumns={"repeat(2, 1fr)"}
+                gap={"2rem"}
+            >
+                {clientasState == "nueva" && (
                     <NuevaClienta
                         setClientasState={setClientasState}
                         setCurrentPaso={setCurrentPaso}
@@ -510,29 +627,49 @@ export function NuevaClienta({
 
     const handleAdd = () => {
         console.log(nuevaClienta);
-        axios.post("/api/clientas", nuevaClienta).then((nuevaClientaResp) => {
-            console.log(nuevaClientaResp.data);
-            if (nuevaClientaResp.status == 201 && nuevaClientaResp.data.uuid) {
-                setInsertedID(nuevaClientaResp.data.uuid);
-                setCurrentCita({
-                    ...currentCita,
-                    clienta: {
-                        ...nuevaClienta,
-                        id: nuevaClientaResp.data.uuid,
-                    },
-                });
-            }
-        });
+        axios
+            .post("/api/clientas", nuevaClienta)
+            .then((nuevaClientaResp) => {
+                console.log(nuevaClientaResp.data);
+                if (
+                    nuevaClientaResp.status == 201 &&
+                    nuevaClientaResp.data.uuid
+                ) {
+                    setInsertedID(
+                        nuevaClientaResp.data.uuid
+                    );
+                    setCurrentCita({
+                        ...currentCita,
+                        clienta: {
+                            ...nuevaClienta,
+                            id: nuevaClientaResp.data.uuid,
+                        },
+                    });
+                }
+            });
     };
 
     return (
         <>
-            <ClientaCard data={nuevaClienta} currentPaso={currentPaso} />
+            <ClientaCard
+                data={nuevaClienta}
+                currentPaso={currentPaso}
+            />
             {insertedID && (
-                <VStack gap={"1rem"} align={"start"} w={"100%"}>
-                    <Alert.Root status="success" w={"100%"} shadow={"md"}>
+                <VStack
+                    gap={"1rem"}
+                    align={"start"}
+                    w={"100%"}
+                >
+                    <Alert.Root
+                        status="success"
+                        w={"100%"}
+                        shadow={"md"}
+                    >
                         <Alert.Indicator />
-                        <Alert.Title>Clienta Agregada con Exito!</Alert.Title>
+                        <Alert.Title>
+                            Clienta Agregada con Exito!
+                        </Alert.Title>
                     </Alert.Root>
                     <Button
                         onClick={() => {
@@ -545,7 +682,10 @@ export function NuevaClienta({
                 </VStack>
             )}
             {!insertedID && (
-                <VStack gap={"1rem"} align={"start"}>
+                <VStack
+                    gap={"1rem"}
+                    align={"start"}
+                >
                     <Input
                         bg={"white"}
                         shadow={"md"}
@@ -582,7 +722,10 @@ export function NuevaClienta({
                         />
                     </HStack>
                     <HStack gap={"1rem"}>
-                        <Button onClick={handleAdd} bg={"pink.500"}>
+                        <Button
+                            onClick={handleAdd}
+                            bg={"pink.500"}
+                        >
                             Agregar y Seleccionar
                         </Button>
                         <Button
@@ -600,10 +743,12 @@ export function NuevaClienta({
     );
 }
 
-export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
+export function ClientaCard({
+    data,
+    currentPaso,
+    setCurrentPaso,
+}) {
     const [currentCita, setCurrentCita] = useCurrentCita();
-    const [loading, setLoading] = loadHook("useLoader");
-    const router = useRouter();
 
     return (
         <Card.Root
@@ -637,9 +782,11 @@ export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
                     </Card.Description>
                 </Card.Body>
                 <Card.Footer>
-                    {currentPaso != "Lista" && data.id && (
+                    {/* {currentPaso != "Lista" && data.id && (
                         <Button
-                            disabled={data.id ? false : true}
+                            disabled={
+                                data.id ? false : true
+                            }
                             onClick={() => {
                                 setCurrentPaso("Confirmar");
                                 setCurrentCita({
@@ -652,20 +799,11 @@ export function ClientaCard({ data, currentPaso, setCurrentPaso }) {
                         >
                             Seleccionar
                         </Button>
-                    )}
+                    )} */}
                     {currentPaso != "Lista" && !data.id && (
-                        <Badge colorPalette={"green"}>Nueva Clienta</Badge>
-                    )}
-                    {currentPaso == "Lista" && (
-                        <Button
-                            onClick={() => {
-                                setLoading(true);
-                                router.push(`/clientas/${data.id}`);
-                            }}
-                            bg={"pink.500"}
-                        >
-                            Editar
-                        </Button>
+                        <Badge colorPalette={"green"}>
+                            Nueva Clienta
+                        </Badge>
                     )}
                 </Card.Footer>
             </Box>
@@ -678,18 +816,25 @@ function formatCurrentDate(date) {
     const [day, month, year] = date.split("-");
     const USDate = new Date(`${month}-${day}-${year}`);
     // console.log(USDate);
-    const formattedDate = USDate.toLocaleDateString("es-MX", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+    const formattedDate = USDate.toLocaleDateString(
+        "es-MX",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        }
+    );
     return formattedDate;
 }
 
 function ServicioCard({ data }) {
     const [currentCita, setCurrentCita] = useCurrentCita();
     return (
-        <Card.Root overflow="hidden" size="sm" shadow={"md"}>
+        <Card.Root
+            overflow="hidden"
+            size="sm"
+            shadow={"md"}
+        >
             <Image
                 objectFit="cover"
                 // maxW="5rem"
@@ -699,24 +844,33 @@ function ServicioCard({ data }) {
             />
             <Box>
                 <Card.Body>
-                    <Card.Title mb="2" color={"pink.600"}>
+                    <Card.Title
+                        mb="2"
+                        color={"pink.600"}
+                    >
                         {data.servicio}
-                        {data.tipo.includes("combo") && <Badge
-                            size={"md"}
-                            ms={"0.5rem"}
-                            colorPalette={"purple"}
-                        >
-                            Combo
-                        </Badge>}
-                        {data.tipo == "combo-hadassa" && <Badge
-                            size={"md"}
-                            ms={"0.5rem"}
-                            colorPalette={"purple"}
-                        >
-                            Hadassa
-                        </Badge>}
+                        {data.tipo.includes("combo") && (
+                            <Badge
+                                size={"md"}
+                                ms={"0.5rem"}
+                                colorPalette={"purple"}
+                            >
+                                Combo
+                            </Badge>
+                        )}
+                        {data.tipo == "combo-hadassa" && (
+                            <Badge
+                                size={"md"}
+                                ms={"0.5rem"}
+                                colorPalette={"purple"}
+                            >
+                                Hadassa
+                            </Badge>
+                        )}
                     </Card.Title>
-                    <Card.Description>{data.descripcion}</Card.Description>
+                    <Card.Description>
+                        {data.descripcion}
+                    </Card.Description>
                 </Card.Body>
                 <Card.Footer
                     justifyContent={"space-between"}
@@ -726,10 +880,12 @@ function ServicioCard({ data }) {
                     <HStack alignItems={"end"}>
                         <VStack>
                             <Badge colorPalette={"green"}>
-                                <FaMoneyBill />${data.precio}
+                                <FaMoneyBill />$
+                                {data.precio}
                             </Badge>
                             <Badge colorPalette={"blue"}>
-                                <FaCreditCard />${data.precio_tarjeta}
+                                <FaCreditCard />$
+                                {data.precio_tarjeta}
                             </Badge>
                         </VStack>
                         <Badge colorPalette={"blue"}>
@@ -740,7 +896,10 @@ function ServicioCard({ data }) {
                         size={"sm"}
                         bg={"pink.500"}
                         onClick={() => {
-                            setCurrentCita({ ...currentCita, servicio: data });
+                            setCurrentCita({
+                                ...currentCita,
+                                servicio: data,
+                            });
                         }}
                     >
                         Seleccionar
