@@ -6,7 +6,13 @@ import {
     VStack,
     Heading,
     Alert,
+    Spinner,
+    HStack,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import TablaCitas from "./TablaCitas";
+import CitaRow from "./CitaRow";
 
 export default function ModalEliminarClienta({
     open,
@@ -14,9 +20,29 @@ export default function ModalEliminarClienta({
     clientaToDelete,
     setClientaToDelete,
 }) {
+    const [citas, setCitas] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const loadCitas = (clientaID) => {
+        axios
+            .get(`/api/citas?clienta=${clientaID}`)
+            .then((citasResp) => {
+                console.log(citasResp.data);
+                setCitas(citasResp.data);
+                setLoading(false);
+            });
+    };
+
+    useEffect(() => {
+        if (open === true) {
+            setLoading(true);
+            loadCitas(clientaToDelete.id);
+        }
+    }, [open]);
+
     return (
         <Dialog.Root
-            size={"md"}
+            size={"lg"}
             lazyMount
             open={open}
             onOpenChange={(e) => setOpen(e.open)}
@@ -32,38 +58,76 @@ export default function ModalEliminarClienta({
                         </Dialog.Header>
 
                         <Dialog.Body>
-                            <VStack
-                                alignItems={"start"}
-                                gap={"1rem"}
-                                mb={"1rem"}
-                            >
-                                <DatosClienta
-                                    clientaToDelete={
-                                        clientaToDelete
+                            {loading && (
+                                <HStack
+                                    justifyContent={
+                                        "center"
                                     }
-                                />
-                                <AlertCitasPendientes />
-                                {/* Lista de citas pendientes */}
-                            </VStack>
+                                    alignItems={"center"}
+                                    py={"2rem"}
+                                    w={"100%"}
+                                    h={"100%"}
+                                >
+                                    <Spinner
+                                        color="pink.500"
+                                        borderWidth="4px"
+                                        size={"xl"}
+                                    />
+                                </HStack>
+                            )}
+                            {!loading && (
+                                <VStack
+                                    alignItems={"start"}
+                                    gap={"1rem"}
+                                    mb={"2rem"}
+                                >
+                                    <DatosClienta
+                                        clientaToDelete={
+                                            clientaToDelete
+                                        }
+                                    />
 
-                            <Text
+                                    <AlertCitasPendientes />
+                                    <TablaCitas>
+                                        {citas &&
+                                            citas.map(
+                                                (cita) => (
+                                                    <CitaRow
+                                                        key={
+                                                            cita.id
+                                                        }
+                                                        cita={
+                                                            cita
+                                                        }
+                                                    />
+                                                )
+                                            )}
+                                    </TablaCitas>
+                                </VStack>
+                            )}
+
+                            {/* <Text
                                 textAlign={"right"}
                                 fontWeight={"bold"}
                             >
                                 {"¿Desear continuar?"}
-                            </Text>
+                            </Text> */}
                         </Dialog.Body>
 
-                        <Dialog.Footer>
-                            <Dialog.ActionTrigger asChild>
-                                <Button bg="gray.400">
-                                    {"Cancelar"}
+                        {!loading && (
+                            <Dialog.Footer>
+                                <Dialog.ActionTrigger
+                                    asChild
+                                >
+                                    <Button bg="gray.400">
+                                        {"Cancelar"}
+                                    </Button>
+                                </Dialog.ActionTrigger>
+                                <Button bg="red.600">
+                                    {"Eliminar"}
                                 </Button>
-                            </Dialog.ActionTrigger>
-                            <Button bg="red.600">
-                                {"Eliminar"}
-                            </Button>
-                        </Dialog.Footer>
+                            </Dialog.Footer>
+                        )}
                     </Dialog.Content>
                 </Dialog.Positioner>
             </Portal>
