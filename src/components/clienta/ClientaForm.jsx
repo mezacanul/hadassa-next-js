@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import FotoPerfilInput from "./FotoPerfilInput";
 import DatosForm from "./DatosForm";
 
-export default function ClientaForm({ clienta }) {
+export default function ClientaForm({
+    clienta,
+    setOpen,
+    setClientaToDelete,
+}) {
     const [fullNombre, setFullNombre] = useState(
         `${clienta.nombres} ${clienta.apellidos}`
     );
@@ -27,6 +31,8 @@ export default function ClientaForm({ clienta }) {
             <DatosForm
                 clienta={clienta}
                 setFullNombre={setFullNombre}
+                setOpen={setOpen}
+                setClientaToDelete={setClientaToDelete}
             />
         </VStack>
     );

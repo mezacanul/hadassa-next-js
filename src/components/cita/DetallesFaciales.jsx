@@ -14,12 +14,13 @@ const lorem =
 export default function DetallesFaciales({
     clientaID,
     detalles,
+    w = "70%",
 }) {
     return (
         <VStack
             align={"start"}
             gap={"1.5rem"}
-            w={"100%"}
+            w={w}
         >
             <Heading size={"2xl"}>
                 Fotos y Detalles:

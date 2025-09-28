@@ -64,7 +64,7 @@ export default function FotoPerfilInput({clienta}) {
     return (
         <>
             <HStack align={"end"} gap={"1.5rem"}>
-                <Image shadow={"md"} rounded={"lg"} w={"10rem"}
+                <Image shadow={"md"} rounded={"lg"} w={"10rem"} bg={"white"}
                     src={
                         fotoClienta
                             ? `${CDN}/img/clientas/${fotoClienta}`

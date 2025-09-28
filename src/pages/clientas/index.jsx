@@ -13,12 +13,16 @@ import { AgGridReact } from "ag-grid-react";
 import "@/config/agGridSetup";
 import axios from "axios";
 import { useRouter } from "next/router";
+import ModalEliminarClienta from "@/components/clienta/ModalEliminarClienta";
 
 export default function Clientas() {
     const [loading, setLoading] = loadHook("useLoader");
     const [clientas, setClientas] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [total, setTotal] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [clientaToDelete, setClientaToDelete] =
+        useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -52,14 +56,19 @@ export default function Clientas() {
         },
         {
             headerName: "Acciones",
-            cellRenderer: EditButton,
+            cellRenderer: ({ data }) => (
+                <Actions
+                    data={data}
+                    setOpen={setOpen}
+                    setClientaToDelete={setClientaToDelete}
+                />
+            ),
+            flex: 2,
             cellStyle: {
-                textAlign: "center",
-                marginTop: "0.5rem",
-                marginBottom: "0.5rem",
-                verticalAlign: "middle",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
             },
-            flex: 1,
         },
     ];
 
@@ -91,10 +100,15 @@ export default function Clientas() {
                         columnDefs={columnDefs}
                         rowHeight={60}
                         quickFilterText={searchTerm}
-                        headerbackgroundColor={"#434343"}
                     />
                 )}
             </Box>
+            <ModalEliminarClienta
+                open={open}
+                setOpen={setOpen}
+                clientaToDelete={clientaToDelete || {}}
+                setClientaToDelete={setClientaToDelete}
+            />
         </Box>
     );
 }
@@ -131,18 +145,29 @@ function ActionsClienta({
     );
 }
 
-function EditButton({ data }) {
+function Actions({ data, setOpen, setClientaToDelete }) {
     const [loading, setLoading] = loadHook("useLoader");
     const router = useRouter();
     return (
-        <Button
-            onClick={() => {
-                setLoading(true);
-                router.push(`/clientas/${data.id}`);
-            }}
-            bg={"pink.500"}
-        >
-            Editar
-        </Button>
+        <HStack gap={"1rem"}>
+            <Button
+                onClick={() => {
+                    setLoading(true);
+                    router.push(`/clientas/${data.id}`);
+                }}
+                bg={"pink.500"}
+            >
+                {"Editar"}
+            </Button>
+            <Button
+                onClick={() => {
+                    setOpen(true);
+                    setClientaToDelete(data);
+                }}
+                bg={"gray.500"}
+            >
+                {"Eliminar"}
+            </Button>
+        </HStack>
     );
 }
