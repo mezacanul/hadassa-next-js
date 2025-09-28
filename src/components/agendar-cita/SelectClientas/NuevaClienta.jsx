@@ -1,12 +1,11 @@
 import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Button,
     Input,
     HStack,
     VStack,
-    Alert,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { ClientaCard } from "./ClientaCard";
@@ -17,6 +16,10 @@ export default function NuevaClienta({
     setClientasState,
     setCurrentPaso,
     currentPaso,
+    setSearchTerm,
+    setIsDuplicate,
+    setIsEmpty,
+    isDuplicate,
 }) {
     const [insertedID, setInsertedID] = useState(null);
     const [currentCita, setCurrentCita] = useCurrentCita();
@@ -29,6 +32,19 @@ export default function NuevaClienta({
     });
     const [clientas, setClientas] = loadHook("useClientas");
 
+    const nombresClientas = useMemo(() => {
+        return clientas.map(
+            (clienta) =>
+                `${clienta.nombres} ${clienta.apellidos}`
+        );
+    }, [clientas]);
+    const telefonoClientas = useMemo(() => {
+        return clientas.map(
+            (clienta) =>
+                `${clienta.lada} ${clienta.telefono}`
+        );
+    }, [clientas]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNuevaClienta((prev) => ({
@@ -38,7 +54,13 @@ export default function NuevaClienta({
     };
 
     const handleAdd = () => {
+        const isValid = validateClienta();
+        if (!isValid) {
+            return;
+        }
+        
         console.log(nuevaClienta);
+        return;
         axios
             .post("/api/clientas", nuevaClienta)
             .then((nuevaClientaResp) => {
@@ -85,17 +107,49 @@ export default function NuevaClienta({
             });
     };
 
+    const validateClienta = () => {
+        // Verify if the clienta is empty
+        if (
+            !nuevaClienta.nombres ||
+            !nuevaClienta.apellidos ||
+            !nuevaClienta.lada ||
+            !nuevaClienta.telefono
+        ) {
+            setIsEmpty(true);
+            setSearchTerm("");
+            setIsDuplicate(false);
+            return false
+        }
+        setIsEmpty(false);
+
+        // Verify if the clienta's name is already in the list
+        const nombreNuevaClienta = `${nuevaClienta.nombres} ${nuevaClienta.apellidos}`;
+        if (nombresClientas.includes(nombreNuevaClienta)) {
+            setIsDuplicate(true);
+            setSearchTerm(nombreNuevaClienta);
+            return false;
+        }
+        // Verify if the clienta's phone number is already in the list
+        const telefonoNuevaClienta = `${nuevaClienta.lada} ${nuevaClienta.telefono}`;
+        if (
+            telefonoClientas.includes(telefonoNuevaClienta)
+        ) {
+            setIsDuplicate(true);
+            setSearchTerm(telefonoNuevaClienta);
+            return false;
+        }
+        // If the clienta is not in the list, reset search term and duplicate
+        setIsDuplicate(false);
+        setSearchTerm("");
+        return true;
+    };
+
     return (
         <>
             <ClientaCard
                 data={nuevaClienta}
                 currentPaso={currentPaso}
             />
-            {insertedID && (
-                <SuccessAddedClienta
-                    setCurrentPaso={setCurrentPaso}
-                />
-            )}
             {!insertedID && (
                 <ClientaForm
                     nuevaClienta={nuevaClienta}
@@ -103,6 +157,15 @@ export default function NuevaClienta({
                     handleChange={handleChange}
                     handleAdd={handleAdd}
                     setClientasState={setClientasState}
+                    setIsDuplicate={setIsDuplicate}
+                    setSearchTerm={setSearchTerm}
+                    isDuplicate={isDuplicate}
+                    setIsEmpty={setIsEmpty}
+                />
+            )}
+            {insertedID && (
+                <SuccessAddedClienta
+                    setCurrentPaso={setCurrentPaso}
                 />
             )}
         </>
@@ -115,6 +178,10 @@ function ClientaForm({
     handleChange,
     handleAdd,
     setClientasState,
+    setIsDuplicate,
+    setSearchTerm,
+    isDuplicate,
+    setIsEmpty,
 }) {
     return (
         <VStack
@@ -137,25 +204,6 @@ function ClientaForm({
                 onChange={handleChange}
                 placeholder="Apellidos"
             />
-            {/* <HStack gap={"1rem"}>
-                <Input
-                    bg={"white"}
-                    shadow={"md"}
-                    name="lada" // Added name attribute
-                    w={"25%"}
-                    value={nuevaClienta.lada}
-                    onChange={handleChange}
-                    placeholder="Lada"
-                />
-                <Input
-                    bg={"white"}
-                    shadow={"md"}
-                    name="telefono" // Added name attribute
-                    value={nuevaClienta.telefono}
-                    onChange={handleChange}
-                    placeholder="Telefono/Celular"
-                />
-            </HStack> */}
             <PhoneInput
                 clientaForm={nuevaClienta}
                 setClientaForm={setNuevaClienta}
@@ -165,12 +213,16 @@ function ClientaForm({
                 <Button
                     onClick={handleAdd}
                     bg={"pink.500"}
+                    // disabled={isDuplicate}
                 >
                     {"Agregar y Seleccionar"}
                 </Button>
                 <Button
                     onClick={() => {
                         setClientasState("buscar");
+                        setIsDuplicate(false);
+                        setIsEmpty(false);
+                        setSearchTerm("");
                     }}
                     bg={"gray.500"}
                 >

@@ -13,6 +13,7 @@ export default function TablaClientas({
     setCurrentPaso,
     clientas,
     searchTerm,
+    isDuplicate,
 }) {
     const flexStyle = {
         display: "flex",
@@ -77,7 +78,7 @@ export default function TablaClientas({
     return (
         <Box
             w={"100%"}
-            h={"60vh"}
+            h={isDuplicate ? "20vh" : "60vh"}
             id={"AG-Table"}
         >
             {!clientas && (
