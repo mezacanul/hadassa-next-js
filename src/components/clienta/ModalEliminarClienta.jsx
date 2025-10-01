@@ -13,12 +13,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import TablaCitas from "./TablaCitas";
 import CitaRow from "./CitaRow";
+import { format } from "date-fns-tz";
+import { parse, isAfter, isEqual } from "date-fns"; // <-- move to top-level imports
 
 export default function ModalEliminarClienta({
     open,
     setOpen,
     clientaToDelete,
-    setClientaToDelete,
 }) {
     const [citas, setCitas] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -28,7 +29,9 @@ export default function ModalEliminarClienta({
             .get(`/api/citas?clienta=${clientaID}`)
             .then((citasResp) => {
                 console.log(citasResp.data);
-                setCitas(citasResp.data);
+                const citasFiltradas =
+                    citasResp.data.filter(returnPendientes);
+                setCitas(citasFiltradas);
                 setLoading(false);
             });
     };
@@ -39,6 +42,38 @@ export default function ModalEliminarClienta({
             loadCitas(clientaToDelete.id);
         }
     }, [open]);
+
+    function returnPendientes(cita) {
+        const todayMX = new Date(
+            new Date().toLocaleString("en-US", {
+                timeZone: "America/Mexico_City",
+            })
+        );
+        const [day, month, year] = cita.fecha
+            .split("-")
+            .map(Number);
+        const citaDate = new Date(year, month - 1, day);
+
+        todayMX.setHours(0, 0, 0, 0);
+        citaDate.setHours(0, 0, 0, 0);
+
+        const isTodayOrAfter = citaDate >= todayMX;
+
+        console.log(citaDate, todayMX, isTodayOrAfter);
+        return isTodayOrAfter && cita.status != 0;
+    }
+
+    function handleEliminarClienta() {
+        console.log("Eliminar Clienta");
+        const citasIDs = citas.map((cita) => cita.id);
+        const clientaID = clientaToDelete.id;
+        const payload = {
+            citas: citasIDs,
+            clienta: clientaID,
+        };
+        console.log(payload);
+        return;
+    }
 
     return (
         <Dialog.Root
@@ -58,23 +93,7 @@ export default function ModalEliminarClienta({
                         </Dialog.Header>
 
                         <Dialog.Body>
-                            {loading && (
-                                <HStack
-                                    justifyContent={
-                                        "center"
-                                    }
-                                    alignItems={"center"}
-                                    py={"2rem"}
-                                    w={"100%"}
-                                    h={"100%"}
-                                >
-                                    <Spinner
-                                        color="pink.500"
-                                        borderWidth="4px"
-                                        size={"xl"}
-                                    />
-                                </HStack>
-                            )}
+                            {loading && <Loader />}
                             {!loading && (
                                 <VStack
                                     alignItems={"start"}
@@ -87,31 +106,33 @@ export default function ModalEliminarClienta({
                                         }
                                     />
 
-                                    <AlertCitasPendientes />
-                                    <TablaCitas>
-                                        {citas &&
-                                            citas.map(
-                                                (cita) => (
-                                                    <CitaRow
-                                                        key={
-                                                            cita.id
-                                                        }
-                                                        cita={
-                                                            cita
-                                                        }
-                                                    />
-                                                )
-                                            )}
-                                    </TablaCitas>
+                                    <AlertCitasPendientes
+                                        length={
+                                            citas.length
+                                        }
+                                    />
+
+                                    {citas.length > 0 && (
+                                        <TablaCitas>
+                                            {citas &&
+                                                citas.map(
+                                                    (
+                                                        cita
+                                                    ) => (
+                                                        <CitaRow
+                                                            key={
+                                                                cita.id
+                                                            }
+                                                            cita={
+                                                                cita
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                        </TablaCitas>
+                                    )}
                                 </VStack>
                             )}
-
-                            {/* <Text
-                                textAlign={"right"}
-                                fontWeight={"bold"}
-                            >
-                                {"¿Desear continuar?"}
-                            </Text> */}
                         </Dialog.Body>
 
                         {!loading && (
@@ -123,7 +144,12 @@ export default function ModalEliminarClienta({
                                         {"Cancelar"}
                                     </Button>
                                 </Dialog.ActionTrigger>
-                                <Button bg="red.600">
+                                <Button
+                                    onClick={
+                                        handleEliminarClienta
+                                    }
+                                    bg="red.600"
+                                >
                                     {"Eliminar"}
                                 </Button>
                             </Dialog.Footer>
@@ -152,20 +178,40 @@ function DatosClienta({ clientaToDelete }) {
     );
 }
 
-function AlertCitasPendientes() {
+function AlertCitasPendientes({ length }) {
     return (
         <Alert.Root
-            status="error"
+            status={`${length > 0 ? "error" : "success"}`}
             w={"100%"}
             shadow={"md"}
             mb={"1rem"}
         >
             <Alert.Indicator />
             <Alert.Title>
-                {
-                    "Esta acción cancelará todas las citas pendientes con esta clienta."
-                }
+                {`${
+                    length > 0
+                        ? "Esta acción cancelará todas las citas pendientes con esta clienta."
+                        : "No hay citas pendientes con esta clienta."
+                }`}
             </Alert.Title>
         </Alert.Root>
+    );
+}
+
+function Loader() {
+    return (
+        <HStack
+            justifyContent={"center"}
+            alignItems={"center"}
+            py={"3rem"}
+            w={"100%"}
+            h={"100%"}
+        >
+            <Spinner
+                color="pink.500"
+                borderWidth="4px"
+                size={"xl"}
+            />
+        </HStack>
     );
 }

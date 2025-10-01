@@ -61,7 +61,7 @@ export default function CitaRow({ cita }) {
                     shadow={"sm"}
                     fontWeight={600}
                     colorPalette={
-                        cita.pagado == 1 ? "green" : "gray"
+                        cita.pagado == 1 ? "green" : "yellow"
                     }
                 >
                     {cita.pagado == 1
