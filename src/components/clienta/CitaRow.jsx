@@ -33,6 +33,7 @@ export default function CitaRow({ cita }) {
                 {formatHoyTitle(formatFechaDMY(cita.fecha))}
             </Table.Cell>
             <Table.Cell>{cita.hora}</Table.Cell>
+            <Table.Cell>{cita.lashista}</Table.Cell>
             <Table.Cell>
                 <Badge
                     shadow={"sm"}
@@ -61,7 +62,9 @@ export default function CitaRow({ cita }) {
                     shadow={"sm"}
                     fontWeight={600}
                     colorPalette={
-                        cita.pagado == 1 ? "green" : "yellow"
+                        cita.pagado == 1
+                            ? "green"
+                            : "yellow"
                     }
                 >
                     {cita.pagado == 1

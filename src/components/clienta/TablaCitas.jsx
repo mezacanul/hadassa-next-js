@@ -18,19 +18,22 @@ export default function TablaCitas({
                         color={"white"}
                     ></Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Servicio
+                        {"Servicio"}
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Fecha
+                        {"Fecha"}
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Hora
+                        {"Hora"}
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Estado
+                        {"Lashista"}
                     </Table.ColumnHeader>
                     <Table.ColumnHeader color={"white"}>
-                        Pagada
+                        {"Estado"}
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader color={"white"}>
+                        {"Pagada"}
                     </Table.ColumnHeader>
                 </Table.Row>
             </Table.Header>

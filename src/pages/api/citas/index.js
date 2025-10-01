@@ -39,6 +39,7 @@ export default async function handler(req, res) {
                 const query = `
                     SELECT 
                         citas.id,
+                        lashistas.nombre as lashista,
                         servicios.servicio,
                         citas.fecha, 
                         citas.hora,
@@ -46,6 +47,7 @@ export default async function handler(req, res) {
                         citas.pagado
                     FROM citas
                     LEFT JOIN servicios ON citas.servicio_id = servicios.id
+                    LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
                     WHERE clienta_id = ?
                     ORDER BY 
                         citas.fecha DESC,

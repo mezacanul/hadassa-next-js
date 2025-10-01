@@ -13,8 +13,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import TablaCitas from "./TablaCitas";
 import CitaRow from "./CitaRow";
-import { format } from "date-fns-tz";
-import { parse, isAfter, isEqual } from "date-fns"; // <-- move to top-level imports
+import API from "@/services/main";
+import { loadHook } from "@/utils/lattice-design";
 
 export default function ModalEliminarClienta({
     open,
@@ -23,6 +23,8 @@ export default function ModalEliminarClienta({
 }) {
     const [citas, setCitas] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState(false);
+    const [clientas, setClientas] = loadHook("useClientas");
 
     const loadCitas = (clientaID) => {
         axios
@@ -38,6 +40,7 @@ export default function ModalEliminarClienta({
 
     useEffect(() => {
         if (open === true) {
+            setSuccess(false);
             setLoading(true);
             loadCitas(clientaToDelete.id);
         }
@@ -65,14 +68,29 @@ export default function ModalEliminarClienta({
 
     function handleEliminarClienta() {
         console.log("Eliminar Clienta");
-        const citasIDs = citas.map((cita) => cita.id);
+        setLoading(true);
         const clientaID = clientaToDelete.id;
-        const payload = {
-            citas: citasIDs,
-            clienta: clientaID,
-        };
-        console.log(payload);
-        return;
+        const citasIDs = citas.map((cita) => cita.id);
+
+        const promiseCalls = [
+            API.clientas.deleteClienta(clientaID),
+            ...citasIDs.map((citaID) =>
+                API.citas.cancelCita(citaID)
+            ),
+        ];
+        Promise.all(promiseCalls).then((responses) => {
+            console.log(responses);
+            setClientas(
+                clientas.filter(
+                    (clienta) => clienta.id !== clientaID
+                )
+            );
+            setLoading(false);
+            setSuccess(true);
+            setTimeout(() => {
+                setOpen(false);
+            }, 2000);
+        });
     }
 
     return (
@@ -94,7 +112,8 @@ export default function ModalEliminarClienta({
 
                         <Dialog.Body>
                             {loading && <Loader />}
-                            {!loading && (
+                            {success && <Success />}
+                            {!loading && !success && (
                                 <VStack
                                     alignItems={"start"}
                                     gap={"1rem"}
@@ -135,7 +154,7 @@ export default function ModalEliminarClienta({
                             )}
                         </Dialog.Body>
 
-                        {!loading && (
+                        {!loading && !success && (
                             <Dialog.Footer>
                                 <Dialog.ActionTrigger
                                     asChild
@@ -203,7 +222,7 @@ function Loader() {
         <HStack
             justifyContent={"center"}
             alignItems={"center"}
-            py={"3rem"}
+            py={"5rem"}
             w={"100%"}
             h={"100%"}
         >
@@ -212,6 +231,26 @@ function Loader() {
                 borderWidth="4px"
                 size={"xl"}
             />
+        </HStack>
+    );
+}
+
+function Success() {
+    return (
+        <HStack
+            justifyContent={"center"}
+            alignItems={"center"}
+            py={"5rem"}
+            w={"100%"}
+            h={"100%"}
+        >
+            <Text
+                fontSize={"xl"}
+                fontWeight={"bold"}
+                color={"green.600"}
+            >
+                {"Operación completada exitosamente"}
+            </Text>
         </HStack>
     );
 }

@@ -17,7 +17,8 @@ import ModalEliminarClienta from "@/components/clienta/ModalEliminarClienta";
 
 export default function Clientas() {
     const [loading, setLoading] = loadHook("useLoader");
-    const [clientas, setClientas] = useState(null);
+    // const [clientas, setClientas] = useState(null);
+    const [clientas, setClientas] = loadHook("useClientas");
     const [searchTerm, setSearchTerm] = useState("");
     const [total, setTotal] = useState(null);
     const [open, setOpen] = useState(false);
@@ -25,14 +26,14 @@ export default function Clientas() {
         useState(null);
 
     useEffect(() => {
-        setLoading(true);
-        axios.get("/api/clientas").then((clientasResp) => {
-            console.log(clientasResp.data);
-            setClientas(clientasResp.data);
-            setTotal(clientasResp.data.length);
+        if (!clientas) {
+            setLoading(true);
+        } else {
+            console.log(clientas);
+            setTotal(clientas.length);
             setLoading(false);
-        });
-    }, []);
+        }
+    }, [clientas]);
 
     const columnDefs = [
         {
