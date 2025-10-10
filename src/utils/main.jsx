@@ -154,14 +154,14 @@ function getHorarioByDayNumber(lashista, todayNumber) {
                 : JSON.parse(lashista.horarioLV).map((hr) =>
                       getHorarioArray(hr)
                   );
-    
+
         horarioJSON =
             todayNumber > 4
                 ? horarioJSON
                 : horarioJSON.length > 1
                 ? [horarioJSON[0][0], horarioJSON[1][1]]
                 : horarioJSON[0];
-    
+
         return horarioJSON;
     } catch (error) {
         console.log(error);
@@ -170,18 +170,22 @@ function getHorarioByDayNumber(lashista, todayNumber) {
 
 function getMinutes(startTime, endTime) {
     // Parse hours and minutes
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-  
+    const [startHour, startMinute] = startTime
+        .split(":")
+        .map(Number);
+    const [endHour, endMinute] = endTime
+        .split(":")
+        .map(Number);
+
     // Convert to minutes since midnight
     const startTotalMinutes = startHour * 60 + startMinute;
     const endTotalMinutes = endHour * 60 + endMinute;
-  
+
     // Calculate difference
     const diffMinutes = endTotalMinutes - startTotalMinutes;
-  
+
     return diffMinutes;
-  }
+}
 
 function getDayIndexNumber(date) {
     const timeZone = "America/Mexico_City";
@@ -204,7 +208,7 @@ function formatEventos(
             lashistas[ev.id_lashista],
             todayNumber
         );
-        
+
         return {
             title: `${ev.titulo}`,
             horario,
@@ -246,7 +250,21 @@ function getIndexedCollection(arr) {
     return indexedCollection;
 }
 
+function decodeHorario(horarios) {
+    return horarios
+        .split("-")
+        .map((hora) => hora.replace(" ", ""));
+}
+
+function encodeHorarios(horarios) {
+    return horarios.map((horario) => {
+        return `${horario[0]} - ${horario[1]}`;
+    });
+}
+
 export {
+    decodeHorario,
+    encodeHorarios,
     getMinutes,
     getDayIndexNumber,
     getHorarioByDayNumber,
