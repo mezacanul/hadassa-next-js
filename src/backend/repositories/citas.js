@@ -154,9 +154,36 @@ async function createCita(cita, uuid, hora) {
     }
 }
 
+async function getCitasDelDiaByLashista(fecha, lashista) {
+    const query = `
+        SELECT 
+            servicio_id, 
+            servicios.servicio, 
+            fecha, 
+            hora, 
+            duracion as minutos, 
+            cama_id
+        FROM 
+            citas 
+        LEFT JOIN clientas ON citas.clienta_id = clientas.id
+        LEFT JOIN servicios ON citas.servicio_id = servicios.id
+        LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
+        WHERE 
+            fecha = ? 
+        AND citas.lashista_id = ? 
+        AND citas.status != 0
+    `;
+    const [rows] = await connection.execute(query, [
+        fecha,
+        lashista,
+    ]);
+    return rows;
+}
+
 export default {
     getByClientaID,
     getByID,
     getByMultipleFilters,
     createCita,
+    getCitasDelDiaByLashista,
 };

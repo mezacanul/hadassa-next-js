@@ -1,3 +1,15 @@
+import { parse, format } from "date-fns";
+import { enUS } from "date-fns/locale";
+
+function getDayName(fecha) {
+    const parsedDate = parse(
+        fecha,
+        "dd-MM-yyyy",
+        new Date()
+    );
+    return format(parsedDate, "eeee", { locale: enUS });
+}
+
 function generarHorarioDelDia({ weekend = false }) {
     const startHour = weekend ? 9 : 9.5;
     const endHour = weekend ? 14.5 : 17.5; // 14:30 or 17:30
@@ -603,4 +615,5 @@ export {
     getAvailable,
     refineHorarios,
     sortByHora,
+    getDayName,
 };

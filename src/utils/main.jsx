@@ -256,6 +256,14 @@ function decodeHorario(horarios) {
         .map((hora) => hora.replace(" ", ""));
 }
 
+function getHorarioObject(horarios) {
+    const horariosArr = decodeHorario(horarios);
+    return {
+        inicio: horariosArr[0],
+        final: horariosArr[1],
+    };
+}
+
 function encodeHorarios(horarios) {
     return horarios.map((horario) => {
         return `${horario[0]} - ${horario[1]}`;
@@ -281,4 +289,5 @@ export {
     formatFechaDMY,
     queryPlusFilters,
     parseQueryFilters,
+    getHorarioObject,
 };

@@ -31,7 +31,7 @@ async function createCita(req) {
         };
     } else {
         return {
-            error: "API Service Error",
+            error: "API Service Error on createCita",
         };
     }
 }
