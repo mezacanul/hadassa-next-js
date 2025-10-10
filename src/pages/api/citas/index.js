@@ -33,71 +33,37 @@ export default async function handler(req, res) {
     try {
         if (req.method === "GET") {
             if (req.query.clienta) {
-                citasController.getByClientaID(req, res);
-                // res.status(200).json(req.query.clienta);
+                console.log("GET BY CLIENTA");
+                const rows =
+                    await citasController.getByClientaID(
+                        req
+                    );
+                res.status(200).json(rows);
             }
             if (req.query.id) {
-                citasController.getByID(req, res);
+                console.log("GET BY ID");
+                const row = await citasController.getByID(
+                    req
+                );
+                res.status(200).json(row);
+            } else {
+                console.log("TEST - MULTIPLE");
+                const rows =
+                    await citasController.getByMultipleFilters(
+                        req
+                    );
+                res.status(200).json(rows);
             }
-            console.log("TEST - MULTIPLE");
-            citasController.getByMultipleFilters(req, res);
         } else if (
             req.method === "POST" &&
             req.body.fecha
         ) {
-            // TO DO:
-            // Separar responsabilidades de API:
-            // citas en POST solo puede agendar citas
-            // para horarios disponibles utilizaremos
-            //     -> horarios?filtro=disponibles&fecha&hora
             if (req.body.action == "agendar") {
-                const cita = req.body;
-                // console.log(cita);
-
-                try {
-                    const [uuidResult] =
-                        await connection.execute(
-                            `SELECT UUID() AS id`
-                        );
-                    const uuid = uuidResult[0].id;
-                    const hora = cita.horario.hora
-                        .replace("-", "")
-                        .replace("+", "");
-
-                    const [mysql_response] =
-                        await connection.execute(
-                            `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, duracion, cama_id, metodo_pago, status, added) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-                            [
-                                uuid,
-                                cita.clienta.id,
-                                cita.servicio.id,
-                                cita.lashista.id,
-                                cita.fecha,
-                                hora,
-                                cita.servicio.minutos,
-                                cita.horario.cama,
-                                cita.metodoPago,
-                                1,
-                            ]
-                        );
-                    if (mysql_response.affectedRows > 0) {
-                        res.status(201).json({
-                            uuid,
-                            inserted:
-                                mysql_response.affectedRows,
-                        });
-                    } else {
-                        res.status(500).json({
-                            error: "Not added",
-                        });
-                    }
-                } catch (insertError) {
-                    return res.status(500).json({
-                        error: "MySQL insertion failed",
-                        details: insertError.message,
-                    });
-                }
+                // const cita = req.body;
+                console.log("AGENDAR");
+                const response =
+                    await citasController.createCita(req);
+                res.status(201).json(response);
             }
 
             // POST: Agendar cita

@@ -1,5 +1,4 @@
 import {
-    formatFechaYMD,
     parseQueryFilters,
     queryPlusFilters,
 } from "@/utils/main";
@@ -113,8 +112,51 @@ async function getByMultipleFilters(reqQuery) {
     return rows;
 }
 
+async function createCita(cita, uuid, hora) {
+    try {
+        const query = `
+        INSERT INTO 
+            citas 
+                (id, 
+                clienta_id, 
+                servicio_id, 
+                lashista_id, 
+                fecha, 
+                hora, 
+                duracion, 
+                cama_id, 
+                metodo_pago, 
+                status, 
+                added
+            ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
+        const [mysql_response] = await connection.execute(
+            query,
+            [
+                uuid,
+                cita.clienta.id,
+                cita.servicio.id,
+                cita.lashista.id,
+                cita.fecha,
+                hora,
+                cita.servicio.minutos,
+                cita.horario.cama,
+                cita.metodoPago,
+                1,
+            ]
+        );
+        return mysql_response;
+    } catch (error) {
+        throw new Error(
+            "MySQL insertion failed:",
+            error.message
+        );
+    }
+}
+
 export default {
     getByClientaID,
     getByID,
     getByMultipleFilters,
+    createCita,
 };
