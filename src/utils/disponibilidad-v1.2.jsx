@@ -110,37 +110,38 @@ function getHorarioLashista(lashista, dayName) {
     }
 }
 
-/**
- * @typedef {Object} Servicio
- * @property {string} servicioID - Unique service identifier.
- * @property {string} servicio - Service name.
- * @property {string[]} horariosOcupados1aCama - Occupied time slots for first bed.
- * @property {string[]} horariosMantener2aCama - Reserved time slots for second bed.
- * @property {number[]} reglasDeServicio - Service rule IDs.
- */
+function horarioJSONToFullArray(horarioJSON) {
+    let nuevoHorario = JSON.parse(horarioJSON);
+    nuevoHorario = nuevoHorario
+        .map((hora) => {
+            return getHorarioObject(hora);
+        })
+        .map((hora) => {
+            return {
+                inicio: encodeHoraToFloat(hora.inicio),
+                final: encodeHoraToFloat(hora.final),
+            };
+        })
+        .map((hora) => {
+            return horarioObjectToFullArray(hora);
+        });
 
-/**
- * @typedef {Object} FamTree
- * @property {string} current - The ID of the current bed.
- * @property {number} currentIDX - The index of the current bed in the loop.
- * @property {string[]} siblings - Array of other bed IDs in the array being looped.
- * @property {number[]} siblingsIDX - Array of indices of other beds in the looping function.
- * @description Object representing the family tree of a bed in a looping context.
- */
-
-/**
- * @typedef {number[]} ReglasDeServicio
- * @variation {[-1,0,1]}
- * @description Reglas de agenda:
- *  - -1: Se mantiene el último intervalo de horario (slot de media hora) en la segunda cama con un signo de -.
- *  -  0: Se mantiene disponible el primer slot horario en la segunda cama.
- *  -  1: Se quitan todos los slots correspondientes a la cita en la segunda cama.
- * @description Duración de cada slot: 30 minutos.
- * @example Ejemplo de slots horarios: ["10:00", "10:30"].
- */
+    if (nuevoHorario.length == 1) {
+        nuevoHorario = [...nuevoHorario[0]];
+    } else if (nuevoHorario.length == 2) {
+        nuevoHorario = [
+            ...nuevoHorario[0],
+            ...nuevoHorario[1],
+        ];
+    }
+    return nuevoHorario;
+}
 
 export {
     generarHorarioDelDia,
     getDayName,
     getHorarioLashista,
+    horarioObjectToFullArray,
+    encodeHoraToFloat,
+    horarioJSONToFullArray,
 };

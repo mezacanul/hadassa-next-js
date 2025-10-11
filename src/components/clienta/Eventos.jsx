@@ -25,7 +25,13 @@ import { format, addDays } from "date-fns";
 import axios from "axios";
 import { useRouter } from "next/router";
 import EventoCard from "./EventoCard";
-import { getFechaLocal } from "@/utils/main";
+import {
+    decodeHorario,
+    encodeHorarios,
+    getFechaLocal,
+    getHorarioObject,
+} from "@/utils/main";
+import { Form } from "react-bootstrap";
 
 export default function Eventos({ w, lashistaID }) {
     const router = useRouter();
@@ -86,17 +92,6 @@ export default function Eventos({ w, lashistaID }) {
                     />
                 )}
 
-            {/* {!currentEvento &&
-                currentView == "tabla" &&
-                eventos && (
-                    <TablaEventos
-                        title={"Pasados"}
-                        eventos={eventos}
-                        setCurrentView={setCurrentView}
-                        setCurrentEvento={setCurrentEvento}
-                    />
-                )} */}
-
             {!currentEvento && currentView == "nuevo" && (
                 <NuevoEvento
                     setCurrentView={setCurrentView}
@@ -125,6 +120,7 @@ const initialForm = {
     fecha_fin: tomorrow,
     hora_init: formatHourMUI("10:00"),
     hora_fin: formatHourMUI("11:00"),
+    horarios: [{ inicio: "09:30", final: "18:00" }],
     notas: "",
 };
 
@@ -146,13 +142,49 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
 
     function handleAgregar() {
         setStatus("loading");
+        const tipo = tipoEvento[0];
+        const {
+            horarios,
+            hora_init,
+            hora_fin,
+            titulo,
+            notas,
+        } = eventoForm;
+        const horariosJSON =
+            tipo == "cambio-horario"
+                ? JSON.stringify(
+                      horarios.map(
+                          (hora) =>
+                              `${hora.inicio} - ${hora.final}`
+                      )
+                  )
+                : null;
+
         const formData = {
             ...eventoForm,
-            hora_init: eventoForm.hora_init.format("HH:mm"),
-            hora_fin: eventoForm.hora_fin.format("HH:mm"),
+            titulo:
+                titulo != ""
+                    ? titulo
+                    : tipo == "cambio-horario"
+                    ? "Cambio de Horario"
+                    : "No Disponible",
+            notas: notas != "" ? notas : null,
+            fecha_fin: null,
+            hora_init:
+                tipo == "horas-libres"
+                    ? hora_init.format("HH:mm")
+                    : null,
+            hora_fin:
+                tipo == "horas-libres"
+                    ? hora_fin.format("HH:mm")
+                    : null,
             lashistaID,
-            tipo: tipoEvento[0],
+            tipo,
+            horarios: horariosJSON,
         };
+        console.log(formData);
+        // setStatus("success");
+        // return;
         axios
             .post("/api/eventos", formData)
             .then((axiosResp) => {
@@ -172,185 +204,38 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                 w={"100%"}
                 gap={"1rem"}
             >
-                <HStack
-                    w={"100%"}
-                    alignItems={"end"}
-                    justifyContent={"start"}
-                    gap={"1rem"}
-                >
-                    <Heading
-                        mt={"0.5rem"}
-                        size={"md"}
-                        fontWeight={400}
-                        textDecor={"underline"}
-                    >
-                        Nuevo Evento:
-                    </Heading>
-                    <Heading
-                        size={"xl"}
-                        color={"pink.600"}
-                        // textDecor={"underline"}
-                    >
-                        {getFechaLocal(
-                            eventoForm.fecha_init
-                        )}
-                    </Heading>
-                </HStack>
-
-                <VStack
-                    alignItems={"start"}
-                    w={"100%"}
-                >
-                    <Text
-                        fontWeight={700}
-                        fontSize={"sm"}
-                    >
-                        Tipo:
-                    </Text>
-                    <SelectEvento
-                        tipoEvento={tipoEvento}
-                        setTipoEvento={setTipoEvento}
-                    />
-                </VStack>
+                <TituloEvento eventoForm={eventoForm} />
 
                 <Grid
                     w={"100%"}
-                    gridTemplateColumns={
-                        tipoEvento == "temporada-libre"
-                            ? "1fr 1fr"
-                            : "1fr"
-                    }
+                    gridTemplateColumns={"1fr 1fr"}
                     gap={"1rem"}
                 >
-                    <VStack alignItems={"start"}>
-                        <Text
-                            fontWeight={700}
-                            fontSize={"sm"}
-                        >
-                            Fecha{" "}
-                            {tipoEvento != "temporada-libre"
-                                ? ""
-                                : " Inicio"}
-                            :
-                        </Text>
-                        <Input
-                            value={eventoForm.fecha_init}
-                            shadow={"sm"}
-                            bg={"white"}
-                            type="date"
-                            onChange={(e) => {
-                                console.log(e.target.value);
-                                setEventoForm({
-                                    ...eventoForm,
-                                    fecha_init:
-                                        e.target.value,
-                                });
-                            }}
-                        />
-                    </VStack>
-
-                    {tipoEvento == "temporada-libre" && (
-                        <VStack alignItems={"start"}>
-                            <Text
-                                fontWeight={700}
-                                fontSize={"sm"}
-                            >
-                                Fecha Fin:
-                            </Text>
-                            <Input
-                                value={eventoForm.fecha_fin}
-                                shadow={"sm"}
-                                bg={"white"}
-                                type="date"
-                                onChange={(e) => {
-                                    console.log(
-                                        e.target.value
-                                    );
-                                    setEventoForm({
-                                        ...eventoForm,
-                                        fecha_fin:
-                                            e.target.value,
-                                    });
-                                }}
-                                placeholder="01/01/2025"
-                            />
-                        </VStack>
-                    )}
+                    <SelectTipo
+                        tipoEvento={tipoEvento}
+                        setTipoEvento={setTipoEvento}
+                    />
+                    <FechaEvento
+                        eventoForm={eventoForm}
+                        setEventoForm={setEventoForm}
+                    />
                 </Grid>
 
-                {tipoEvento == "horas-libres" && (
-                    <Grid
-                        w={"100%"}
-                        gridTemplateColumns={"1fr 1fr"}
-                        gap={"1rem"}
-                    >
-                        <Heading size={"sm"}>
-                            Hora Inicio:
-                        </Heading>
-                        <Heading size={"sm"}>
-                            Hora Fin:
-                        </Heading>
-                        <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                        >
-                            <TimePicker
-                                sx={{
-                                    width: "100%",
-                                    backgroundColor:
-                                        "white",
-                                }}
-                                label={"De"}
-                                value={eventoForm.hora_init}
-                                onChange={(newValue) => {
-                                    setEventoForm({
-                                        ...eventoForm,
-                                        hora_init:
-                                            formatHourMUI(
-                                                newValue.format(
-                                                    "HH:mm"
-                                                )
-                                            ),
-                                    });
-                                    console.log(newValue);
-                                }}
-                                timeSteps={{
-                                    minutes: 15,
-                                }}
-                            />
-                        </LocalizationProvider>
-
-                        <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                        >
-                            <TimePicker
-                                sx={{
-                                    width: "100%",
-                                    backgroundColor:
-                                        "white",
-                                }}
-                                label={"A"}
-                                value={eventoForm.hora_fin}
-                                onChange={(newValue) => {
-                                    setEventoForm({
-                                        ...eventoForm,
-                                        hora_fin:
-                                            formatHourMUI(
-                                                newValue.format(
-                                                    "HH:mm"
-                                                )
-                                            ),
-                                    });
-                                    console.log(newValue);
-                                }}
-                                timeSteps={{
-                                    minutes: 15,
-                                }}
-                            />
-                        </LocalizationProvider>
-                    </Grid>
+                {tipoEvento == "cambio-horario" && (
+                    <SelectNuevoHorario
+                        eventoForm={eventoForm}
+                        setEventoForm={setEventoForm}
+                    />
                 )}
 
-                {/* <VStack w={"100%"} mt={"2rem"}> */}
+                {tipoEvento == "horas-libres" && (
+                    <SelectHorasLibres
+                        eventoForm={eventoForm}
+                        setEventoForm={setEventoForm}
+                    />
+                )}
+
+                {/* Titulo y Notas */}
                 <Input
                     shadow={"sm"}
                     bg={"white"}
@@ -364,7 +249,6 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                         });
                     }}
                 />
-
                 <Textarea
                     size={"xl"}
                     shadow={"sm"}
@@ -380,33 +264,51 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                 />
                 {/* </VStack> */}
 
-                <HStack>
-                    {status == "loading" && (
-                        <Spinner
-                            size={"md"}
-                            color={"pink.500"}
-                        />
-                    )}
-                    {status != "loading" && (
-                        <>
-                            <Button
-                                shadow={"sm"}
-                                onClick={() => {
-                                    setCurrentView("tabla");
-                                }}
-                                bg={"gray.600"}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                shadow={"sm"}
-                                bg={"pink.500"}
-                                onClick={handleAgregar}
-                            >
-                                Agregar
-                            </Button>
-                        </>
-                    )}
+                <HStack
+                    w={"100%"}
+                    justifyContent={"between"}
+                >
+                    <Text
+                        fontSize={"sm"}
+                        color={"red"}
+                    >
+                        {
+                            "Esta acción cancelará todos los eventos actuales para la fecha seleccionada"
+                        }
+                    </Text>
+                    <HStack
+                        w={"100%"}
+                        justifyContent={"end"}
+                    >
+                        {status == "loading" && (
+                            <Spinner
+                                size={"md"}
+                                color={"pink.500"}
+                            />
+                        )}
+                        {status != "loading" && (
+                            <>
+                                <Button
+                                    shadow={"sm"}
+                                    onClick={() => {
+                                        setCurrentView(
+                                            "tabla"
+                                        );
+                                    }}
+                                    bg={"gray.600"}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    shadow={"sm"}
+                                    bg={"pink.500"}
+                                    onClick={handleAgregar}
+                                >
+                                    Agregar
+                                </Button>
+                            </>
+                        )}
+                    </HStack>
                 </HStack>
 
                 {status == "error" && (
@@ -440,35 +342,257 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
     );
 }
 
-const eventosData = [
-    {
-        id: "abc123",
-        title: "Curso",
-        notes: "Peinado de pestañas",
-        fecha_init: "04/06/2025",
-        fecha_fin: null,
-        hora_init: "10:00",
-        hora_fin: "13:00",
-        tipo: "horas-libres",
-    },
-    {
-        id: "abc124",
-        title: "Descanso",
-        notes: "",
-        fecha_init: "05/06/2025",
-        fecha_fin: null,
-        hora_init: "10:00",
-        hora_fin: "13:00",
-        tipo: "dia-libre",
-    },
-    {
-        id: "abc125",
-        title: "Vacaciones",
-        notes: "",
-        fecha_init: "06/06/2025",
-        fecha_fin: "10/06/2025",
-        hora_init: null,
-        hora_fin: null,
-        tipo: "temporada-libre",
-    },
-];
+function TituloEvento({ eventoForm }) {
+    return (
+        <VStack
+            w={"100%"}
+            alignItems={"start"}
+            justifyContent={"start"}
+            gap={"0.5rem"}
+        >
+            <Heading
+                mt={"0.5rem"}
+                size={"md"}
+                fontWeight={400}
+                textDecor={"underline"}
+            >
+                Nuevo Evento:
+            </Heading>
+            <Heading
+                size={"xl"}
+                color={"pink.600"}
+                // textDecor={"underline"}
+            >
+                {getFechaLocal(eventoForm.fecha_init)}
+            </Heading>
+        </VStack>
+    );
+}
+
+function SelectTipo({ tipoEvento, setTipoEvento }) {
+    return (
+        <VStack
+            alignItems={"start"}
+            w={"100%"}
+        >
+            <Text
+                fontWeight={700}
+                fontSize={"sm"}
+            >
+                Tipo:
+            </Text>
+            <SelectEvento
+                tipoEvento={tipoEvento}
+                setTipoEvento={setTipoEvento}
+            />
+        </VStack>
+    );
+}
+
+function FechaEvento({ eventoForm, setEventoForm }) {
+    return (
+        <VStack
+            alignItems={"start"}
+            w={"100%"}
+        >
+            <Text
+                fontWeight={700}
+                fontSize={"sm"}
+            >
+                {"Fecha:"}
+            </Text>
+            <Input
+                value={eventoForm.fecha_init}
+                shadow={"sm"}
+                bg={"white"}
+                type="date"
+                onChange={(e) => {
+                    console.log(e.target.value);
+                    setEventoForm({
+                        ...eventoForm,
+                        fecha_init: e.target.value,
+                    });
+                }}
+            />
+        </VStack>
+    );
+}
+
+function SelectNuevoHorario({ eventoForm, setEventoForm }) {
+    const selectHorarioStyle = {
+        width: "50%",
+        padding: "0.5rem",
+        borderRadius: "0.2rem",
+        boxShadow:
+            "0px 2px 2px 2px rgba(108, 108, 108, 0.1)",
+    };
+
+    function handleChange(newValue, index, type) {
+        setEventoForm({
+            ...eventoForm,
+            horarios: eventoForm.horarios.map((hora, i) => {
+                if (i == index) {
+                    return {
+                        ...hora,
+                        [type]: newValue,
+                    };
+                }
+                return hora;
+            }),
+        });
+    }
+
+    function handleAdd() {
+        setEventoForm({
+            ...eventoForm,
+            horarios: [
+                ...eventoForm.horarios,
+                { inicio: "09:30", final: "18:00" },
+            ],
+        });
+    }
+    function handleDelete() {
+        setEventoForm({
+            ...eventoForm,
+            horarios: eventoForm.horarios.filter(
+                (_, i) => i !== 0
+            ),
+        });
+    }
+    return (
+        <VStack
+            w={"100%"}
+            alignItems={"start"}
+        >
+            <Heading size={"sm"}>
+                {"Nuevo Horario:"}
+            </Heading>
+            {eventoForm.horarios &&
+                eventoForm.horarios.map((hora, i) => (
+                    <HStack
+                        w={"100%"}
+                        key={i}
+                    >
+                        <Form.Control
+                            style={selectHorarioStyle}
+                            type="time"
+                            value={
+                                eventoForm.horarios[i]
+                                    .inicio
+                            }
+                            onChange={(e) => {
+                                handleChange(
+                                    e.target.value,
+                                    i,
+                                    "inicio"
+                                );
+                            }}
+                            step={"1800"}
+                        />
+                        <Form.Control
+                            style={selectHorarioStyle}
+                            type="time"
+                            value={
+                                eventoForm.horarios[i].final
+                            }
+                            onChange={(e) => {
+                                handleChange(
+                                    e.target.value,
+                                    i,
+                                    "final"
+                                );
+                            }}
+                        />
+                    </HStack>
+                ))}
+            <HStack
+                w={"100%"}
+                justifyContent={"end"}
+            >
+                <Button
+                    size={"sm"}
+                    bg={"pink.500"}
+                    fontSize={"xl"}
+                    onClick={handleDelete}
+                    disabled={
+                        eventoForm.horarios.length == 1
+                    }
+                >
+                    {"-"}
+                </Button>
+                <Button
+                    size={"sm"}
+                    bg={"pink.500"}
+                    fontSize={"xl"}
+                    onClick={handleAdd}
+                    disabled={
+                        eventoForm.horarios.length == 2
+                    }
+                >
+                    {"+"}
+                </Button>
+            </HStack>
+        </VStack>
+    );
+}
+function SelectHorasLibres({ eventoForm, setEventoForm }) {
+    return (
+        <Grid
+            w={"100%"}
+            gridTemplateColumns={"1fr 1fr"}
+            gap={"1rem"}
+        >
+            <Heading size={"sm"}>Hora Inicio:</Heading>
+            <Heading size={"sm"}>Hora Fin:</Heading>
+            <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+            >
+                <TimePicker
+                    sx={{
+                        width: "100%",
+                        backgroundColor: "white",
+                    }}
+                    label={"De"}
+                    value={eventoForm.hora_init}
+                    onChange={(newValue) => {
+                        setEventoForm({
+                            ...eventoForm,
+                            hora_init: formatHourMUI(
+                                newValue.format("HH:mm")
+                            ),
+                        });
+                        console.log(newValue);
+                    }}
+                    timeSteps={{
+                        minutes: 30,
+                    }}
+                />
+            </LocalizationProvider>
+
+            <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+            >
+                <TimePicker
+                    sx={{
+                        width: "100%",
+                        backgroundColor: "white",
+                    }}
+                    label={"A"}
+                    value={eventoForm.hora_fin}
+                    onChange={(newValue) => {
+                        setEventoForm({
+                            ...eventoForm,
+                            hora_fin: formatHourMUI(
+                                newValue.format("HH:mm")
+                            ),
+                        });
+                        console.log(newValue);
+                    }}
+                    timeSteps={{
+                        minutes: 30,
+                    }}
+                />
+            </LocalizationProvider>
+        </Grid>
+    );
+}

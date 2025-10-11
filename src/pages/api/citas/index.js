@@ -6,6 +6,7 @@ import {
     formatFechaYMD,
     getDayIndexNumber,
     getHorarioByDayNumber,
+    getHorarioObject,
     getMinutes,
 } from "@/utils/main";
 import {
@@ -20,6 +21,11 @@ import {
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 import { db_info } from "@/config/db";
 import citasController from "@/backend/controllers/citas";
+import {
+    encodeHoraToFloat,
+    horarioJSONToFullArray,
+    horarioObjectToFullArray,
+} from "@/utils/disponibilidad-v1.2";
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection({
@@ -165,11 +171,13 @@ export default async function handler(req, res) {
                 ])
             );
 
+            // console.log("eventos before", eventos);
             eventos = formatEventosForAvailableCalculation(
                 eventos,
                 lashista,
                 formatFechaYMD(cita.fecha)
             );
+            console.log("eventos after", eventos);
 
             horarioLashista = [
                 "Saturday",
@@ -177,11 +185,27 @@ export default async function handler(req, res) {
             ].includes(dayName)
                 ? lashista.horarioSBD
                 : lashista.horarioLV;
+
             let horarioLashistaArray =
                 filterTimeSlotsByRange(
                     horarioDelDia,
                     horarioLashista
                 );
+
+            if (
+                eventos.length > 0 &&
+                eventos[0].tipo == "cambio-horario"
+            ) {
+                let eventoHorarios = eventos[0].horarios;
+                horarioLashistaArray =
+                    horarioJSONToFullArray(eventoHorarios);
+                // console.log("nuevoHorario", nuevoHorario);
+            }
+            console.log(
+                "horarioLashistaArray",
+                horarioLashistaArray
+            );
+
             // horarioDelDia = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
             // console.log(lashista.nombre, {horarioDelDia, lashista});
             // console.log("Filtrado", filterTimeSlotsByRange(horarioDelDia, horarioLashista));
@@ -244,6 +268,7 @@ export default async function handler(req, res) {
                     servicios,
                     req.body.dev
                 );
+                // console.log("available", available);
 
                 let availableArr = refineHorarios(
                     available,
@@ -253,46 +278,47 @@ export default async function handler(req, res) {
 
                 if (eventos.length > 0) {
                     const evento = eventos[0];
-                    const eventSlots = getEventSlots(
-                        evento.hora,
-                        evento.minutos
-                    );
-                    const minutosCita =
-                        servicios[cita.servicio_id].minutos;
-                    const eventSlotsBackwards =
-                        getEventSlotsBackwards(
+                    if (evento.tipo != "cambio-horario") {
+                        const eventSlots = getEventSlots(
                             evento.hora,
-                            minutosCita
+                            evento.minutos
                         );
-
-                    // console.log(availableArr, servicios[cita.servicio_id], eventSlotsBackwards);
-
-                    availableArr = availableArr.filter(
-                        (available) => {
-                            return !eventSlots.includes(
-                                available.hora
+                        const minutosCita =
+                            servicios[cita.servicio_id]
+                                .minutos;
+                        const eventSlotsBackwards =
+                            getEventSlotsBackwards(
+                                evento.hora,
+                                minutosCita
                             );
-                        }
-                    );
-                    availableArr = availableArr.filter(
-                        (available) => {
-                            return !eventSlotsBackwards.includes(
-                                available.hora
-                            );
-                        }
-                    );
+
+                        // console.log(availableArr, servicios[cita.servicio_id], eventSlotsBackwards);
+
+                        availableArr = availableArr.filter(
+                            (available) => {
+                                return !eventSlots.includes(
+                                    available.hora
+                                );
+                            }
+                        );
+                        availableArr = availableArr.filter(
+                            (available) => {
+                                return !eventSlotsBackwards.includes(
+                                    available.hora
+                                );
+                            }
+                        );
+                    }
                 }
 
                 console.log("TEST - YES DEV");
-                console
-                    .log
-                    // eventos,
-                    // servicios[cita.servicio_id],
-                    // availableArr
-                    // horariosDispPorCama
-                    // citasDelDia[0],
-                    // lashista
-                    ();
+                // console.log();
+                // eventos,
+                // servicios[cita.servicio_id],
+                // availableArr
+                // horariosDispPorCama
+                // citasDelDia[0],
+                // lashista
 
                 // Final response
                 res.status(200).json(availableArr);
@@ -346,5 +372,7 @@ function formatEventosForAvailableCalculation(
             ? getMinutes(ev.hora_init, ev.hora_fin)
             : getMinutes(horario[0], horario[1]),
         cama_id: `cama-${ev.lashista.toLowerCase()}-1`,
+        tipo: ev.tipo,
+        horarios: ev.horarios,
     }));
 }

@@ -27,16 +27,7 @@ async function getHorariosDisponibles(parametros) {
         horariosStudio,
     });
 
-    // const citasDelDia =
-    //     await citasRepository.getCitasDelDiaByLashista(
-    //         parametros.fecha,
-    //         parametros.lashista_id
-    //     );
-    // const servicios = await serviciosRepository.getAll();
-    // const camasIDs =
-    //     await camasRepository.getCamasIDsByLashista(
-    //         parametros.lashista_id
-    //     );
+    // Lashista y horarios de la lashista correspondiente al dia
     const [lashista] = await lashistasRepository.getById(
         parametros.lashista_id
     );
@@ -44,13 +35,24 @@ async function getHorariosDisponibles(parametros) {
         lashista,
         dayName
     );
+
+    const citasDelDia =
+        await citasRepository.getCitasDelDiaByLashista(
+            parametros.fecha,
+            parametros.lashista_id
+        );
+    // const servicios = await serviciosRepository.getAll();
+    // const camasIDs =
+    //     await camasRepository.getCamasIDsByLashista(
+    //         parametros.lashista_id
+    //     );
     // const eventos =
     //     await eventosRepository.getByFechaAndLashista(
     //         parametros.fecha,
     //         parametros.lashista_id
     //     );
 
-    return horarioLashista;
+    return citasDelDia;
 }
 
 export default {

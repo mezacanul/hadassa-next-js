@@ -359,7 +359,7 @@ function TimeSelector({
     }
 
     useEffect(() => {
-        // console.log(horariosArr);
+        console.log("horariosArr", horariosArr);
     }, []);
 
     return (
