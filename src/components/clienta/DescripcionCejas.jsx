@@ -1,13 +1,28 @@
-import { Button, Heading, HStack, Spinner, Text, Textarea, VStack } from "@chakra-ui/react";
+import {
+    Button,
+    Heading,
+    HStack,
+    Spinner,
+    Text,
+    Textarea,
+    VStack,
+} from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
 
-export default function DescripcionCejas({ clientaID, detalles }) {
-    const [loadingActualizacion, setLoadingActualizacion] = useState(false);
-    const [updateSuccess, setUpdateSuccess] = useState(null);
-    const [enableActualizar, setEnableActualizar] = useState(false);
-    const [detallesCejas, setDetallesCejas] = useState(detalles);
-    
+export default function DescripcionCejas({
+    clientaID,
+    detalles,
+}) {
+    const [loadingActualizacion, setLoadingActualizacion] =
+        useState(false);
+    const [updateSuccess, setUpdateSuccess] =
+        useState(null);
+    const [enableActualizar, setEnableActualizar] =
+        useState(false);
+    const [detallesCejas, setDetallesCejas] =
+        useState(detalles);
+
     function actualizarDetallesCejas() {
         setLoadingActualizacion(true);
         axios
@@ -21,7 +36,10 @@ export default function DescripcionCejas({ clientaID, detalles }) {
                 console.log("clienta", clientaID);
                 console.log("texto", detallesCejas);
 
-                if (resp.success && resp.affectedRows == 1) {
+                if (
+                    resp.success &&
+                    resp.affectedRows == 1
+                ) {
                     setUpdateSuccess(true);
                     setEnableActualizar(false);
                 } else {
@@ -33,14 +51,19 @@ export default function DescripcionCejas({ clientaID, detalles }) {
 
     return (
         <>
-            <VStack alignItems={"start"} w={"100%"}>
+            <VStack
+                alignItems={"start"}
+                w={"100%"}
+            >
                 <Heading>Descripción:</Heading>
                 <Textarea
+                    w={"100%"}
                     h={"10rem"}
                     shadow={"sm"}
                     bg={"white"}
-                    w={"70%"}
-                    value={detallesCejas ? detallesCejas : ""}
+                    value={
+                        detallesCejas ? detallesCejas : ""
+                    }
                     onChange={(e) => {
                         setEnableActualizar(true);
                         setDetallesCejas(e.target.value);
@@ -48,30 +71,34 @@ export default function DescripcionCejas({ clientaID, detalles }) {
                 />
             </VStack>
 
-            {
-                !loadingActualizacion && (
-                    <HStack gap={"1.5rem"}>
-                        <Button
-                            colorPalette={"blue"}
-                            shadow={"sm"}
-                            variant={"subtle"}
-                            fontWeight={700}
-                            disabled={enableActualizar ? false : true}
-                            onClick={actualizarDetallesCejas}
-                        >
-                            Actualizar Descripción
-                        </Button>
-                        {updateSuccess && (
-                            <Text color={"green"}>¡Actualizado exitosamente!</Text>
-                        )}
-                    </HStack>
-                )
-            }
-            {
-                loadingActualizacion && (
-                    <Spinner borderWidth={"3px"} size={"lg"} color={"blue.500"} />
-                )
-            }
+            {!loadingActualizacion && (
+                <HStack gap={"1.5rem"}>
+                    <Button
+                        colorPalette={"blue"}
+                        shadow={"sm"}
+                        variant={"subtle"}
+                        fontWeight={700}
+                        disabled={
+                            enableActualizar ? false : true
+                        }
+                        onClick={actualizarDetallesCejas}
+                    >
+                        Actualizar Descripción
+                    </Button>
+                    {updateSuccess && (
+                        <Text color={"green"}>
+                            ¡Actualizado exitosamente!
+                        </Text>
+                    )}
+                </HStack>
+            )}
+            {loadingActualizacion && (
+                <Spinner
+                    borderWidth={"3px"}
+                    size={"lg"}
+                    color={"blue.500"}
+                />
+            )}
         </>
-    )
+    );
 }

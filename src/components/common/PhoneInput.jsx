@@ -4,6 +4,7 @@ export default function PhoneInput({
     clientaForm,
     setClientaForm,
     w = "100%",
+    fontSize = "md",
 }) {
     return (
         <HStack w={w}>
@@ -21,13 +22,15 @@ export default function PhoneInput({
                 value={clientaForm.lada}
                 w={"20%"}
                 {...inputStyles}
+                fontSize={fontSize}
                 placeholder="Lada"
             />
             <Input
                 value={clientaForm.telefono}
                 onChange={(e) => {
                     const value = e.target.value;
-                    const lastChar = e.target.value.slice(-1);
+                    const lastChar =
+                        e.target.value.slice(-1);
                     if (lastChar === " ") return;
                     setClientaForm({
                         ...clientaForm,
@@ -36,6 +39,7 @@ export default function PhoneInput({
                 }}
                 w={"100%"}
                 {...inputStyles}
+                fontSize={fontSize}
                 placeholder="Telefono/Celular"
             />
         </HStack>
@@ -43,7 +47,6 @@ export default function PhoneInput({
 }
 
 const inputStyles = {
-    fontSize: "md",
     shadow: "sm",
     bg: "white",
 };

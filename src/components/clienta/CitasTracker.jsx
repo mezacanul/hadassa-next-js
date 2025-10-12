@@ -17,6 +17,8 @@ import { TfiReceipt } from "react-icons/tfi";
 import { FaStar } from "react-icons/fa";
 import { loadHook } from "@/utils/lattice-design";
 import { useRouter as useNextNav } from "next/navigation";
+import TablaCitas from "./TablaCitas";
+import CitaRow from "./CitaRow";
 
 export default function CitasTracker({ citas }) {
     const [citasPagadas, setCitasPagadas] = useState(null);
@@ -140,107 +142,6 @@ function CitasPagadas({ data }) {
                 ))}
             </VStack>
         </Box>
-    );
-}
-
-function TablaCitas({ children, w = "100%" }) {
-    return (
-        <Table.Root
-            size="md"
-            striped
-            variant={"outline"}
-            bg={"white"}
-            w={w}
-        >
-            <Table.Header>
-                <Table.Row bg={"pink.500"}>
-                    <Table.ColumnHeader
-                        color={"white"}
-                    ></Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Servicio
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Fecha
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Hora
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Estado
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color={"white"}>
-                        Pagada
-                    </Table.ColumnHeader>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>{children}</Table.Body>
-        </Table.Root>
-    );
-}
-
-function CitaRow({ cita }) {
-    const [, setLoading] = loadHook("useLoader");
-    const NextNav = useNextNav();
-
-    return (
-        <Table.Row
-            _hover={{
-                color: "pink.600",
-                textDecor: "underline",
-                cursor: "pointer",
-            }}
-            onClick={() => {
-                setLoading(true);
-                NextNav.push(`/citas/${cita.id}`);
-            }}
-            transition={"all ease 0.3s"}
-        >
-            <Table.Cell>
-                <TfiReceipt size={"1.7rem"} />
-            </Table.Cell>
-            <Table.Cell>{cita.servicio}</Table.Cell>
-            <Table.Cell>
-                {formatHoyTitle(formatFechaDMY(cita.fecha))}
-            </Table.Cell>
-            <Table.Cell>{cita.hora}</Table.Cell>
-            <Table.Cell>
-                <Badge
-                    shadow={"sm"}
-                    fontWeight={600}
-                    colorPalette={
-                        cita.status === 0
-                            ? "red"
-                            : cita.status === 1
-                            ? "yellow"
-                            : cita.status === 2
-                            ? "green"
-                            : ""
-                    }
-                >
-                    {cita.status === 0
-                        ? "Cancelada"
-                        : cita.status === 1
-                        ? "Pendiente"
-                        : cita.status === 2
-                        ? "Confirmada"
-                        : ""}
-                </Badge>
-            </Table.Cell>
-            <Table.Cell>
-                <Badge
-                    shadow={"sm"}
-                    fontWeight={600}
-                    colorPalette={
-                        cita.pagado == 1 ? "green" : "gray"
-                    }
-                >
-                    {cita.pagado == 1
-                        ? "Pagada"
-                        : "Pendiente"}
-                </Badge>
-            </Table.Cell>
-        </Table.Row>
     );
 }
 

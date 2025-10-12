@@ -96,7 +96,7 @@ export default function Hoy() {
                                 // );
 
                                 console.log(citasResp.data);
-                                setEvents([
+                                const formattedEvents = [
                                     ...formatEvents(
                                         citasResp.data
                                     ),
@@ -105,7 +105,9 @@ export default function Hoy() {
                                         lashistasResp.data,
                                         selectedDate
                                     ),
-                                ]);
+                                ];
+                                console.log(formattedEvents);
+                                setEvents(formattedEvents);
                                 calendarApi.gotoDate(
                                     selectedDate
                                 );
@@ -199,6 +201,12 @@ export default function Hoy() {
                                 opacity: 0.9;
                             }
                             
+                            #Hoy .fc-v-event:has(.pagado) {
+                                background-color:rgb(231, 252, 232) !important;
+                                border: 2px solid rgb(37, 136, 32) !important;
+                                opacity: 0.9;
+                            }
+                            
                             #Hoy .fc-v-event:has(.pendiente) {
                                 background-color: #fefce8 !important;
                                 border: 2px solid #eab308 !important;
@@ -261,51 +269,7 @@ export default function Hoy() {
                             minute: "2-digit",
                             hour12: true,
                         }}
-                        eventContent={(arg) => {
-                            // console.log(arg.event);
-                            const { extendedProps } =
-                                arg.event;
-                            return (
-                                <div
-                                    style={{
-                                        marginLeft:
-                                            "0.3rem",
-                                    }}
-                                    className={
-                                        (extendedProps.status ==
-                                            1 &&
-                                            "pendiente") ||
-                                        (extendedProps.status ==
-                                            2 &&
-                                            "confirmado") ||
-                                        (extendedProps.status ==
-                                            3 &&
-                                            "evento")
-                                    }
-                                >
-                                    <b
-                                        style={{
-                                            fontSize:
-                                                "0.7rem",
-                                            color: "black",
-                                        }}
-                                    >
-                                        {arg.event.title}
-                                    </b>
-                                    <p
-                                        style={{
-                                            fontSize:
-                                                "0.7rem",
-                                            color: "black",
-                                        }}
-                                    >
-                                        {extendedProps.servicio
-                                            ? extendedProps.servicio
-                                            : extendedProps.notas}
-                                    </p>
-                                </div>
-                            );
-                        }}
+                        eventContent={EventRenderer}
                         // viewDidMount={() => {
                         //     console.log("viewDidMount hoyRef:", hoyRef);
                         //     // Optionally test the API here
@@ -319,6 +283,66 @@ export default function Hoy() {
                 </Box>
             </Dialog.Root>
         </Box>
+    );
+}
+
+function EventRenderer(arg) {
+    // console.log(arg.event);
+    const { pagado, status, servicio, notas } =
+        arg.event.extendedProps;
+    // console.log(arg);
+
+    // const getStatusClass = (p, s) => {
+    //     if (p == 1 && s == 2) {
+    //         return "pagado";
+    //     } else if (s == 1) {
+    //         return "pendiente";
+    //     } else if (s == 2) {
+    //         return "confirmado";
+    //     } else if (s == 3) {
+    //         return "evento";
+    //     }
+    // };
+
+    const getStatusClass = (p, s) => {
+        const classMap = {
+            0: {
+                1: "pendiente",
+                2: "confirmado",
+                3: "evento",
+            },
+            1: {
+                1: "pendiente",
+                2: "pagado",
+            },
+        };
+
+        return classMap[p || 0][s];
+    };
+    return (
+        <div
+            style={{
+                marginLeft: "0.3rem",
+            }}
+            className={`${getStatusClass(pagado, status)}`}
+        >
+            <b
+                style={{
+                    fontSize: "0.7rem",
+                    color: "black",
+                }}
+            >
+                {arg.event.title || "AUSENTE"}
+            </b>
+            <p
+                style={{
+                    fontSize: "0.7rem",
+                    color: "black",
+                }}
+            >
+                {servicio ? servicio : notas}
+            </p>
+        </div>
     );
 }
 

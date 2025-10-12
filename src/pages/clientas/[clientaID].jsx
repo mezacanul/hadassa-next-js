@@ -1,6 +1,7 @@
 import DetallesFaciales from "@/components/cita/DetallesFaciales";
 import CitasTracker from "@/components/clienta/CitasTracker";
 import ClientaForm from "@/components/clienta/ClientaForm";
+import ModalEliminarClienta from "@/components/clienta/ModalEliminarClienta";
 import { loadHook } from "@/utils/lattice-design";
 import {
     Box,
@@ -18,6 +19,9 @@ export default function Clienta() {
     const [loading, setLoading] = loadHook("useLoader");
     const [clienta, setClienta] = useState(null);
     const [citas, setCitas] = useState(null);
+    const [clientaToDelete, setClientaToDelete] =
+        useState(null);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         if (router.isReady) {
@@ -39,32 +43,49 @@ export default function Clienta() {
     }, [router.isReady]);
 
     return (
-        <Grid
-            px={"2rem"}
-            gap={"2rem"}
-            w={"100%"}
-            gridTemplateColumns={"2fr 3fr"}
-        >
-            <Box>
-                {!clienta && (
-                    <Spinner
-                        borderWidth={"3px"}
-                        size={"xl"}
-                        color={"pink.500"}
-                    />
-                )}
-                {clienta && (
-                    <ClientaForm clienta={clienta} />
-                )}
-                {clienta && (
-                    <DetallesFaciales
-                        clientaID={clienta.id}
-                        detalles={clienta.detalles_cejas}
-                    />
-                )}
-            </Box>
+        <Box>
+            <Grid
+                px={"2rem"}
+                gap={"2rem"}
+                w={"100%"}
+                gridTemplateColumns={"2fr 3fr"}
+            >
+                <Box>
+                    {!clienta && (
+                        <Spinner
+                            borderWidth={"3px"}
+                            size={"xl"}
+                            color={"pink.500"}
+                        />
+                    )}
+                    {clienta && (
+                        <ClientaForm
+                            clienta={clienta}
+                            setOpen={setOpen}
+                            setClientaToDelete={
+                                setClientaToDelete
+                            }
+                        />
+                    )}
+                    {clienta && (
+                        <DetallesFaciales
+                            clientaID={clienta.id}
+                            detalles={
+                                clienta.detalles_cejas
+                            }
+                            w={"100%"}
+                        />
+                    )}
+                </Box>
 
-            {citas && <CitasTracker citas={citas} />}
-        </Grid>
+                {citas && <CitasTracker citas={citas} />}
+            </Grid>
+            <ModalEliminarClienta
+                open={open}
+                setOpen={setOpen}
+                clientaToDelete={clientaToDelete}
+                setClientaToDelete={setClientaToDelete}
+            />
+        </Box>
     );
 }
