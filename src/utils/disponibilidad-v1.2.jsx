@@ -1,5 +1,12 @@
-import { parse, format } from "date-fns";
-import { enUS } from "date-fns/locale";
+import {
+    parse,
+    format,
+    startOfWeek,
+    endOfWeek,
+    eachDayOfInterval,
+    getYear,
+} from "date-fns";
+import { enUS, es } from "date-fns/locale";
 import { getHorarioObject } from "./main";
 
 function isWeekend(dayName) {
@@ -137,6 +144,47 @@ function horarioJSONToFullArray(horarioJSON) {
     return nuevoHorario;
 }
 
+function getSemana(date) {
+    // Get start and end of the week (Monday to Sunday)
+    date = parse(date, "dd-MM-yyyy", new Date());
+    console.log(date);
+    const weekStart = startOfWeek(date, {
+        weekStartsOn: 1,
+    }); // 1 = Monday
+    const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+
+    // Get all days in the week
+    const days = eachDayOfInterval({
+        start: weekStart,
+        end: weekEnd,
+    });
+    // console.log(days);
+
+    // Transform to your desired shape
+    const semana = days.map((day) => ({
+        fecha: format(day, "dd-MM-yyyy"), // "11-10-2025"
+        diaNum: format(day, "dd"), // "11"
+        mesNombre: format(day, "MMMM", { locale: es }), // "octubre"
+        titulo: format(day, "EEEE dd 'de' MMM.", {
+            locale: es,
+        }),
+        anio: getYear(day), // 2025
+    }));
+    // console.log(semana);
+
+    return {
+        dias: semana.slice(0, 6),
+        titulo: (
+            <p>
+                {`Semana del`}{" "}
+                <b>{`${semana[0].diaNum} de ${semana[0].mesNombre}`}</b>{" "}
+                {`al `}
+                <b>{`${semana[5].diaNum} de ${semana[5].mesNombre}`}</b>
+            </p>
+        ),
+    };
+}
+
 export {
     generarHorarioDelDia,
     getDayName,
@@ -144,4 +192,5 @@ export {
     horarioObjectToFullArray,
     encodeHoraToFloat,
     horarioJSONToFullArray,
+    getSemana,
 };
