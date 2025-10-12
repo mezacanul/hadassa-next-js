@@ -16,7 +16,7 @@ export default function ParamsViewer({
             w={"100%"}
             justifyContent={"start"}
             alignItems={"center"}
-            // my={"1rem"}
+            my={"1.5rem"}
             gap={"2rem"}
         >
             <HStack

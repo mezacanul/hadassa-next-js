@@ -7,9 +7,12 @@ import {
     Text,
     useToken,
 } from "@chakra-ui/react";
+import { Tooltip } from "../ui/tooltip";
+import { useCurrentCita } from "@/pages/nueva-cita/[date]";
 
 export default function CalendarioSemanal({
     agendaSemanal,
+    goToAgendar,
 }) {
     return (
         <VStack
@@ -23,7 +26,10 @@ export default function CalendarioSemanal({
             >
                 {agendaSemanal.map((dia) => (
                     <GridItem key={dia.fecha}>
-                        <DiaYHoras dia={dia} />
+                        <DiaYHoras
+                            dia={dia}
+                            goToAgendar={goToAgendar}
+                        />
                     </GridItem>
                 ))}
             </Grid>
@@ -31,17 +37,25 @@ export default function CalendarioSemanal({
     );
 }
 
-function DiaYHoras({ dia }) {
+function DiaYHoras({ dia, goToAgendar }) {
     return (
         <VStack>
-            <Heading>{dia.titulo}</Heading>
+            <Heading
+                size={"md"}
+                mb={"1rem"}
+            >
+                {dia.titulo}
+            </Heading>
             <Grid
-                templateColumns="repeat(4, 1fr)"
+                templateColumns="repeat(3, 1fr)"
                 gap={"1rem"}
             >
                 {dia.disponibles.map((disp, idx) => (
                     <GridItem key={idx}>
-                        <HoraMiniCard hora={disp.hora} />
+                        <HoraMiniCard
+                            disp={disp}
+                            goToAgendar={goToAgendar}
+                        />
                     </GridItem>
                 ))}
             </Grid>
@@ -49,22 +63,32 @@ function DiaYHoras({ dia }) {
     );
 }
 
-function HoraMiniCard({ hora }) {
+function HoraMiniCard({ disp, goToAgendar }) {
     const color = useToken("colors", "pink.600");
+    const [currentCita, setCurrentCita] = useCurrentCita();
+
     return (
-        <VStack
-            bg={"white"}
-            border={`2px solid ${color}`}
-            px={"0.5rem"}
-            py={"0.2rem"}
-            rounded={"md"}
-        >
-            <Text
-                color={color}
-                fontWeight={700}
+        <Tooltip content={"Agendar Cita"}>
+            <VStack
+                onClick={() => goToAgendar(disp)}
+                bg={"white"}
+                border={`2px solid ${color}`}
+                px={"0.5rem"}
+                py={"0.2rem"}
+                rounded={"md"}
+                transition={"all ease 0.3s"}
+                _hover={{
+                    cursor: "pointer",
+                    transform: "scale(1.1)",
+                }}
             >
-                {hora}
-            </Text>
-        </VStack>
+                <Text
+                    color={color}
+                    fontWeight={700}
+                >
+                    {disp.hora}
+                </Text>
+            </VStack>
+        </Tooltip>
     );
 }

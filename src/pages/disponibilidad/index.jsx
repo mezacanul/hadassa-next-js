@@ -17,6 +17,8 @@ import { getSemana } from "@/utils/disponibilidad-v1.2";
 import { formatFechaDMY } from "@/utils/main";
 import { CiCalendarDate } from "react-icons/ci";
 import { IoCloseOutline } from "react-icons/io5";
+import { useCurrentCita } from "../nueva-cita/[date]";
+import { useRouter } from "next/navigation";
 
 export default function Disponibilidad() {
     const [selected, setSelected] = useState({
@@ -43,6 +45,8 @@ export default function Disponibilidad() {
     const [agendaSemanal, setAgendaSemanal] =
         useState(null);
     const [loading, setLoading] = useState(false);
+    const [currentCita, setCurrentCita] = useCurrentCita();
+    const router = useRouter();
 
     useEffect(() => {
         Promise.all([
@@ -135,6 +139,25 @@ export default function Disponibilidad() {
         },
     };
 
+    const goToAgendar = (hora) => {
+        const cita = {
+            ...currentCita,
+            horario: hora,
+            fecha: formatFechaDMY(current.fecha),
+            lashista: options.lashistas.find(
+                (lashista) =>
+                    lashista.id === current.lashista
+            ),
+            servicio: options.servicios.find(
+                (servicio) =>
+                    servicio.id === current.servicio
+            ),
+        };
+        setCurrentCita(cita);
+        console.log(cita);
+        router.push(`/nueva-cita/${cita.fecha}`);
+    };
+
     return (
         <Box w={"100%"}>
             <VStack
@@ -163,18 +186,16 @@ export default function Disponibilidad() {
 
             {options.lashistas && options.servicios && (
                 <>
-                    {/* {openParams && ( */}
-                        <SearchParams
-                            selected={selected}
-                            setSelected={setSelected}
-                            options={options}
-                            setDaysSemana={setDaysSemana}
-                            onVerDisponibilidad={
-                                onVerDisponibilidad
-                            }
-                            openParams={openParams}
-                        />
-                    {/* )} */}
+                    <SearchParams
+                        selected={selected}
+                        setSelected={setSelected}
+                        options={options}
+                        setDaysSemana={setDaysSemana}
+                        onVerDisponibilidad={
+                            onVerDisponibilidad
+                        }
+                        openParams={openParams}
+                    />
                     {current.lashista &&
                         current.servicio && (
                             <ParamsViewer
@@ -193,6 +214,7 @@ export default function Disponibilidad() {
                     {!loading && agendaSemanal && (
                         <CalendarioSemanal
                             agendaSemanal={agendaSemanal}
+                            goToAgendar={goToAgendar}
                         />
                     )}
 
@@ -221,10 +243,7 @@ export default function Disponibilidad() {
     );
 }
 
-function MenuButton({
-    openParams,
-    setOpenParams,
-}) {
+function MenuButton({ openParams, setOpenParams }) {
     const pink = useToken("colors", "pink.600");
     return (
         <Box

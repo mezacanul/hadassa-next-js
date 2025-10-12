@@ -33,13 +33,6 @@ export default function SearchParams({
                     });
                     console.log(e.target.value);
                 }}
-                // value={selected.fecha}
-                // onChange={(e) => {
-                //     setSelected({
-                //         ...selected,
-                //         fecha: e.target.value,
-                //     });
-                // }}
             />
             <MySelect
                 value={selected.servicio}

@@ -7,7 +7,7 @@ import {
     getYear,
 } from "date-fns";
 import { enUS, es } from "date-fns/locale";
-import { getHorarioObject } from "./main";
+import { capitalizeFirst, getHorarioObject } from "./main";
 
 function isWeekend(dayName) {
     return ["Saturday", "Sunday"].includes(dayName);
@@ -165,9 +165,11 @@ function getSemana(date) {
         fecha: format(day, "dd-MM-yyyy"), // "11-10-2025"
         diaNum: format(day, "dd"), // "11"
         mesNombre: format(day, "MMMM", { locale: es }), // "octubre"
-        titulo: format(day, "EEEE dd 'de' MMM.", {
-            locale: es,
-        }),
+        titulo: capitalizeFirst(
+            format(day, "EEEE dd 'de' MMM.", {
+                locale: es,
+            })
+        ),
         anio: getYear(day), // 2025
     }));
     // console.log(semana);
