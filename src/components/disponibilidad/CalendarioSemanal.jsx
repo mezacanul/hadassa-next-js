@@ -43,21 +43,28 @@ function DiaYHoras({ dia, goToAgendar }) {
             <Heading
                 size={"md"}
                 mb={"1rem"}
+                textDecor={"underline"}
             >
                 {dia.titulo}
             </Heading>
+            {dia.disponibles.length == 0 && (
+                <Text fontSize={"sm"}>
+                    {"No hay horarios disponibles."}
+                </Text>
+            )}
             <Grid
                 templateColumns="repeat(3, 1fr)"
                 gap={"1rem"}
             >
-                {dia.disponibles.map((disp, idx) => (
-                    <GridItem key={idx}>
-                        <HoraMiniCard
-                            disp={disp}
-                            goToAgendar={goToAgendar}
-                        />
-                    </GridItem>
-                ))}
+                {dia.disponibles.length > 0 &&
+                    dia.disponibles.map((disp, idx) => (
+                        <GridItem key={idx}>
+                            <HoraMiniCard
+                                disp={disp}
+                                goToAgendar={goToAgendar}
+                            />
+                        </GridItem>
+                    ))}
             </Grid>
         </VStack>
     );

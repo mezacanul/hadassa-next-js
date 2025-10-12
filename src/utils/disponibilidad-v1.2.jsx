@@ -177,7 +177,7 @@ function getSemana(date) {
     return {
         dias: semana.slice(0, 6),
         titulo: (
-            <p>
+            <p style={{ fontSize: "1.2rem" }}>
                 {`Semana del`}{" "}
                 <b>{`${semana[0].diaNum} de ${semana[0].mesNombre}`}</b>{" "}
                 {`al `}
