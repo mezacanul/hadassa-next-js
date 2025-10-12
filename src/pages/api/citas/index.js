@@ -6,23 +6,26 @@ import {
     formatFechaYMD,
     getDayIndexNumber,
     getHorarioByDayNumber,
+    getHorarioObject,
     getMinutes,
-    parseQueryFilters,
-    queryPlusFilters,
 } from "@/utils/main";
 import {
-    canSchedule,
     generarHorarioDelDia,
     GenerarHorariosDisponibles,
     getAvailable,
     getEventSlots,
     getEventSlotsBackwards,
-    getSlots,
     refineHorarios,
     sortByHora,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
 import { db_info } from "@/config/db";
+import citasController from "@/backend/controllers/citas";
+import {
+    encodeHoraToFloat,
+    horarioJSONToFullArray,
+    horarioObjectToFullArray,
+} from "@/utils/disponibilidad-v1.2";
 
 export default async function handler(req, res) {
     const connection = await mysql.createConnection({
@@ -36,170 +39,37 @@ export default async function handler(req, res) {
     try {
         if (req.method === "GET") {
             if (req.query.clienta) {
-                const query = `
-                    SELECT 
-                        citas.id,
-                        lashistas.nombre as lashista,
-                        servicios.servicio,
-                        citas.fecha, 
-                        citas.hora,
-                        citas.status,
-                        citas.pagado
-                    FROM citas
-                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
-                    LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
-                    WHERE clienta_id = ?
-                    ORDER BY 
-                        citas.fecha DESC,
-                        citas.hora DESC
-                `;
-                const [rows] = await connection.execute(
-                    query,
-                    [req.query.clienta]
-                );
+                console.log("GET BY CLIENTA");
+                const rows =
+                    await citasController.getByClientaID(
+                        req
+                    );
                 res.status(200).json(rows);
-                // res.status(200).json(req.query.clienta);
             }
             if (req.query.id) {
-                const query = `SELECT 
-                            citas.id as cita_ID,
-                            servicios.image servicio_foto,
-                            lashistas.id as lashista_id, 
-                            lashistas.image as lashista_foto, 
-                            lashistas.nombre as lashista,
-                            citas.cama_id,
-                            servicios.servicio, 
-                            citas.fecha,
-                            citas.hora,
-                            citas.status,
-                            citas.metodo_pago,
-                            citas.fecha_pagado,
-                            citas.monto_pagado,
-                            citas.pagado,
-                            servicios.precio,
-                            servicios.minutos,
-                            servicios.id as servicio_id,
-                            servicios.precio_tarjeta,
-                            clientas.id as clienta_id, 
-                            clientas.foto_clienta, 
-                            clientas.nombres as clienta_nombres, 
-                            clientas.apellidos as clienta_apellidos, 
-                            clientas.lada, 
-                            clientas.telefono,
-                            clientas.detalles_cejas
-                        FROM 
-                            citas
-                        LEFT JOIN lashistas ON citas.lashista_id = lashistas.id
-                        LEFT JOIN clientas ON citas.clienta_id = clientas.id
-                        LEFT JOIN servicios ON citas.servicio_id = servicios.id
-                        WHERE citas.id = ?`;
-                const [rows] = await connection.execute(
-                    query,
-                    [req.query.id]
+                console.log("GET BY ID");
+                const row = await citasController.getByID(
+                    req
                 );
-                res.status(200).json(rows[0]);
+                res.status(200).json(row);
+            } else {
+                console.log("TEST - MULTIPLE");
+                const rows =
+                    await citasController.getByMultipleFilters(
+                        req
+                    );
+                res.status(200).json(rows);
             }
-            // Map query params to database columns
-            // Also defining which filters are allowed (+ at parseQueryFilters)
-            const filterMap = {
-                date: "fecha",
-                lashista: "lashista_id",
-                // cama: "cama_id",
-                // hora: "hora"
-            };
-            const { conditions, params } =
-                parseQueryFilters(req.query, filterMap);
-            // console.log(conditions, params);
-
-            let query = `SELECT 
-                        citas.id as cita_ID, 
-                        fecha, 
-                        hora, 
-                        duracion,
-                        status,
-                        cama_id, 
-                        clientas.nombres, 
-                        clientas.apellidos, 
-                        clientas.foto_clienta as foto, 
-                        servicios.id as servicio_id, 
-                        servicios.servicio, 
-                        servicios.precio, 
-                        servicios.minutos as minutos, 
-                        lashistas.nombre as lashista,
-                        pagado
-                    FROM 
-                      citas 
-                    LEFT JOIN clientas ON citas.clienta_id = clientas.id
-                    LEFT JOIN servicios ON citas.servicio_id = servicios.id
-                    LEFT JOIN lashistas ON citas.lashista_id = lashistas.id`;
-            let fullQuery = queryPlusFilters(
-                query,
-                conditions
-            );
-            fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`;
-
-            const [rows] = await connection.execute(
-                fullQuery,
-                params
-            );
-            res.status(200).json(rows);
         } else if (
             req.method === "POST" &&
             req.body.fecha
         ) {
-            // TO DO:
-            // Separar responsabilidades de API:
-            // citas en POST solo puede agendar citas
-            // para horarios disponibles utilizaremos
-            //     -> horarios?filtro=disponibles&fecha&hora
             if (req.body.action == "agendar") {
-                const cita = req.body;
-                // console.log(cita);
-
-                try {
-                    const [uuidResult] =
-                        await connection.execute(
-                            `SELECT UUID() AS id`
-                        );
-                    const uuid = uuidResult[0].id;
-                    const hora = cita.horario.hora
-                        .replace("-", "")
-                        .replace("+", "");
-
-                    const [mysql_response] =
-                        await connection.execute(
-                            `INSERT INTO citas (id, clienta_id, servicio_id, lashista_id, fecha, hora, duracion, cama_id, metodo_pago, status, added) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-                            [
-                                uuid,
-                                cita.clienta.id,
-                                cita.servicio.id,
-                                cita.lashista.id,
-                                cita.fecha,
-                                hora,
-                                cita.servicio.minutos,
-                                cita.horario.cama,
-                                cita.metodoPago,
-                                1,
-                            ]
-                        );
-                    if (mysql_response.affectedRows > 0) {
-                        res.status(201).json({
-                            uuid,
-                            inserted:
-                                mysql_response.affectedRows,
-                        });
-                    } else {
-                        res.status(500).json({
-                            error: "Not added",
-                        });
-                    }
-                } catch (insertError) {
-                    return res.status(500).json({
-                        error: "MySQL insertion failed",
-                        details: insertError.message,
-                    });
-                }
+                // const cita = req.body;
+                console.log("AGENDAR");
+                const response =
+                    await citasController.createCita(req);
+                res.status(201).json(response);
             }
 
             // POST: Agendar cita
@@ -301,11 +171,13 @@ export default async function handler(req, res) {
                 ])
             );
 
+            // console.log("eventos before", eventos);
             eventos = formatEventosForAvailableCalculation(
                 eventos,
                 lashista,
                 formatFechaYMD(cita.fecha)
             );
+            console.log("eventos after", eventos);
 
             horarioLashista = [
                 "Saturday",
@@ -313,11 +185,27 @@ export default async function handler(req, res) {
             ].includes(dayName)
                 ? lashista.horarioSBD
                 : lashista.horarioLV;
+
             let horarioLashistaArray =
                 filterTimeSlotsByRange(
                     horarioDelDia,
                     horarioLashista
                 );
+
+            if (
+                eventos.length > 0 &&
+                eventos[0].tipo == "cambio-horario"
+            ) {
+                let eventoHorarios = eventos[0].horarios;
+                horarioLashistaArray =
+                    horarioJSONToFullArray(eventoHorarios);
+                // console.log("nuevoHorario", nuevoHorario);
+            }
+            console.log(
+                "horarioLashistaArray",
+                horarioLashistaArray
+            );
+
             // horarioDelDia = filterTimeSlotsByRange(horarioDelDia, horarioLashista)
             // console.log(lashista.nombre, {horarioDelDia, lashista});
             // console.log("Filtrado", filterTimeSlotsByRange(horarioDelDia, horarioLashista));
@@ -380,6 +268,7 @@ export default async function handler(req, res) {
                     servicios,
                     req.body.dev
                 );
+                // console.log("available", available);
 
                 let availableArr = refineHorarios(
                     available,
@@ -389,46 +278,47 @@ export default async function handler(req, res) {
 
                 if (eventos.length > 0) {
                     const evento = eventos[0];
-                    const eventSlots = getEventSlots(
-                        evento.hora,
-                        evento.minutos
-                    );
-                    const minutosCita =
-                        servicios[cita.servicio_id].minutos;
-                    const eventSlotsBackwards =
-                        getEventSlotsBackwards(
+                    if (evento.tipo != "cambio-horario") {
+                        const eventSlots = getEventSlots(
                             evento.hora,
-                            minutosCita
+                            evento.minutos
                         );
-
-                    // console.log(availableArr, servicios[cita.servicio_id], eventSlotsBackwards);
-
-                    availableArr = availableArr.filter(
-                        (available) => {
-                            return !eventSlots.includes(
-                                available.hora
+                        const minutosCita =
+                            servicios[cita.servicio_id]
+                                .minutos;
+                        const eventSlotsBackwards =
+                            getEventSlotsBackwards(
+                                evento.hora,
+                                minutosCita
                             );
-                        }
-                    );
-                    availableArr = availableArr.filter(
-                        (available) => {
-                            return !eventSlotsBackwards.includes(
-                                available.hora
-                            );
-                        }
-                    );
+
+                        // console.log(availableArr, servicios[cita.servicio_id], eventSlotsBackwards);
+
+                        availableArr = availableArr.filter(
+                            (available) => {
+                                return !eventSlots.includes(
+                                    available.hora
+                                );
+                            }
+                        );
+                        availableArr = availableArr.filter(
+                            (available) => {
+                                return !eventSlotsBackwards.includes(
+                                    available.hora
+                                );
+                            }
+                        );
+                    }
                 }
 
                 console.log("TEST - YES DEV");
-                console
-                    .log
-                    // eventos,
-                    // servicios[cita.servicio_id],
-                    // availableArr
-                    // horariosDispPorCama
-                    // citasDelDia[0],
-                    // lashista
-                    ();
+                // console.log();
+                // eventos,
+                // servicios[cita.servicio_id],
+                // availableArr
+                // horariosDispPorCama
+                // citasDelDia[0],
+                // lashista
 
                 // Final response
                 res.status(200).json(availableArr);
@@ -482,5 +372,7 @@ function formatEventosForAvailableCalculation(
             ? getMinutes(ev.hora_init, ev.hora_fin)
             : getMinutes(horario[0], horario[1]),
         cama_id: `cama-${ev.lashista.toLowerCase()}-1`,
+        tipo: ev.tipo,
+        horarios: ev.horarios,
     }));
 }

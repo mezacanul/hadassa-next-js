@@ -95,7 +95,7 @@ export default function Hoy() {
                                 //     )
                                 // );
 
-                                console.log(citasResp.data);
+                                console.log("Citas Resp",citasResp.data);
                                 const formattedEvents = [
                                     ...formatEvents(
                                         citasResp.data

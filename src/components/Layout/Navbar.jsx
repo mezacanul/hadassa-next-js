@@ -18,7 +18,7 @@ import {
 import { LuCalendarPlus } from "react-icons/lu";
 import { FaHouseChimney } from "react-icons/fa6";
 import { format, parse } from "date-fns";
-import NavBarLink from "./NavbarLink";
+import NavbarLink from "./NavbarLink";
 
 export default function NavBar({ h }) {
     const [selectedDate] = loadHook("useSelectedDate");
@@ -132,13 +132,12 @@ export default function NavBar({ h }) {
             </HStack>
 
             <HStack
-                fontSize={"1.1rem"}
                 w={"100%"}
                 justify={"space-between"}
                 align={"center"}
             >
                 {NavBarLinks.map((link) => (
-                    <NavBarLink
+                    <NavbarLink
                         key={link.title}
                         title={link.title}
                         pathname={link.pathname}
@@ -186,6 +185,7 @@ const PathnameToTitle = {
     "/lashistas/[lashistaID]": "Lashista",
     "/servicios": "Servicios",
     "/servicios/[servicioID]": "Servicio",
+    "/disponibilidad": "Disponibilidad",
     "/dev": "Developer",
 };
 
@@ -199,5 +199,6 @@ const PathnameToHeading = {
     "/lashistas/[lashistaID]": "Lashista",
     "/servicios": "Servicios",
     "/servicios/[servicioID]": "Servicio",
+    "/disponibilidad": "Disponibilidad",
     "/dev": "Developer",
 };

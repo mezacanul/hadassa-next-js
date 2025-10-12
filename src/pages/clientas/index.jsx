@@ -29,7 +29,7 @@ export default function Clientas() {
         if (!clientas) {
             setLoading(true);
         } else {
-            console.log(clientas);
+            // console.log(clientas);
             setTotal(clientas.length);
             setLoading(false);
         }
