@@ -104,8 +104,9 @@ function CitasPagadas({ data }) {
                 gap={"1rem"}
                 w={"100%"}
             >
-                {Object.keys(data).map((servicio) => (
+                {Object.keys(data).map((servicio, idx) => (
                     <HStack
+                        key={idx}
                         w={"100%"}
                         justifyContent={"space-between"}
                     >

@@ -25,6 +25,10 @@ import { useRouter } from "next/router";
 import { FaHouseChimney } from "react-icons/fa6";
 import { useAgendarLoading, useCitaID, useMetodoPago } from "@/components/agendar-cita/OrderSummary";
 import FechaLogo from "@/components/FechaLogo";
+import "@/styles/Tables.css";
+
+// import 'ag-grid-community/styles/ag-grid.css'
+// import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 // import Router from 'next/router';
 

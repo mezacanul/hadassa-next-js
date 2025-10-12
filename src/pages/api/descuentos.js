@@ -17,7 +17,7 @@ export default async function handler(req, res) {
                 WHERE 
                     clienta_id = ? AND
                     servicio_id = ? AND 
-                    pagado = 1`,
+                    pagado = 1 AND status != 0`,
                 [
                     clienta,
                     servicio
