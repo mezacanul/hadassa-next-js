@@ -1,5 +1,6 @@
 import {
     Badge,
+    Box,
     Button,
     Grid,
     Heading,
@@ -12,10 +13,12 @@ import { FaRegClock } from "react-icons/fa6";
 import { FaRegCalendar } from "react-icons/fa6";
 import { format } from "date-fns";
 import {
+    decodeHorario,
+    decodeJSONToHorarioObjects,
     formatEventType,
     getFechaLocal,
 } from "@/utils/main";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function EventoCard({
@@ -23,27 +26,27 @@ export default function EventoCard({
     setCurrentEvento,
     setCurrentView,
 }) {
+    const [horarios, setHorarios] = useState(null);
     const [status, setStatus] = useState("iddle");
-    const formatted = {
-        fecha_init: getFechaLocal(evento.fecha_init),
-        fecha_fin: evento.fecha_fin
-            ? getFechaLocal(evento.fecha_fin)
-            : null,
-        hora_init: evento.hora_init
-            ? format(
-                  new Date(
-                      `2025-01-01 ${evento.hora_init}`
-                  ),
-                  "hh:mm a"
-              )
-            : null,
-        hora_fin: evento.hora_fin
-            ? format(
-                  new Date(`2025-01-01 ${evento.hora_fin}`),
-                  "hh:mm a"
-              )
-            : null,
-    };
+    const formatted = formatEventoCard(evento);
+
+    useEffect(() => {
+        if (evento.tipo == "cambio-horario") {
+            console.log("evento.horarios", evento.horarios);
+
+            let horarios = decodeJSONToHorarioObjects(
+                evento.horarios
+            );
+            console.log(horarios);
+            setHorarios(horarios);
+        }
+
+        console.log(evento);
+    }, [evento]);
+
+    useEffect(() => {
+        console.log("horarios", horarios);
+    }, [horarios]);
 
     function handleCancelar() {
         console.log(evento.id);
@@ -122,27 +125,12 @@ export default function EventoCard({
                         </Heading>
                     </HStack>
                 </VStack>
-
-                {formatted.fecha_fin && (
-                    <VStack alignItems={"start"}>
-                        <Text
-                            fontSize={"sm"}
-                            textDecor={"underline"}
-                        >
-                            Fecha Fin:
-                        </Text>
-
-                        <HStack>
-                            <Heading size={"md"}>
-                                <FaRegCalendar />
-                            </Heading>
-                            <Heading size={"md"}>
-                                {formatted.fecha_fin}
-                            </Heading>
-                        </HStack>
-                    </VStack>
-                )}
             </Grid>
+
+            {evento.tipo == "cambio-horario" &&
+                horarios && (
+                    <HorariosData horarios={horarios} />
+                )}
 
             {evento.tipo == "horas-libres" && (
                 <Grid
@@ -241,5 +229,62 @@ export default function EventoCard({
                 )}
             </HStack>
         </VStack>
+    );
+}
+
+function formatEventoCard(evento) {
+    return {
+        fecha_init: getFechaLocal(evento.fecha_init),
+        fecha_fin: evento.fecha_fin
+            ? getFechaLocal(evento.fecha_fin)
+            : null,
+        hora_init: evento.hora_init
+            ? format(
+                  new Date(
+                      `2025-01-01 ${evento.hora_init}`
+                  ),
+                  "hh:mm a"
+              )
+            : null,
+        hora_fin: evento.hora_fin
+            ? format(
+                  new Date(`2025-01-01 ${evento.hora_fin}`),
+                  "hh:mm a"
+              )
+            : null,
+    };
+}
+
+function HorariosData({ horarios }) {
+    return (
+        <HStack
+            alignItems={"start"}
+            gap={"2rem"}
+        >
+            {horarios.map((horario, i) => (
+                <HorarioMiniCard
+                    key={i}
+                    horario={horario}
+                />
+            ))}
+        </HStack>
+    );
+}
+
+function HorarioMiniCard({ horario }) {
+    return (
+        <Box
+            py={"0.5rem"}
+            px={"1rem"}
+            // bg={"gray.50"}
+            rounded={"md"}
+            shadow={"sm"}
+            borderColor={"pink.500"}
+            borderWidth={"2px"}
+        >
+            <Text fontWeight={700}>
+                {horario.inicio} - {horario.final}
+            </Text>
+        </Box>
     );
 }

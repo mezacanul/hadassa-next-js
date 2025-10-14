@@ -270,6 +270,13 @@ function encodeHorarios(horarios) {
     });
 }
 
+function decodeJSONToHorarioObjects(horarios) {
+    const arrayOfObjects = JSON.parse(horarios);
+    return arrayOfObjects.map((horario) =>
+        getHorarioObject(horario)
+    );
+}
+
 export {
     decodeHorario,
     encodeHorarios,
@@ -290,4 +297,5 @@ export {
     queryPlusFilters,
     parseQueryFilters,
     getHorarioObject,
+    decodeJSONToHorarioObjects,
 };
