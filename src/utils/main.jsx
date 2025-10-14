@@ -125,10 +125,10 @@ function getFechaLocal(fecha) {
     );
     const formatted = format(
         new Date(fecha_zoned),
-        "dd 'de' MMMM",
+        "EEEE dd 'de' MMMM",
         { locale: es }
     );
-    return formatted;
+    return capitalizeFirst(formatted);
 }
 
 function formatEventType(type) {

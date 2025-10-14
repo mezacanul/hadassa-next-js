@@ -25,7 +25,8 @@ export default async function handler(req, res) {
                         eventos 
                     WHERE 
                         id_lashista = ?
-                        AND fecha_init >= ?
+                    AND fecha_init >= ?
+                    AND status = 1
                     ORDER BY status DESC, fecha_init ASC`,
                     [lashista, today]
                 );
