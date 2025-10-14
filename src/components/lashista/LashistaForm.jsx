@@ -29,12 +29,12 @@ export default function LashistaForm({ lashista }) {
         nombre: "",
         email: "",
         password: "",
-        horarioLV: null,
-        horarioSBD: null,
+        horarioLV: null || [],
+        horarioSBD: null || [],
     });
 
     useEffect(() => {
-        setLashistaForm({
+        const incoming = {
             nombre: lashista.nombre,
             email: lashista.email,
             password: lashista.password,
@@ -44,7 +44,9 @@ export default function LashistaForm({ lashista }) {
             horarioSBD: lashista.horarioSBD
                 .split("-")
                 .map((hora) => hora.replace(" ", "")),
-        });
+        };
+        // console.log("incoming", incoming);
+        setLashistaForm(incoming);
     }, []);
 
     useEffect(() => {
@@ -216,10 +218,10 @@ export default function LashistaForm({ lashista }) {
                         onClick={deleteLastHorario}
                         colorPalette={"pink"}
                         fontSize={"1.2rem"}
-                        // disabled={
-                        //     lashistaForm.horarioLV.length <
-                        //     2
-                        // }
+                        disabled={
+                            lashistaForm.horarioLV.length ==
+                            1
+                        }
                     >
                         {"-"}
                     </Button>
@@ -227,10 +229,10 @@ export default function LashistaForm({ lashista }) {
                         onClick={addHorario}
                         colorPalette={"pink"}
                         fontSize={"1.2rem"}
-                        // disabled={
-                        //     lashistaForm.horarioLV.length >=
-                        //     2
-                        // }
+                        disabled={
+                            lashistaForm.horarioLV.length ==
+                            2
+                        }
                     >
                         {"+"}
                     </Button>

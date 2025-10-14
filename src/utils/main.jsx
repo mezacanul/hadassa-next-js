@@ -125,10 +125,10 @@ function getFechaLocal(fecha) {
     );
     const formatted = format(
         new Date(fecha_zoned),
-        "dd 'de' MMMM",
+        "EEEE dd 'de' MMMM",
         { locale: es }
     );
-    return formatted;
+    return capitalizeFirst(formatted);
 }
 
 function formatEventType(type) {
@@ -203,7 +203,36 @@ function formatEventos(
     // const hora_start = horario.length > 1 ? horario[1][0]
     // const fecha_init =
 
-    const eventos = eventsArr.map((ev) => {
+    let eventosCambioHorario = eventsArr.filter((ev) => {
+        return ev.tipo == "cambio-horario";
+    });
+    let formattedCambioHorario = [];
+
+    if (eventosCambioHorario.length > 0) {
+        eventosCambioHorario.forEach((ev) => {
+            const horarios = decodeJSONToHorarioObjects(
+                ev.horarios
+            );
+            horarios.forEach((horario) => {
+                formattedCambioHorario.push({
+                    ...ev,
+                    hora_init: horario.inicio,
+                    hora_fin: horario.final,
+                });
+            });
+        });
+    }
+    // console.log(
+    //     "eventos con cambio de horario",
+    //     formattedCambioHorario
+    // );
+
+    let eventos = eventsArr.filter((ev) => {
+        return ev.tipo != "cambio-horario";
+    });
+    eventos = [...eventos, ...formattedCambioHorario];
+    eventos = eventos.map((ev) => {
+        const allow = ["horas-libres", "cambio-horario"];
         let horario = getHorarioByDayNumber(
             lashistas[ev.id_lashista],
             todayNumber
@@ -213,12 +242,12 @@ function formatEventos(
             title: `${ev.titulo}`,
             horario,
             start: `${ev.fecha_init}T${
-                ev.tipo == "horas-libres"
+                allow.includes(ev.tipo)
                     ? ev.hora_init
                     : horario[0]
             }:00`,
             end: `${ev.fecha_init}T${
-                ev.tipo == "horas-libres"
+                allow.includes(ev.tipo)
                     ? ev.hora_fin
                     : horario[1]
             }:00`,
@@ -270,6 +299,13 @@ function encodeHorarios(horarios) {
     });
 }
 
+function decodeJSONToHorarioObjects(horarios) {
+    const arrayOfObjects = JSON.parse(horarios);
+    return arrayOfObjects.map((horario) =>
+        getHorarioObject(horario)
+    );
+}
+
 export {
     decodeHorario,
     encodeHorarios,
@@ -290,4 +326,5 @@ export {
     queryPlusFilters,
     parseQueryFilters,
     getHorarioObject,
+    decodeJSONToHorarioObjects,
 };

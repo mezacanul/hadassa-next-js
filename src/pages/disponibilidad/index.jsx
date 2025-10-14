@@ -19,8 +19,10 @@ import { CiCalendarDate } from "react-icons/ci";
 import { IoCloseOutline } from "react-icons/io5";
 import { useCurrentCita } from "../nueva-cita/[date]";
 import { useRouter } from "next/navigation";
+import { loadHook } from "@/utils/lattice-design";
 
 export default function Disponibilidad() {
+    const [loader, setLoader] = loadHook("useLoader");
     const [selected, setSelected] = useState({
         lashista: null,
         servicio: null,
@@ -49,6 +51,7 @@ export default function Disponibilidad() {
     const router = useRouter();
 
     useEffect(() => {
+        setLoader(false);
         Promise.all([
             axios.get("/api/lashistas"),
             axios.get("/api/servicios"),

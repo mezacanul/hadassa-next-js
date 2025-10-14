@@ -41,17 +41,32 @@ export default function Eventos({ w, lashistaID }) {
         useState(null);
 
     useEffect(() => {
-        if (router.isReady && currentView == "tabla") {
+        // if (router.isReady && currentView == "tabla") {
+        // setEventos(null);
+        console.log(lashistaID);
+        fetchEventos();
+        // }
+    }, []);
+
+    function handleBack(reload = false) {
+        setCurrentView("tabla");
+        // setTimeout(() => {
+        setCurrentEvento(null);
+        // }, 50);
+        if (reload == true) {
             setEventos(null);
-            console.log(lashistaID);
-            axios
-                .get(`/api/eventos?lashista=${lashistaID}`)
-                .then((axiosResp) => {
-                    console.log(axiosResp);
-                    setEventos(axiosResp.data);
-                });
+            fetchEventos();
         }
-    }, [router.isReady, currentView]);
+    }
+
+    function fetchEventos() {
+        axios
+            .get(`/api/eventos?lashista=${lashistaID}`)
+            .then((axiosResp) => {
+                console.log(axiosResp);
+                setEventos(axiosResp.data);
+            });
+    }
 
     // useEffect(() => {
     //     console.log(currentView);
@@ -96,6 +111,7 @@ export default function Eventos({ w, lashistaID }) {
                 <NuevoEvento
                     setCurrentView={setCurrentView}
                     lashistaID={lashistaID}
+                    handleBack={handleBack}
                 />
             )}
             {currentEvento && currentView == "evento" && (
@@ -103,6 +119,7 @@ export default function Eventos({ w, lashistaID }) {
                     evento={currentEvento}
                     setCurrentEvento={setCurrentEvento}
                     setCurrentView={setCurrentView}
+                    handleBack={handleBack}
                 />
             )}
         </VStack>
@@ -128,7 +145,11 @@ function formatHourMUI(value) {
     return dayjs(`2025-01-01T${value}`);
 }
 
-function NuevoEvento({ setCurrentView, lashistaID }) {
+function NuevoEvento({
+    setCurrentView,
+    lashistaID,
+    handleBack,
+}) {
     const [status, setStatus] = useState("iddle");
     const [tipoEvento, setTipoEvento] = useState([
         "horas-libres",
@@ -211,13 +232,13 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                     gridTemplateColumns={"1fr 1fr"}
                     gap={"1rem"}
                 >
-                    <SelectTipo
-                        tipoEvento={tipoEvento}
-                        setTipoEvento={setTipoEvento}
-                    />
                     <FechaEvento
                         eventoForm={eventoForm}
                         setEventoForm={setEventoForm}
+                    />
+                    <SelectTipo
+                        tipoEvento={tipoEvento}
+                        setTipoEvento={setTipoEvento}
                     />
                 </Grid>
 
@@ -290,11 +311,7 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                             <>
                                 <Button
                                     shadow={"sm"}
-                                    onClick={() => {
-                                        setCurrentView(
-                                            "tabla"
-                                        );
-                                    }}
+                                    onClick={handleBack}
                                     bg={"gray.600"}
                                 >
                                     Cancelar
@@ -330,9 +347,7 @@ function NuevoEvento({ setCurrentView, lashistaID }) {
                             cursor: "pointer",
                         }}
                         textDecor={"underline"}
-                        onClick={() => {
-                            setCurrentView("tabla");
-                        }}
+                        onClick={() => handleBack(true)}
                     >
                         Atrás
                     </Text>

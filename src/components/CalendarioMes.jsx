@@ -33,12 +33,25 @@ export default function CalendarioMes() {
     const router = useRouter();
     const [openDialogue, setOpenDialogue] = useState(false);
     // const [selectedDate, setSelectedDate] = useState("");
-    const [displayedMonthIndex, setDisplayedMonthIndex] = useState(
-        new Date().getMonth()
+    const [displayedMonthIndex, setDisplayedMonthIndex] =
+        useState(new Date().getMonth());
+    const [selectedDate, setSelectedDate] = loadHook(
+        "useSelectedDate"
     );
-    const [selectedDate, setSelectedDate] = loadHook("useSelectedDate");
     // const [hoyRef, setHoyRef] = useHoyRef()
     // const [calendarControl ] = useCalendarControl();
+
+    useEffect(() => {
+        if (calendarRef.current && selectedDate) {
+            goToSelectedDate(selectedDate);
+            setTimeout(() => {
+                const el = document.querySelector(
+                    `.fc-daygrid-day[data-date="${selectedDate}"]`
+                );
+                showSelectedDate(el);
+            }, 100);
+        }
+    }, [calendarRef.current]);
 
     const formatDateTitleOnMonthCalendar = (date) => {
         const monthNames = [
@@ -62,32 +75,32 @@ export default function CalendarioMes() {
         return `${month} de ${year}`;
     };
 
+    // useEffect(() => {
+    //     if (calendarRef.current && selectedDate) {
+    //         console.log("Go to", selectedDate);
+    //         goToSelectedDate(selectedDate);
+    //     }
+    // }, [calendarRef.current]);
+
     useEffect(() => {
         // console.log("Displayed Month Index: ", displayedMonthIndex);
     }, [displayedMonthIndex]);
 
-    // function handleDayClick() {
-    //     console.log(hoyRef);
-    // }
+    function showSelectedDate(el) {
+        document
+            .querySelectorAll("td.fc-daygrid-day")
+            .forEach((td) => {
+                td.classList.remove("day-clicked");
+            });
+        el.classList.add("day-clicked");
+    }
+
+    function goToSelectedDate(selectedDate) {
+        calendarRef.current.getApi().gotoDate(selectedDate);
+    }
 
     return (
-        // <Dialog.Root
-        //     open={openDialogue}
-        //     lazyMount
-        //     placement={"center"}
-        //     size={"lg"}
-        // >
-        //     <AgendarCitaModal
-        //         setOpenDialogue={setOpenDialogue}
-        //         selectedDate={selectedDate}
-        //         // data={currentEventDialogue}
-        //     />
         <VStack id="MesCalendar">
-            {/* <Button onClick={()=>{
-                console.log(hoyRef);
-            }}>
-                hoyRef
-            </Button> */}
             <Box width="100%">
                 <style>{DayGridStyles}</style>
                 <style>{MesCalendarStyles}</style>
@@ -114,14 +127,20 @@ export default function CalendarioMes() {
                     weekends={true}
                     hiddenDays={[0]}
                     locales={[esLocale]} // Include the Spanish locale
-                    titleFormat={formatDateTitleOnMonthCalendar}
+                    titleFormat={
+                        formatDateTitleOnMonthCalendar
+                    }
                     customButtons={{
                         today: {
                             text: "Hoy",
                             click: function () {
-                                calendarRef.current.getApi().today(); // Default "today" behavior
+                                calendarRef.current
+                                    .getApi()
+                                    .today(); // Default "today" behavior
                                 setSelectedDate(null);
-                                console.log("Today button clicked!"); // Your callback
+                                console.log(
+                                    "Today button clicked!"
+                                ); // Your callback
                                 // Add your custom logic here
                             },
                         },
@@ -129,29 +148,60 @@ export default function CalendarioMes() {
                     dayCellDidMount={(info) => {
                         // Check if date is today and add class on mount
                         const today = new Date();
-                        const formattedToday = format(today, "yyyy-MM-dd");
-                        const formattedDate = format(info.date, "yyyy-MM-dd");
-                        if (formattedDate === formattedToday) {
-                            info.el.classList.add("day-clicked");
+                        const formattedToday = format(
+                            today,
+                            "yyyy-MM-dd"
+                        );
+                        const formattedDate = format(
+                            info.date,
+                            "yyyy-MM-dd"
+                        );
+                        if (
+                            formattedDate === formattedToday
+                        ) {
+                            info.el.classList.add(
+                                "day-clicked"
+                            );
                         }
 
-                        info.el.addEventListener("click", () => {
-                            const formattedDate = format(
-                                info.date,
-                                "yyyy-MM-dd"
-                            );
-                            setSelectedDate(formattedDate);
-                            document
-                                .querySelectorAll("td.fc-daygrid-day")
-                                .forEach((td) => {
-                                    td.classList.remove("day-clicked");
-                                });
-                            info.el.classList.add("day-clicked");
-                            console.log("INFO", info, info.el);
-                        });
+                        info.el.addEventListener(
+                            "click",
+                            () => {
+                                const formattedDate =
+                                    format(
+                                        info.date,
+                                        "yyyy-MM-dd"
+                                    );
+                                setSelectedDate(
+                                    formattedDate
+                                );
+                                showSelectedDate(info.el);
+
+                                console.log(
+                                    "INFO",
+                                    info,
+                                    info.el
+                                );
+                            }
+                        );
                     }}
                     eventClick={(info) => {
                         console.log("info", info);
+                    }}
+                    viewDidMount={(info) => {
+                        if (selectedDate) {
+                            // goToSelectedDate();
+                            // setTimeout(() => {
+                            const dayCell =
+                                document.querySelector(
+                                    `.fc-daygrid-day[data-date="${selectedDate}"]`
+                                );
+                            if (dayCell) {
+                                showSelectedDate(dayCell);
+                            }
+                            // }, 100);
+                        }
+                        // goToSelectedDate();
                     }}
                 />
             </Box>
@@ -161,9 +211,15 @@ export default function CalendarioMes() {
 }
 
 function renderEventContent(eventInfo) {
-    let color = eventInfo.event.title == "Disponible" ? "#198754" : "#6c757d";
+    let color =
+        eventInfo.event.title == "Disponible"
+            ? "#198754"
+            : "#6c757d";
     return (
-        <Box bg={color} p={"0.2rem"}>
+        <Box
+            bg={color}
+            p={"0.2rem"}
+        >
             <Text>{eventInfo.event.title}</Text>
         </Box>
     );
@@ -189,14 +245,23 @@ const DayBox = (router) => (info) => {
     return (
         <div>
             <p>{info.dayNumberText}</p>
-            <p style={{ fontSize: "1.2rem", marginTop: "0.5rem" }}>
+            <p
+                style={{
+                    fontSize: "1.2rem",
+                    marginTop: "0.5rem",
+                }}
+            >
                 {today == formattedDate && "Hoy"}
             </p>
         </div>
     );
 };
 
-function AgendarCitaModal({ setOpenDialogue, selectedDate, data }) {
+function AgendarCitaModal({
+    setOpenDialogue,
+    selectedDate,
+    data,
+}) {
     return (
         <Portal>
             <Dialog.Backdrop />
@@ -208,7 +273,9 @@ function AgendarCitaModal({ setOpenDialogue, selectedDate, data }) {
                     alignItems={"center"}
                 >
                     <Dialog.Header>
-                        <Dialog.Title>Agendar Nueva Cita</Dialog.Title>
+                        <Dialog.Title>
+                            Agendar Nueva Cita
+                        </Dialog.Title>
                     </Dialog.Header>
 
                     <CitaForm
@@ -225,12 +292,20 @@ function CitaForm({ selectedDate, setOpenDialogue }) {
     return (
         <Dialog.Body w={"30vw"}>
             <Card.Root>
-                <Card.Body gap="4" w={"30vw"} mb={"2rem"}>
-                    <Card.Title mt="2">{selectedDate}</Card.Title>
+                <Card.Body
+                    gap="4"
+                    w={"30vw"}
+                    mb={"2rem"}
+                >
+                    <Card.Title mt="2">
+                        {selectedDate}
+                    </Card.Title>
                     <Card.Description>
                         <p>Servicio</p>
                         <select>
-                            <option value="test">test</option>
+                            <option value="test">
+                                test
+                            </option>
                         </select>
                     </Card.Description>
                     <Card.Description>
@@ -267,10 +342,18 @@ function CitaForm({ selectedDate, setOpenDialogue }) {
 
 function renderResourceLabel(info) {
     return (
-        <div style={{ padding: "8px", textAlign: "center" }}>
+        <div
+            style={{ padding: "8px", textAlign: "center" }}
+        >
             <img
-                style={{ width: "4rem", marginBottom: "0.5rem" }}
-                src={"img/lashistas/" + info.resource.extendedProps.src}
+                style={{
+                    width: "4rem",
+                    marginBottom: "0.5rem",
+                }}
+                src={
+                    "img/lashistas/" +
+                    info.resource.extendedProps.src
+                }
             />
             <p
                 style={{
@@ -289,7 +372,10 @@ function renderResourceLabel(info) {
                 }}
             >
                 <LuBedSingle
-                    style={{ fontSize: "1.4rem", color: "rgb(228, 129, 167)" }}
+                    style={{
+                        fontSize: "1.4rem",
+                        color: "rgb(228, 129, 167)",
+                    }}
                 />
                 <span
                     style={{
