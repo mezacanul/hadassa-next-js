@@ -25,6 +25,7 @@ export default function EventoCard({
     evento,
     setCurrentEvento,
     setCurrentView,
+    handleBack,
 }) {
     const [horarios, setHorarios] = useState(null);
     const [status, setStatus] = useState("iddle");
@@ -58,10 +59,7 @@ export default function EventoCard({
                 console.log(axiosResp);
                 const resp = axiosResp.data;
                 if (resp.success && resp.affectedRows > 0) {
-                    setCurrentView("tabla");
-                    setTimeout(() => {
-                        setCurrentEvento(null);
-                    }, 100);
+                    handleBack(true);
                 }
             });
     }
@@ -202,12 +200,7 @@ export default function EventoCard({
                             shadow={"sm"}
                             variant={"subtle"}
                             colorPalette={"blue"}
-                            onClick={() => {
-                                setCurrentView("tabla");
-                                setTimeout(() => {
-                                    setCurrentEvento(null);
-                                }, 100);
-                            }}
+                            onClick={handleBack}
                             size={"xs"}
                             fontWeight={700}
                         >
