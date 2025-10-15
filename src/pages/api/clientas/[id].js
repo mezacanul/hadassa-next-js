@@ -92,6 +92,6 @@ export default async function handler(req, res) {
         console.error("Error:", error); // Debug
         res.status(500).json({ error });
     } finally {
-        if (connection) await connection.end(); // Close connection
+        //if (connection) await connection.end(); // Close connection
     }
 }

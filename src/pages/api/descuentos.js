@@ -29,6 +29,6 @@ export default async function handler(req, res) {
     } catch (error) {
         res.status(500).json({ error });
     } finally {
-        await connection.end();
+        //await connection.end();
     }
 }
