@@ -8,6 +8,8 @@ async function getCamasIDsByLashista(lashista) {
     return rows;
 }
 
-export default {
+const camasRepository = {
     getCamasIDsByLashista,
 };
+
+export default camasRepository;

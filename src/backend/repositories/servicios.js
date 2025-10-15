@@ -13,6 +13,8 @@ async function getAll(id) {
     return rows;
 }
 
-export default {
+const serviciosRepository = {
     getAll,
 };
+
+export default serviciosRepository;

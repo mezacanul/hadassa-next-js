@@ -6,6 +6,8 @@ async function getById(id) {
     return rows;
 }
 
-export default {
+const lashistasRepository = {
     getById,
 };
+
+export default lashistasRepository;

@@ -20,6 +20,8 @@ async function getByFechaAndLashista(fecha, lashista) {
     return rows;
 }
 
-export default {
+const eventosRepository = {
     getByFechaAndLashista,
 };
+
+export default eventosRepository;

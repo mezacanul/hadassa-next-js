@@ -180,10 +180,12 @@ async function getCitasDelDiaByLashista(fecha, lashista) {
     return rows;
 }
 
-export default {
+const citasRepository = {
     getByClientaID,
     getByID,
     getByMultipleFilters,
     createCita,
     getCitasDelDiaByLashista,
 };
+
+export default citasRepository;

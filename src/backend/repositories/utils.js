@@ -16,7 +16,9 @@ async function getStudioHorarios() {
     return rows;
 }
 
-export default {
+const utilsRepository = {
     generateUUID,
     getStudioHorarios,
 };
+
+export default utilsRepository;
