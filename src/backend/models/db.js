@@ -1,6 +1,12 @@
 import mysql from "mysql2/promise";
 import { dbConfig } from "../config/db";
 
-const connection = await mysql.createConnection(dbConfig);
+// Create a connection pool to reuse connections efficiently
+const pool = mysql.createPool({
+    ...dbConfig,
+    connectionLimit: 10,
+    queueLimit: 0,
+    waitForConnections: true,
+});
 
-export default connection;
+export default pool;

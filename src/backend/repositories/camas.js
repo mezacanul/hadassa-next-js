@@ -1,10 +1,9 @@
-import connection from "../models/db";
+// import connection from "../models/db";
+import pool from "../models/db";
 
 async function getCamasIDsByLashista(lashista) {
     const query = `SELECT id FROM camas WHERE lashista_id = ?`;
-    const [rows] = await connection.execute(query, [
-        lashista,
-    ]);
+    const [rows] = await pool.query(query, [lashista]);
     return rows;
 }
 

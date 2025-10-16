@@ -1,8 +1,9 @@
-import connection from "../models/db";
+// import connection from "../models/db";
+import pool from "../models/db";
 
 async function generateUUID() {
     const query = `SELECT UUID() AS id`;
-    const [rows] = await connection.execute(query);
+    const [rows] = await pool.query(query);
     return rows;
 }
 
@@ -12,7 +13,7 @@ async function getStudioHorarios() {
             *
         FROM cat_horarios
     `;
-    const [rows] = await connection.execute(query);
+    const [rows] = await pool.query(query);
     return rows;
 }
 

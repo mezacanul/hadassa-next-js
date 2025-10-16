@@ -2,7 +2,8 @@ import {
     parseQueryFilters,
     queryPlusFilters,
 } from "@/utils/main";
-import connection from "../models/db";
+// import connection from "../models/db";
+import pool from "../models/db";
 
 async function getByID(id) {
     const query = `SELECT 
@@ -38,7 +39,7 @@ async function getByID(id) {
         LEFT JOIN servicios ON citas.servicio_id = servicios.id
         WHERE citas.id = ?
     `;
-    const [rows] = await connection.execute(query, [id]);
+    const [rows] = await pool.query(query, [id]);
     return rows;
 }
 
@@ -60,7 +61,7 @@ async function getByClientaID(clientaId) {
             citas.fecha DESC,
             citas.hora DESC
     `;
-    const [rows] = await connection.execute(query, [
+    const [rows] = await pool.query(query, [
         clientaId,
     ]);
     return rows;
@@ -105,10 +106,11 @@ async function getByMultipleFilters(reqQuery) {
     let fullQuery = queryPlusFilters(sqlQuery, conditions);
     fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`;
 
-    const [rows] = await connection.execute(
+    const [rows] = await pool.query(
         fullQuery,
         params
     );
+    console.log("repository", rows);
     return rows;
 }
 
@@ -130,7 +132,7 @@ async function createCita(cita, uuid, hora) {
                 added
             ) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
-        const [mysql_response] = await connection.execute(
+        const [mysql_response] = await pool.query(
             query,
             [
                 uuid,
@@ -173,7 +175,7 @@ async function getCitasDelDiaByLashista(fecha, lashista) {
         AND citas.lashista_id = ? 
         AND citas.status != 0
     `;
-    const [rows] = await connection.execute(query, [
+    const [rows] = await pool.query(query, [
         fecha,
         lashista,
     ]);

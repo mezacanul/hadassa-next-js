@@ -1,4 +1,5 @@
-import connection from "../models/db";
+// import connection from "../models/db";
+import pool from "../models/db";
 
 async function getByFechaAndLashista(fecha, lashista) {
     const query = `
@@ -13,7 +14,7 @@ async function getByFechaAndLashista(fecha, lashista) {
             AND id_lashista = ?
             AND status = 1
     `;
-    const [rows] = await connection.execute(query, [
+    const [rows] = await pool.query(query, [
         fecha,
         lashista,
     ]);
