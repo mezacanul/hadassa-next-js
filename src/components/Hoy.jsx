@@ -1,6 +1,11 @@
 "use client";
 
-import { Box, Heading, Text, VStack } from "@chakra-ui/react";
+import {
+    Box,
+    Heading,
+    Text,
+    VStack,
+} from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -8,8 +13,13 @@ import { loadHook } from "@/utils/lattice-design";
 import { format } from "date-fns";
 import { useRouter as useNextNav } from "next/navigation";
 import { CDN } from "@/config/cdn";
+import { AgGridReact } from "ag-grid-react";
+import "@/config/agGridSetup";
+import { sortByHora } from "@/utils/disponibilidad";
+import { useToken } from "@chakra-ui/react";
 
 export default function Hoy() {
+    const primaryColor = useToken("colors", "blue.600");
     const [loading, setLoading] = loadHook("useLoader");
     const [resources, setResources] = useState(null);
     const [selectedDate, setSelectedDate] = loadHook(
@@ -62,7 +72,11 @@ export default function Hoy() {
                             );
 
                             setEventos(eventosResp.data);
-                            setCitas(citasResp.data);
+                            const sortedCitas = sortByHora(
+                                citasResp.data
+                            );
+                            setCitas(sortedCitas);
+                            // setCitas(citasResp.data);
                             setLashistas(
                                 lashistasResp.data
                             );
@@ -99,19 +113,79 @@ export default function Hoy() {
             <Box>
                 <Heading>Hoy</Heading>
 
-                <VStack
-                    gap={"1rem"}
+                <Box
                     my={"1rem"}
-                    align={"start"}
+                    h={"70vh"}
+                    id={"AG-Table"}
+                    w={"100%"}
                 >
-                    {citas &&
-                        citas.map((cita) => (
-                            <Text>{cita.servicio}</Text>
-                        ))}
-                </VStack>
+                    {citas && (
+                        <AgGridReact
+                            rowData={citas}
+                            columnDefs={getColumnDefinitions(primaryColor)}
+                            rowHeight={60}
+                            autoSizeStrategy={{
+                                type: "fitCellContents",
+                            }}
+                            defaultColDef={{
+                                resizable: true,
+                                flex: 1,
+                                cellStyle: {
+                                    display: "flex",
+                                    // justifyContent: "center",
+                                    alignItems: "center",
+                                },
+                            }}
+                            // quickFilterText={searchTerm}
+                        />
+                    )}
+                </Box>
             </Box>
         </Box>
     );
+}
+
+function getColumnDefinitions(primaryColor) {
+    return [
+        {
+            headerName: "Hora",
+            field: "hora",
+            cellStyle: {
+                fontWeight: "bold",
+                fontSize: "1rem",
+                color: primaryColor
+            },
+        },
+        {
+            headerName: "Servicio",
+            field: "servicio",
+            flex: 2,
+            cellStyle: {
+                // fontWeight: "bold",
+                textDecoration: "underline",
+            },
+        },
+        {
+            headerName: "Nombre",
+            // field: "lashista",
+            valueGetter: (params) =>
+                `${params.data.nombres} ${params.data.apellidos}`,
+            // cellRenderer: renderResourceLabel,
+            flex: 2,
+        },
+        {
+            headerName: "Pagado",
+            field: "pagado",
+        },
+        {
+            headerName: "Status",
+            field: "status",
+        },
+        {
+            headerName: "Acciones",
+            field: "acciones",
+        },
+    ];
 }
 
 function renderResourceLabel(info) {
