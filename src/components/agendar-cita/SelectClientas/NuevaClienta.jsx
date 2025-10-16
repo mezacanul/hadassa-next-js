@@ -6,6 +6,7 @@ import {
     Input,
     HStack,
     VStack,
+    Alert,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { ClientaCard } from "./ClientaCard";
