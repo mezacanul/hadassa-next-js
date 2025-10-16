@@ -58,10 +58,9 @@ export default function NuevaClienta({
         if (!isValid) {
             return;
         }
-        
+
         console.log(nuevaClienta);
-        return;
-        axios
+        return axios
             .post("/api/clientas", nuevaClienta)
             .then((nuevaClientaResp) => {
                 console.log(nuevaClientaResp.data);
@@ -118,7 +117,7 @@ export default function NuevaClienta({
             setIsEmpty(true);
             setSearchTerm("");
             setIsDuplicate(false);
-            return false
+            return false;
         }
         setIsEmpty(false);
 
