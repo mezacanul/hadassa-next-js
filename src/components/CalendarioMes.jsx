@@ -121,7 +121,7 @@ export default function CalendarioMes() {
                             dateInfo.view.currentStart.getMonth()
                         ); // Update on month change
                     }}
-                    height="65vh"
+                    height="53vh"
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
                     weekends={true}
@@ -503,7 +503,7 @@ const DayGridStyles = `
     .fc-daygrid-day-number div {
     width: 100%;
     justify-content: space-between !important;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
     }
 `;

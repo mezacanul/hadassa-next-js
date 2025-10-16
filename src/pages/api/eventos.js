@@ -38,9 +38,11 @@ export default async function handler(req, res) {
                 const { fecha } = req.query;
                 const [rows] = await pool.query(
                     `SELECT 
-                        * 
+                        eventos.*,
+                        lashistas.nombre as lashista_nombre
                     FROM 
                         eventos 
+                    LEFT JOIN lashistas ON eventos.id_lashista = lashistas.id
                     WHERE 
                         fecha_init = ?
                         AND status = 1`,

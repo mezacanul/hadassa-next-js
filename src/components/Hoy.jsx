@@ -19,6 +19,8 @@ import "@/config/agGridSetup";
 import { sortByHora } from "@/utils/disponibilidad";
 import { useToken } from "@chakra-ui/react";
 import { formatFechaDMY } from "@/utils/main";
+import TablaCitasMain from "./hoy/TablaCitasMain";
+import TablaEventosMain from "./hoy/TablaEventosMain";
 
 export default function Hoy() {
     const primaryColor = useToken("colors", "blue.600");
@@ -48,6 +50,8 @@ export default function Hoy() {
     useEffect(() => {
         if (selectedDate != null) {
             // return;
+            setCitas(null);
+            setEventos(null);
             console.log("Date updated! ->", selectedDate);
             try {
                 // Use setTimeout to defer the state update to a microtask
@@ -59,18 +63,18 @@ export default function Hoy() {
                         axios.get(
                             `/api/eventos?fecha=${selectedDate}`
                         ),
-                        axios.get(`/api/lashistas`),
+                        // axios.get(`/api/lashistas`),
                     ]).then(
                         ([
                             citasResp,
                             eventosResp,
-                            lashistasResp,
+                            // lashistasResp,
                         ]) => {
                             console.log(
                                 "Responses",
                                 eventosResp.data,
                                 citasResp.data,
-                                lashistasResp.data
+                                // lashistasResp.data
                             );
 
                             setEventos(eventosResp.data);
@@ -79,9 +83,9 @@ export default function Hoy() {
                             );
                             setCitas(sortedCitas);
                             // setCitas(citasResp.data);
-                            setLashistas(
-                                lashistasResp.data
-                            );
+                            // setLashistas(
+                            //     lashistasResp.data
+                            // );
                             console.log(
                                 "Updated Today's View"
                             );
@@ -113,169 +117,30 @@ export default function Hoy() {
     };
 
     return (
-        <Box
+        <VStack
+            gap={"1rem"}
             id="Hoy"
             // bg={"white"}
             w={"100%"}
         >
             <Box w={"100%"}>
-                <Heading>Hoy</Heading>
+                <Text fontSize={"2xl"}>Citas</Text>
 
-                <Box
-                    my={"1rem"}
-                    h={"70vh"}
-                    id={"AG-Table"}
-                    w={"100%"}
-                >
-                    {citas && (
-                        <AgGridReact
-                            rowData={citas}
-                            columnDefs={getColumnDefinitions(
-                                primaryColor,
-                                goToServicio
-                            )}
-                            rowHeight={60}
-                            // autoSizeStrategy={{
-                            //     type: "fitCellContents",
-                            // }}
-                            defaultColDef={{
-                                resizable: true,
-                                flex: 2,
-                                cellStyle: {
-                                    display: "flex",
-                                    // justifyContent: "center",
-                                    alignItems: "center",
-                                },
-                            }}
-                            // quickFilterText={searchTerm}
-                        />
-                    )}
-                </Box>
+                <TablaCitasMain
+                    citas={citas}
+                    primaryColor={primaryColor}
+                    goToServicio={goToServicio}
+                />
             </Box>
-        </Box>
-    );
-}
 
-function getColumnDefinitions(primaryColor, goToServicio) {
-    return [
-        {
-            headerName: "Hora",
-            field: "hora",
-            cellStyle: {
-                fontWeight: "bold",
-                // fontSize: "1rem",
-                color: primaryColor,
-                justifyContent: "center",
-            },
-        },
-        {
-            headerName: "Servicio",
-            field: "servicio",
-            flex: 3,
-            cellStyle: {
-                // fontWeight: "bold",
-                // textDecoration: "underline",
-            },
-            cellClass: "hover-link",
-            onCellClicked: (params) => {
-                goToServicio(params.data.cita_ID);
-            },
-        },
-        {
-            headerName: "Nombre",
-            // field: "lashista",
-            valueGetter: (params) =>
-                `${params.data.nombres} ${params.data.apellidos}`,
-            // cellRenderer: renderResourceLabel,
-            flex: 3,
-        },
-        {
-            headerName: "Lashista",
-            field: "lashista",
-            flex: 2,
-            // minWidth: 100,
-        },
-        // {
-        //     headerName: "Fecha",
-        //     field: "fecha",
-        //     valueGetter: (params) =>
-        //         formatFechaDMY(params.data.fecha),
-        // },
-        {
-            headerName: "Pagado",
-            // field: "pagado",
-            cellRenderer: ({ data }) => (
-                <BadgeCustom
-                    type="pagado"
-                    status={data.pagado}
-                />
-            ),
-        },
-        {
-            headerName: "Status",
-            // field: "status",
-            cellRenderer: ({ data }) => (
-                <BadgeCustom
-                    type="status"
-                    status={data.status}
-                />
-            ),
-        },
-        // {
-        //     headerName: "Acciones",
-        //     field: "acciones",
-        // },
-    ];
-}
+            <Box w={"100%"}>
+                <Text fontSize={"xl"}>Eventos</Text>
 
-function renderResourceLabel(info) {
-    return (
-        <div
-            style={{ padding: "8px", textAlign: "center" }}
-        >
-            <img
-                style={{
-                    width: "3.5rem",
-                    marginBottom: "0.5rem",
-                }}
-                src={
-                    `${CDN}/img/lashistas/` +
-                    info.resource.extendedProps.src
-                }
-            />
-            <p
-                style={{
-                    marginBottom: "0.2rem",
-                    fontWeight: "300",
-                    fontSize: "1rem",
-                }}
-            >
-                {info.resource.title}
-            </p>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                <LuBedSingle
-                    style={{
-                        fontSize: "1.2rem",
-                        color: "rgb(228, 129, 167)",
-                    }}
+                <TablaEventosMain
+                    eventos={eventos}
+                    primaryColor={primaryColor}
                 />
-                <span
-                    style={{
-                        fontSize: "1rem",
-                        fontWeight: "bold",
-                        marginLeft: "0.3rem",
-                        color: "rgb(228, 129, 167)",
-                    }}
-                >
-                    - {info.resource.id.slice(-1)}
-                </span>
-            </div>
-        </div>
+            </Box>
+        </VStack>
     );
 }
