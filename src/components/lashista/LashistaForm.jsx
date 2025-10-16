@@ -14,20 +14,27 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+    decodeHorario,
+    encodeHorarios,
+} from "@/utils/main";
+import { addMinutes, format } from "date-fns";
+import { loadHook } from "@/utils/lattice-design";
 
 export default function LashistaForm({ lashista }) {
+    const [horarios] = loadHook("useHorarios");
     const [actualizarStatus, setActualizarStatus] =
         useState("iddle");
     const [lashistaForm, setLashistaForm] = useState({
         nombre: "",
         email: "",
         password: "",
-        horarioLV: null,
-        horarioSBD: null,
+        horarioLV: null || [],
+        horarioSBD: null || [],
     });
 
     useEffect(() => {
-        setLashistaForm({
+        const incoming = {
             nombre: lashista.nombre,
             email: lashista.email,
             password: lashista.password,
@@ -37,7 +44,9 @@ export default function LashistaForm({ lashista }) {
             horarioSBD: lashista.horarioSBD
                 .split("-")
                 .map((hora) => hora.replace(" ", "")),
-        });
+        };
+        // console.log("incoming", incoming);
+        setLashistaForm(incoming);
     }, []);
 
     useEffect(() => {
@@ -64,6 +73,54 @@ export default function LashistaForm({ lashista }) {
                 console.log(axiosResp);
                 setActualizarStatus("success");
             });
+    }
+
+    const addHorario = () => {
+        // console.log("horarios", horarios);
+        const horariosLV = horarios.filter(
+            (horario) => horario.clave == "LV"
+        )[0];
+        // console.log("horariosLV", horariosLV);
+
+        const decodedHorarios = lashistaForm.horarioLV.map(
+            (horario) => decodeHorario(horario)
+        );
+        console.log("decodedHorarios", decodedHorarios);
+
+        const l1 =
+            decodedHorarios[decodedHorarios.length - 1];
+        const l11 = l1[l1.length - 1];
+        // Add 30 minutes to l11 using date-fns
+        const [hours, minutes] = l11.split(":").map(Number);
+        const baseDate = new Date();
+        baseDate.setHours(hours, minutes, 0, 0);
+        const newTime = addMinutes(baseDate, 30);
+        const fNewTime = format(newTime, "HH:mm");
+
+        const newHorarios = [
+            ...decodedHorarios,
+            [fNewTime, horariosLV.final],
+        ];
+
+        console.log(
+            encodeHorarios(newHorarios),
+            lashistaForm.horarioLV
+        );
+        setLashistaForm({
+            ...lashistaForm,
+            horarioLV: encodeHorarios(newHorarios),
+        });
+    };
+
+    function deleteLastHorario() {
+        const newHorarios = lashistaForm.horarioLV.slice(
+            0,
+            -1
+        );
+        setLashistaForm({
+            ...lashistaForm,
+            horarioLV: newHorarios,
+        });
     }
 
     // const horariosLV = JSON.parse(lashista.horarioLV)
@@ -118,11 +175,13 @@ export default function LashistaForm({ lashista }) {
             <VStack
                 alignItems={"start"}
                 w={"100%"}
+                gap={"1rem"}
             >
                 <Text
                     mb={"0.5rem"}
                     fontWeight={600}
                     fontSize={"0.8rem"}
+                    color={"pink.600"}
                 >
                     {"Horario de Lunes a Viernes"}
                 </Text>
@@ -150,6 +209,34 @@ export default function LashistaForm({ lashista }) {
                             )
                         )}
                 </VStack>
+
+                <HStack
+                    w={"100%"}
+                    gap={"0.5rem"}
+                >
+                    <Button
+                        onClick={deleteLastHorario}
+                        colorPalette={"pink"}
+                        fontSize={"1.2rem"}
+                        disabled={
+                            lashistaForm.horarioLV.length ==
+                            1
+                        }
+                    >
+                        {"-"}
+                    </Button>
+                    <Button
+                        onClick={addHorario}
+                        colorPalette={"pink"}
+                        fontSize={"1.2rem"}
+                        disabled={
+                            lashistaForm.horarioLV.length ==
+                            2
+                        }
+                    >
+                        {"+"}
+                    </Button>
+                </HStack>
             </VStack>
 
             {/* Horario SBD Selector  */}
@@ -161,6 +248,7 @@ export default function LashistaForm({ lashista }) {
                     mb={"0.5rem"}
                     fontWeight={600}
                     fontSize={"0.8rem"}
+                    color={"pink.600"}
                 >
                     {"Horario Sábado"}
                 </Text>
@@ -248,9 +336,7 @@ function TimeSelector({
 }) {
     //Array of [ "HH:mm", ... ]
     const [horariosArr, setHorariosArr] = useState(
-        horarios
-            .split("-")
-            .map((hora) => hora.replace(" ", ""))
+        decodeHorario(horarios)
     );
 
     function handleChange(newValue, index, i) {
@@ -275,7 +361,7 @@ function TimeSelector({
     }
 
     useEffect(() => {
-        // console.log(horariosArr);
+        console.log("horariosArr", horariosArr);
     }, []);
 
     return (

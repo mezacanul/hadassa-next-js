@@ -125,10 +125,10 @@ function getFechaLocal(fecha) {
     );
     const formatted = format(
         new Date(fecha_zoned),
-        "dd 'de' MMMM",
+        "EEEE dd 'de' MMMM",
         { locale: es }
     );
-    return formatted;
+    return capitalizeFirst(formatted);
 }
 
 function formatEventType(type) {
@@ -154,14 +154,14 @@ function getHorarioByDayNumber(lashista, todayNumber) {
                 : JSON.parse(lashista.horarioLV).map((hr) =>
                       getHorarioArray(hr)
                   );
-    
+
         horarioJSON =
             todayNumber > 4
                 ? horarioJSON
                 : horarioJSON.length > 1
                 ? [horarioJSON[0][0], horarioJSON[1][1]]
                 : horarioJSON[0];
-    
+
         return horarioJSON;
     } catch (error) {
         console.log(error);
@@ -170,18 +170,22 @@ function getHorarioByDayNumber(lashista, todayNumber) {
 
 function getMinutes(startTime, endTime) {
     // Parse hours and minutes
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-  
+    const [startHour, startMinute] = startTime
+        .split(":")
+        .map(Number);
+    const [endHour, endMinute] = endTime
+        .split(":")
+        .map(Number);
+
     // Convert to minutes since midnight
     const startTotalMinutes = startHour * 60 + startMinute;
     const endTotalMinutes = endHour * 60 + endMinute;
-  
+
     // Calculate difference
     const diffMinutes = endTotalMinutes - startTotalMinutes;
-  
+
     return diffMinutes;
-  }
+}
 
 function getDayIndexNumber(date) {
     const timeZone = "America/Mexico_City";
@@ -199,22 +203,51 @@ function formatEventos(
     // const hora_start = horario.length > 1 ? horario[1][0]
     // const fecha_init =
 
-    const eventos = eventsArr.map((ev) => {
+    let eventosCambioHorario = eventsArr.filter((ev) => {
+        return ev.tipo == "cambio-horario";
+    });
+    let formattedCambioHorario = [];
+
+    if (eventosCambioHorario.length > 0) {
+        eventosCambioHorario.forEach((ev) => {
+            const horarios = decodeJSONToHorarioObjects(
+                ev.horarios
+            );
+            horarios.forEach((horario) => {
+                formattedCambioHorario.push({
+                    ...ev,
+                    hora_init: horario.inicio,
+                    hora_fin: horario.final,
+                });
+            });
+        });
+    }
+    // console.log(
+    //     "eventos con cambio de horario",
+    //     formattedCambioHorario
+    // );
+
+    let eventos = eventsArr.filter((ev) => {
+        return ev.tipo != "cambio-horario";
+    });
+    eventos = [...eventos, ...formattedCambioHorario];
+    eventos = eventos.map((ev) => {
+        const allow = ["horas-libres", "cambio-horario"];
         let horario = getHorarioByDayNumber(
             lashistas[ev.id_lashista],
             todayNumber
         );
-        
+
         return {
             title: `${ev.titulo}`,
             horario,
             start: `${ev.fecha_init}T${
-                ev.tipo == "horas-libres"
+                allow.includes(ev.tipo)
                     ? ev.hora_init
                     : horario[0]
             }:00`,
             end: `${ev.fecha_init}T${
-                ev.tipo == "horas-libres"
+                allow.includes(ev.tipo)
                     ? ev.hora_fin
                     : horario[1]
             }:00`,
@@ -246,7 +279,36 @@ function getIndexedCollection(arr) {
     return indexedCollection;
 }
 
+function decodeHorario(horarios) {
+    return horarios
+        .split("-")
+        .map((hora) => hora.replace(" ", ""));
+}
+
+function getHorarioObject(horarios) {
+    const horariosArr = decodeHorario(horarios);
+    return {
+        inicio: horariosArr[0],
+        final: horariosArr[1],
+    };
+}
+
+function encodeHorarios(horarios) {
+    return horarios.map((horario) => {
+        return `${horario[0]} - ${horario[1]}`;
+    });
+}
+
+function decodeJSONToHorarioObjects(horarios) {
+    const arrayOfObjects = JSON.parse(horarios);
+    return arrayOfObjects.map((horario) =>
+        getHorarioObject(horario)
+    );
+}
+
 export {
+    decodeHorario,
+    encodeHorarios,
     getMinutes,
     getDayIndexNumber,
     getHorarioByDayNumber,
@@ -263,4 +325,6 @@ export {
     formatFechaDMY,
     queryPlusFilters,
     parseQueryFilters,
+    getHorarioObject,
+    decodeJSONToHorarioObjects,
 };

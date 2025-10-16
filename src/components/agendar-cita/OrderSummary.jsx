@@ -116,6 +116,10 @@ export default function OrderSummary({
                     setCitaID(citasResp.data.uuid);
                     setAgendarLoading(false);
                 }
+            })
+            .catch((error) => {
+                setAgendarLoading(null);
+                console.log(error);
             });
     };
 
@@ -465,13 +469,13 @@ export default function OrderSummary({
                 </Button>
             )}
 
-<style>
-    {`
+            <style>
+                {`
         .link-to:hover {
             cursor: pointer;
         }
     `}
-</style>
+            </style>
             {citaID && (
                 <Heading
                     className="link-to"

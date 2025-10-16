@@ -1,6 +1,7 @@
 // pages/api/clientas.js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 import { toZonedTime, format } from "date-fns-tz";
 
 const timeZone = "America/Mexico_City";
@@ -10,22 +11,23 @@ const today = format(
 );
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection(
-        db_info
-    );
+    // const connection = await mysql.createConnection(
+    //     db_info
+    // );
 
     try {
         if (req.method === "GET") {
             if (req.query.lashista) {
                 const { lashista } = req.query;
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     `SELECT 
                         * 
                     FROM 
                         eventos 
                     WHERE 
                         id_lashista = ?
-                        AND fecha_init >= ?
+                    AND fecha_init >= ?
+                    AND status = 1
                     ORDER BY status DESC, fecha_init ASC`,
                     [lashista, today]
                 );
@@ -34,7 +36,7 @@ export default async function handler(req, res) {
 
             if (req.query.fecha) {
                 const { fecha } = req.query;
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     `SELECT 
                         * 
                     FROM 
@@ -58,7 +60,7 @@ export default async function handler(req, res) {
 
             let query =
                 "UPDATE eventos SET status = 0 WHERE id = ?";
-            let [result] = await connection.execute(query, [
+            let [result] = await pool.query(query, [
                 eventoID,
             ]);
             if (result.affectedRows > 0) {
@@ -79,30 +81,53 @@ export default async function handler(req, res) {
         if (req.method === "POST") {
             const nuevo_evento = req.body;
             const { tipo } = nuevo_evento;
-            const [uuidResult] = await connection.execute(
+            const [uuidResult] = await pool.query(
                 `SELECT UUID() AS id`
             );
             const uuid = uuidResult[0].id;
             let mysql_response;
             let sql;
 
+            const [cancelAllCurrentEventos] =
+                await pool.query(
+                    `UPDATE 
+                        eventos 
+                    SET 
+                        status = 0 
+                    WHERE id_lashista = ? 
+                    AND fecha_init = ? 
+                    AND status = 1`,
+                    [
+                        nuevo_evento.lashistaID,
+                        nuevo_evento.fecha_init,
+                    ]
+                );
+            console.log(
+                "cancelAllCurrentEventos",
+                cancelAllCurrentEventos
+            );
+
+            // if (cancelAllCurrentEventos.affectedRows > 0) {
+            // console.log("Canceled all current eventos");
+
             switch (nuevo_evento.tipo) {
                 case "horas-libres":
                     sql = `INSERT INTO eventos 
-                            (
-                                id, 
-                                titulo,
-                                notas,
-                                fecha_init,
-                                hora_init,
-                                hora_fin,
-                                id_lashista,
-                                tipo,
-                                status
-                            )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                                (
+                                    id, 
+                                    titulo,
+                                    notas,
+                                    fecha_init,
+                                    hora_init,
+                                    hora_fin,
+                                    id_lashista,
+                                    tipo,
+                                    status
+                                )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
@@ -112,22 +137,24 @@ export default async function handler(req, res) {
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
                 case "dia-libre":
                     sql = `INSERT INTO eventos 
-                            (
-                                id, 
-                                titulo,
-                                notas,
-                                fecha_init,
-                                id_lashista,
-                                tipo,
-                                status
-                            )
-                        VALUES (?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                                (
+                                    id, 
+                                    titulo,
+                                    notas,
+                                    fecha_init,
+                                    id_lashista,
+                                    tipo,
+                                    status
+                                )
+                            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
@@ -135,32 +162,35 @@ export default async function handler(req, res) {
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
-                case "temporada-libre":
+                case "cambio-horario":
                     sql = `INSERT INTO eventos 
-                            (
-                                id, 
-                                titulo,
-                                notas,
-                                fecha_init,
-                                fecha_fin,
-                                id_lashista,
-                                tipo,
-                                status
-                            )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                                (
+                                    id, 
+                                    titulo,
+                                    notas,
+                                    fecha_init,
+                                    horarios,
+                                    id_lashista,
+                                    tipo,
+                                    status
+                                )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
                             nuevo_evento.fecha_init,
-                            nuevo_evento.fecha_fin,
+                            nuevo_evento.horarios,
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
                 default:
                     break;
@@ -174,11 +204,12 @@ export default async function handler(req, res) {
             } else {
                 res.status(500).json({ error });
             }
+            // }
         }
     } catch (error) {
         res.status(500).json({ error });
     } finally {
         // Close the connection
-        await connection.end();
+        //await connection.end();
     }
 }

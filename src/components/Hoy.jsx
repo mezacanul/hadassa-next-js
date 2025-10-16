@@ -1,492 +1,231 @@
-// app/components/Calendar.jsx
-// "use client";
+"use client";
 
-import FullCalendar from "@fullcalendar/react";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
+import BadgeCustom from "./common/BadgeCustom";
 import {
     Box,
-    Button,
-    Dialog,
-    Portal,
-    Avatar,
-    Card,
     Heading,
-    HStack,
-    Image,
     Text,
-    Badge,
     VStack,
-    CloseButton,
 } from "@chakra-ui/react";
 import { LuBedSingle } from "react-icons/lu";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import esLocale from "@fullcalendar/core/locales/es"; // Import Spanish locale
 import { loadHook } from "@/utils/lattice-design";
-import { parse, format, addMinutes } from "date-fns";
+import { format } from "date-fns";
 import { useRouter as useNextNav } from "next/navigation";
 import { CDN } from "@/config/cdn";
-import {
-    formatEventos,
-    getIndexedCollection,
-} from "@/utils/main";
+import { AgGridReact } from "ag-grid-react";
+import "@/config/agGridSetup";
+import { sortByHora } from "@/utils/disponibilidad";
+import { useToken } from "@chakra-ui/react";
+import { formatFechaDMY } from "@/utils/main";
 
 export default function Hoy() {
-    // const [events, setEvents] = useState([]);
-    const [events, setEvents] = loadHook("useEvents");
+    const primaryColor = useToken("colors", "blue.600");
+    const [loading, setLoading] = loadHook("useLoader");
     const [resources, setResources] = useState(null);
-    const [openDialogue, setOpenDialogue] = useState(false);
-    const [currentEventDialogue, setCurrentEventDialogue] =
-        useState([]);
-    const calendarRef = useRef(null); // Create a ref for the calendar
     const [selectedDate, setSelectedDate] = loadHook(
         "useSelectedDate"
     );
-
+    const [citas, setCitas] = useState(null);
+    const [lashistas, setLashistas] = useState(null);
+    const [eventos, setEventos] = useState(null);
     const NextNav = useNextNav();
-    const [loading, setLoading] = loadHook("useLoader");
+    // const [events, setEvents] = loadHook("useEvents");
 
     useEffect(() => {
-        const formattedToday = format(
-            new Date(),
-            "yyyy-MM-dd"
-        );
+        // -- DEV: When selectDate updates for the first time, it is the same as today
+        if (selectedDate == null) {
+            const formattedToday = format(
+                new Date(),
+                "yyyy-MM-dd"
+            );
+            console.log("formattedToday", formattedToday);
+            setSelectedDate(formattedToday);
+        }
+    }, []);
 
-        if (calendarRef.current) {
-            const calendarApi =
-                calendarRef.current.getApi();
-            // console.log("selectedDate:", selectedDate);
+    useEffect(() => {
+        if (selectedDate != null) {
+            // return;
+            console.log("Date updated! ->", selectedDate);
+            try {
+                // Use setTimeout to defer the state update to a microtask
+                setTimeout(() => {
+                    Promise.all([
+                        axios.get(
+                            `/api/citas?date=${selectedDate}`
+                        ),
+                        axios.get(
+                            `/api/eventos?fecha=${selectedDate}`
+                        ),
+                        axios.get(`/api/lashistas`),
+                    ]).then(
+                        ([
+                            citasResp,
+                            eventosResp,
+                            lashistasResp,
+                        ]) => {
+                            console.log(
+                                "Responses",
+                                eventosResp.data,
+                                citasResp.data,
+                                lashistasResp.data
+                            );
 
-            // -- DEV: We set the current date to today's date
-            // when first mounting the Hoy component
-            if (selectedDate == null) {
-                setSelectedDate(formattedToday);
-            } else {
-                console.log(
-                    "Catched! Date updated ->",
-                    selectedDate
-                );
-                // -- DEV: When selectDate updates for the first time, it is the same as today
-                try {
-                    // Use setTimeout to defer the state update to a microtask
-                    setTimeout(() => {
-                        Promise.all([
-                            axios.get(
-                                `/api/citas?date=${selectedDate}`
-                            ),
-                            axios.get(
-                                `/api/eventos?fecha=${selectedDate}`
-                            ),
-                            axios.get(`/api/lashistas`),
-                        ]).then(
-                            ([
-                                citasResp,
-                                eventosResp,
-                                lashistasResp,
-                            ]) => {
-                                console.log(
-                                    eventosResp.data
-                                );
-                                // console.log(
-                                //     formatEventos(
-                                //         eventosResp.data,
-                                //         lashistasResp.data
-                                //     )
-                                // );
-
-                                console.log(citasResp.data);
-                                setEvents([
-                                    ...formatEvents(
-                                        citasResp.data
-                                    ),
-                                    ...formatEventos(
-                                        eventosResp.data,
-                                        lashistasResp.data,
-                                        selectedDate
-                                    ),
-                                ]);
-                                calendarApi.gotoDate(
-                                    selectedDate
-                                );
-                                console.log(
-                                    "Updated Today's View"
-                                );
-                                // console.log(citasResp.data);
-                            }
-                        );
-                    }, 0);
-                } catch (error) {
-                    console.error(
-                        "Error navigating to date:",
-                        error
+                            setEventos(eventosResp.data);
+                            const sortedCitas = sortByHora(
+                                citasResp.data
+                            );
+                            setCitas(sortedCitas);
+                            // setCitas(citasResp.data);
+                            setLashistas(
+                                lashistasResp.data
+                            );
+                            console.log(
+                                "Updated Today's View"
+                            );
+                        }
                     );
-                }
+                }, 0);
+            } catch (error) {
+                console.error(
+                    "Error navigating to date:",
+                    error
+                );
             }
         }
     }, [selectedDate]);
-
-    useEffect(() => {
-        Promise.all([axios.get("/api/camas")]).then(
-            ([camasResp]) => {
-                setResources(camasResp.data);
-            }
-        );
-    }, []);
 
     const handleEventPreview = (info) => {
         // const { cita_ID } = info.event["_def"].extendedProps
         const cita = info.event["_def"].extendedProps;
         if (cita.status != 3) {
-            const cama_arr = cita.cama_id.split("-");
-
             setLoading(true);
             NextNav.push(`/citas/${cita.cita_ID}`);
             // console.log(info.event.toPlainObject());
         }
     };
 
+    const goToServicio = (citaID) => {
+        setLoading(true);
+        NextNav.push(`/citas/${citaID}`);
+    };
+
     return (
         <Box
             id="Hoy"
-            bg={"white"}
+            // bg={"white"}
+            w={"100%"}
         >
-            <Dialog.Root
-                id="Hoy"
-                open={openDialogue}
-                closeOnInteractOutside
-                // lazyMount
-                placement={"center"}
-                size={"md"}
-            >
-                <CitaDialog
-                    setOpenDialogue={setOpenDialogue}
-                    data={currentEventDialogue}
-                />
+            <Box w={"100%"}>
+                <Heading>Hoy</Heading>
 
-                <Box>
-                    <style>
-                        {`
-                            #Hoy .fc-timegrid-slot-label-cushion {
-                                font-size: 0.85rem;
-                            }
-
-                            #Hoy .fc-timegrid-slots {
-                                // background-color: rgb(255, 238, 249); /* Set your desired color */
-                                // background-color: rgb(255, 249, 254); /* Set your desired color */
-                                background-color: white;
-                                // background-color: transparent;
-                            }
-                            
-                            #Hoy .fc-header-toolbar {
-                                display: none;
-                            }
-
-                            #Hoy .fc-toolbar-title {
-                                font-size: 2.5rem !important;
-                                font-weight: 200 !important;
-                            }
-
-                            #Hoy .fc-v-event {
-                                background-color: transparent;
-                                border: 2px solid black;
-                                opacity: 0.9;
-                            }
-
-                            #Hoy .fc-v-event:has(.confirmado) {
-                                background-color: #fce7f3 !important;
-                                border: 2px solid #ec4899 !important;
-                                opacity: 0.9;
-                            }
-                            
-                            #Hoy .fc-v-event:has(.pendiente) {
-                                background-color: #fefce8 !important;
-                                border: 2px solid #eab308 !important;
-                                opacity: 0.9;
-                            }
-
-                            #Hoy .fc-v-event:has(.evento) {
-                                background-color:rgb(232, 241, 254) !important;
-                                border: 2px solid rgb(23, 46, 137) !important;
-                                opacity: 0.9;
-                            }
-
-                            .fc-timegrid-col:nth-child(3) .fc-timegrid-col-frame {
-                                border-right: 1px solid rgb(210, 210, 210) !important;
-                                z-index: 10;
-                            }
-                            
-                            .fc-timegrid-col:nth-child(5) .fc-timegrid-col-frame {
-                                border-right: 1px solid rgb(210, 210, 210) !important;
-                                z-index: 10;
-                            }
-
-                            #Hoy .fc .fc-timegrid-slot-label {
-                                vertical-align: top;
-                            }
-                        `}
-                    </style>
-                    <FullCalendar
-                        ref={calendarRef} // Attach the ref to FullCalendar
-                        plugins={[
-                            timeGridPlugin,
-                            resourceTimeGridPlugin,
-                        ]}
-                        initialView="resourceTimeGridDay"
-                        resources={resources}
-                        events={events}
-                        initialDate={new Date()}
-                        // initialDate={new Date("04-25-2025")}
-                        slotMinTime="09:00:00"
-                        slotMaxTime="18:00:00"
-                        expandRows={true}
-                        height="260vh"
-                        // headerToolbar={{ left: "title", center: "", right: "" }}
-                        headerToolbar={{
-                            left: "",
-                            center: "",
-                            right: "",
-                        }}
-                        allDaySlot={false} // Removes the all-day row
-                        slotDuration="00:30:00"
-                        slotLabelInterval="00:30:00"
-                        resourceLabelContent={
-                            renderResourceLabel
-                        }
-                        eventClick={handleEventPreview}
-                        locales={[esLocale]} // Include the Spanish locale
-                        // titleFormat={formatHoyTitle}
-                        slotLabelFormat={{
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                        }}
-                        eventContent={(arg) => {
-                            // console.log(arg.event);
-                            const { extendedProps } =
-                                arg.event;
-                            return (
-                                <div
-                                    style={{
-                                        marginLeft:
-                                            "0.3rem",
-                                    }}
-                                    className={
-                                        (extendedProps.status ==
-                                            1 &&
-                                            "pendiente") ||
-                                        (extendedProps.status ==
-                                            2 &&
-                                            "confirmado") ||
-                                        (extendedProps.status ==
-                                            3 &&
-                                            "evento")
-                                    }
-                                >
-                                    <b
-                                        style={{
-                                            fontSize:
-                                                "0.7rem",
-                                            color: "black",
-                                        }}
-                                    >
-                                        {arg.event.title}
-                                    </b>
-                                    <p
-                                        style={{
-                                            fontSize:
-                                                "0.7rem",
-                                            color: "black",
-                                        }}
-                                    >
-                                        {extendedProps.servicio
-                                            ? extendedProps.servicio
-                                            : extendedProps.notas}
-                                    </p>
-                                </div>
-                            );
-                        }}
-                        // viewDidMount={() => {
-                        //     console.log("viewDidMount hoyRef:", hoyRef);
-                        //     // Optionally test the API here
-                        //     if (hoyRef) {
-                        //         hoyRef.gotoDate("2025-04-30"); // Test navigation
-                        //     } else {
-                        //         console.log("No Hoy ref found");
-                        //     }
-                        // }}
-                    />
+                <Box
+                    my={"1rem"}
+                    h={"70vh"}
+                    id={"AG-Table"}
+                    w={"100%"}
+                >
+                    {citas && (
+                        <AgGridReact
+                            rowData={citas}
+                            columnDefs={getColumnDefinitions(
+                                primaryColor,
+                                goToServicio
+                            )}
+                            rowHeight={60}
+                            // autoSizeStrategy={{
+                            //     type: "fitCellContents",
+                            // }}
+                            defaultColDef={{
+                                resizable: true,
+                                flex: 2,
+                                cellStyle: {
+                                    display: "flex",
+                                    // justifyContent: "center",
+                                    alignItems: "center",
+                                },
+                            }}
+                            // quickFilterText={searchTerm}
+                        />
+                    )}
                 </Box>
-            </Dialog.Root>
+            </Box>
         </Box>
     );
 }
 
-function CitaDialog({ setOpenDialogue, data }) {
-    const NextNav = useNextNav();
-    const citaData = { ...data.extendedProps };
-    const [loading, setLoading] = loadHook("useLoader");
-
-    useEffect(() => {
-        // console.log(data);
-    }, []);
-    return (
-        <Portal>
-            <Dialog.Backdrop />
-            <Dialog.Positioner>
-                <Dialog.Content
-                    py={"3rem"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                >
-                    {/* <Dialog.Header>
-                      <Dialog.Title>Dialog Title</Dialog.Title>
-                  </Dialog.Header> */}
-                    <Dialog.Body>
-                        <Card.Root
-                            // shadow={"md"}
-                            w={"25rem"}
-                            py={"1rem"}
-                            px={"1rem"}
-                            borderColor={"pink.500"}
-                            borderWidth={"2px"}
-                        >
-                            <Card.Body gap="4">
-                                <HStack
-                                    justify={"center"}
-                                    w={"100%"}
-                                    mb={"1rem"}
-                                >
-                                    <VStack>
-                                        <Image
-                                            w={"12rem"}
-                                            h={"12rem"}
-                                            borderRadius={
-                                                "50%"
-                                            }
-                                            src={`${CDN}/img/clientas/${
-                                                citaData.foto
-                                                    ? citaData.foto
-                                                    : "avatar-woman.png"
-                                            }`}
-                                            objectFit={
-                                                "cover"
-                                            }
-                                        />
-                                        <Text
-                                            mt={"1rem"}
-                                            fontSize={
-                                                "1rem"
-                                            }
-                                        >{`${citaData.nombres} ${citaData.apellidos}`}</Text>
-                                    </VStack>
-                                </HStack>
-                                <Card.Title
-                                    fontSize={"1.5rem"}
-                                    mt={0}
-                                    mb={"0.5rem"}
-                                    color={"pink.700"}
-                                >
-                                    {citaData.servicio}
-                                </Card.Title>
-
-                                <Card.Description
-                                    justifyContent={
-                                        "space-between"
-                                    }
-                                    display={"flex"}
-                                >
-                                    <Text as="span">
-                                        Hora:
-                                    </Text>
-                                    <Text
-                                        as="span"
-                                        fontWeight={800}
-                                    >
-                                        {citaData.hora}
-                                        {" a.m."}
-                                    </Text>
-                                </Card.Description>
-                                <Card.Description
-                                    justifyContent={
-                                        "space-between"
-                                    }
-                                    display={"flex"}
-                                >
-                                    <Text as="span">
-                                        Lashista:
-                                    </Text>
-                                    <Text
-                                        as="span"
-                                        fontWeight={800}
-                                    >
-                                        {citaData.lashista}
-                                    </Text>
-                                </Card.Description>
-                                <Card.Description
-                                    justifyContent={
-                                        "space-between"
-                                    }
-                                    display={"flex"}
-                                    w={"100%"}
-                                >
-                                    <Text as="span">
-                                        Total a Pagar:
-                                    </Text>
-                                    <Text
-                                        as="span"
-                                        fontWeight={800}
-                                    >
-                                        {/* <Badge
-                                                size={"md"}
-                                                me={"1rem"}
-                                                colorPalette={"green"}
-                                            >
-                                                Pagado
-                                            </Badge> */}
-                                        {`$${citaData.precio}`}
-                                    </Text>
-                                </Card.Description>
-                            </Card.Body>
-                            <Card.Footer
-                                justifyContent="center"
-                                mt={"2rem"}
-                            >
-                                <Button
-                                    bg={"pink.600"}
-                                    onClick={() => {
-                                        setLoading(true);
-                                        setOpenDialogue(
-                                            false
-                                        );
-                                        NextNav.push(
-                                            `/citas/${citaData.cita_ID}`
-                                        );
-                                    }}
-                                >
-                                    Abrir Ticket
-                                </Button>
-                            </Card.Footer>
-                        </Card.Root>
-                    </Dialog.Body>
-                    <Dialog.CloseTrigger
-                        top="0"
-                        insetEnd="-12"
-                        asChild
-                    >
-                        <CloseButton
-                            onClick={() => {
-                                setOpenDialogue(false);
-                            }}
-                            bg="bg"
-                            size="sm"
-                        />
-                    </Dialog.CloseTrigger>
-                </Dialog.Content>
-            </Dialog.Positioner>
-        </Portal>
-    );
+function getColumnDefinitions(primaryColor, goToServicio) {
+    return [
+        {
+            headerName: "Hora",
+            field: "hora",
+            cellStyle: {
+                fontWeight: "bold",
+                // fontSize: "1rem",
+                color: primaryColor,
+                justifyContent: "center",
+            },
+        },
+        {
+            headerName: "Servicio",
+            field: "servicio",
+            flex: 3,
+            cellStyle: {
+                // fontWeight: "bold",
+                // textDecoration: "underline",
+            },
+            cellClass: "hover-link",
+            onCellClicked: (params) => {
+                goToServicio(params.data.cita_ID);
+            },
+        },
+        {
+            headerName: "Nombre",
+            // field: "lashista",
+            valueGetter: (params) =>
+                `${params.data.nombres} ${params.data.apellidos}`,
+            // cellRenderer: renderResourceLabel,
+            flex: 3,
+        },
+        {
+            headerName: "Lashista",
+            field: "lashista",
+            flex: 2,
+            // minWidth: 100,
+        },
+        // {
+        //     headerName: "Fecha",
+        //     field: "fecha",
+        //     valueGetter: (params) =>
+        //         formatFechaDMY(params.data.fecha),
+        // },
+        {
+            headerName: "Pagado",
+            // field: "pagado",
+            cellRenderer: ({ data }) => (
+                <BadgeCustom
+                    type="pagado"
+                    status={data.pagado}
+                />
+            ),
+        },
+        {
+            headerName: "Status",
+            // field: "status",
+            cellRenderer: ({ data }) => (
+                <BadgeCustom
+                    type="status"
+                    status={data.status}
+                />
+            ),
+        },
+        // {
+        //     headerName: "Acciones",
+        //     field: "acciones",
+        // },
+    ];
 }
 
 function renderResourceLabel(info) {
@@ -539,53 +278,4 @@ function renderResourceLabel(info) {
             </div>
         </div>
     );
-}
-
-export function formatEvents(eventsData) {
-    if (eventsData != null) {
-        // console.log("Formatted", eventsData);
-
-        return eventsData.map((ed) => {
-            // Split the date into parts and rearrange
-            const [day, month, year] = ed.fecha.split("-");
-            const formattedDate = `${year}-${month}-${day}`;
-            // Combine with the time and add seconds
-            // const start = `${formattedDate}T${ed.hora}:00`;
-            const start = `${formattedDate}T${ed.hora}:00`;
-
-            // Parse the date and time into a Date object
-            const parsedDate = parse(
-                ed.fecha,
-                "dd-MM-yyyy",
-                new Date()
-            );
-            const [hours, minutes] = ed.hora.split(":");
-            const dateWithTime = new Date(
-                parsedDate.setHours(hours, minutes, 0)
-            );
-            // Add minutes
-            const dateWithAddedTime = addMinutes(
-                dateWithTime,
-                ed.duracion
-            );
-            // Format the result
-            // console.log(dateWithTime, ed.duracion);
-
-            const end = format(
-                dateWithAddedTime,
-                "yyyy-MM-dd'T'HH:mm:ss"
-            );
-
-            // console.log(start, end); // "2025-04-25T09:00:00"
-            return {
-                title: `${ed.nombres} ${ed.apellidos}`,
-                start: start,
-                end: end,
-                resourceId: ed.cama_id,
-                extendedProps: {
-                    ...ed,
-                },
-            };
-        });
-    }
 }
