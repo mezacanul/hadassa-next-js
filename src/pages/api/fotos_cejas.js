@@ -1,20 +1,21 @@
 // pages/api/servicios.js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection({
-        host: db_info.host,
-        port: db_info.port,
-        user: db_info.user,
-        password: db_info.password,
-        database: db_info.database,
-    });
+    // const connection = await mysql.createConnection({
+    //     host: db_info.host,
+    //     port: db_info.port,
+    //     user: db_info.user,
+    //     password: db_info.password,
+    //     database: db_info.database,
+    // });
 
     try {
         if (req.method == "GET") {
             if (req.query.clientaID) {
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     `SELECT 
                         * 
                     FROM fotos_cejas 
@@ -32,14 +33,16 @@ export default async function handler(req, res) {
             let inserted = [];
 
             for (const foto of fotos) {
-                const [mysql_response] = await connection.execute(
+                const [mysql_response] = await pool.query(
                     `INSERT INTO fotos_cejas (id, id_clienta, foto) VALUES (UUID(), ?, ?)`,
                     [clientaID, foto.foto]
                 );
                 if (mysql_response.affectedRows > 0) {
                     inserted.push(foto); // Add successful foto object to inserted array
                 } else {
-                    console.log(`Insert failed for foto: ${foto.foto}`);
+                    console.log(
+                        `Insert failed for foto: ${foto.foto}`
+                    );
                 }
             }
 
@@ -57,28 +60,26 @@ export default async function handler(req, res) {
 
         if (req.method == "DELETE") {
             // res.status(200).json({
-            //     ...req.query, 
+            //     ...req.query,
             //     success: true,
             //     affectedRows: 1
             // });
             if (req.query.clienta_id && req.query.foto) {
-                const [mysql_response] = await connection.execute(
+                const [mysql_response] = await pool.query(
                     `DELETE FROM 
                         fotos_cejas
                     WHERE 
                         foto = ? 
                     AND 
                         id_clienta = ?`,
-                    [
-                        req.query.foto,
-                        req.query.clienta_id,
-                    ]
+                    [req.query.foto, req.query.clienta_id]
                 );
-                if(mysql_response.affectedRows > 0){
+                if (mysql_response.affectedRows > 0) {
                     res.status(200).json({
                         success: true,
-                        affectedRows: mysql_response.affectedRows,
-                        foto: req.query.foto
+                        affectedRows:
+                            mysql_response.affectedRows,
+                        foto: req.query.foto,
                     });
                 }
             }
@@ -86,6 +87,6 @@ export default async function handler(req, res) {
     } catch (error) {
         res.status(500).json({ error });
     } finally {
-        await connection.end();
+        //await connection.end();
     }
 }

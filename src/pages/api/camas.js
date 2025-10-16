@@ -1,14 +1,15 @@
 // pages/api/servicios.js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection(db_info);
+    // const connection = await mysql.createConnection(db_info);
 
     try {
-        if(req.method == "GET"){
-            if(req.query.lashista){
-                const [rows] = await connection.execute(
+        if (req.method == "GET") {
+            if (req.query.lashista) {
+                const [rows] = await pool.query(
                     `SELECT 
                         camas.id,
                         camas.lashista_id,
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
                 );
                 res.status(200).json(rows);
             } else {
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     "SELECT camas.id, lashistas.nombre as title, lashistas.image as src from camas LEFT JOIN lashistas ON camas.lashista_id = lashistas.id"
                 );
                 res.status(200).json(rows);
@@ -31,6 +32,6 @@ export default async function handler(req, res) {
     } catch (error) {
         res.status(500).json({ error });
     } finally {
-        await connection.end();
+        //await connection.end();
     }
 }

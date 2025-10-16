@@ -11,6 +11,7 @@ async function getByClientaID(req) {
 }
 
 async function getByMultipleFilters(req) {
+    // console.log("controller", req.query);
     return await citasService.getByMultipleFilters(
         req.query
     );

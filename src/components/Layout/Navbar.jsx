@@ -14,11 +14,11 @@ import {
     HStack,
     Text,
     Grid,
+    Link,
 } from "@chakra-ui/react";
 import { LuCalendarPlus } from "react-icons/lu";
 import { FaHouseChimney } from "react-icons/fa6";
 import { format, parse } from "date-fns";
-import NavbarLink from "@/components/Layout/NavbarLink";
 
 export default function NavBar({ h }) {
     const [selectedDate] = loadHook("useSelectedDate");
@@ -202,3 +202,24 @@ const PathnameToHeading = {
     "/disponibilidad": "Disponibilidad",
     "/dev": "Developer",
 };
+
+function NavbarLink({ title, pathname }) {
+    const [_, setLoading] = loadHook("useLoader");
+    const NextNav = useNextNav();
+    return (
+        <Text
+            fontSize={"md"}
+            // fontWeight={600}
+        >
+            <Link
+                onClick={() => {
+                    setLoading(true);
+                    NextNav.push(pathname);
+                }}
+                color={"#ec4899"}
+            >
+                {title}
+            </Link>
+        </Text>
+    );
+}

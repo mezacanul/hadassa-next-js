@@ -1,14 +1,15 @@
 // pages/api/citas/[id].js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
 
-const dbConfig = {
-    host: db_info.host,
-    port: db_info.port,
-    user: db_info.user,
-    password: db_info.password,
-    database: db_info.database,
-};
+// const dbConfig = {
+//     host: db_info.host,
+//     port: db_info.port,
+//     user: db_info.user,
+//     password: db_info.password,
+//     database: db_info.database,
+// };
+import pool from "@/backend/models/db";
 
 export default async function handler(req, res) {
     let connection;
@@ -16,7 +17,7 @@ export default async function handler(req, res) {
     let result;
 
     try {
-        connection = await mysql.createConnection(dbConfig);
+        // connection = await mysql.createConnection(dbConfig);
 
         if (req.method == "PATCH") {
             const id = req.query.id;
@@ -29,7 +30,10 @@ export default async function handler(req, res) {
                             SET 
                                 status = ? 
                             WHERE id = ?`;
-                    [result] = await connection.execute(query, [value, id]);
+                    [result] = await pool.query(
+                        query,
+                        [value, id]
+                    );
                     break;
                 case "pagado":
                     query = `UPDATE 
@@ -41,13 +45,13 @@ export default async function handler(req, res) {
                                 monto_pagado = ?
                             WHERE 
                                 id = ?`;
-                    [result] = await connection.execute(
-                        query, 
+                    [result] = await pool.query(
+                        query,
                         [
-                            value, 
+                            value,
                             req.body.metodoPago,
                             req.body.precio,
-                            id
+                            id,
                         ]
                     );
                     break;
@@ -58,16 +62,19 @@ export default async function handler(req, res) {
                                 cama_id = ? 
                             WHERE 
                                 id = ?`;
-                    [result] = await connection.execute(query, [value, id]);
+                    [result] = await pool.query(
+                        query,
+                        [value, id]
+                    );
                     break;
                 default:
                     break;
             }
 
             if (result.affectedRows === 0) {
-                return res
-                    .status(404)
-                    .json({ error: "Cita not found or no change" });
+                return res.status(404).json({
+                    error: "Cita not found or no change",
+                });
             }
 
             res.status(200).json({
@@ -79,6 +86,6 @@ export default async function handler(req, res) {
         console.error("Error:", error); // Debug
         res.status(500).json({ error });
     } finally {
-        if (connection) await connection.end(); // Close connection
+        // if (connection) await connection.end(); // Close connection
     }
 }

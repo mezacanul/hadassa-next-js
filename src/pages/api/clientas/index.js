@@ -1,31 +1,33 @@
 // pages/api/clientas.js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+
+import pool from "@/backend/models/db";
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection({
-        host: db_info.host,
-        port: db_info.port,
-        user: db_info.user,
-        password: db_info.password,
-        database: db_info.database,
-    });
+    // const connection = await mysql.createConnection({
+    //     host: db_info.host,
+    //     port: db_info.port,
+    //     user: db_info.user,
+    //     password: db_info.password,
+    //     database: db_info.database,
+    // });
 
     try {
         if (req.method === "GET") {
-            const [rows] = await connection.execute(
+            const [rows] = await pool.query(
                 "SELECT * FROM clientas WHERE eliminada = 0 ORDER BY nombres ASC, apellidos ASC"
             );
             res.status(200).json(rows);
         } else if (req.method === "POST") {
             const nueva_clienta = req.body;
 
-            const [uuidResult] = await connection.execute(
+            const [uuidResult] = await pool.query(
                 `SELECT UUID() AS id`
             );
             const uuid = uuidResult[0].id;
 
-            const [mysql_response] = await connection.execute(
+            const [mysql_response] = await pool.query(
                 `INSERT INTO
                       clientas (id, nombres, apellidos, lada, telefono, fecha_agregado)
                   VALUES (?, ?, ?, ?, ?, NOW())`,
@@ -50,6 +52,6 @@ export default async function handler(req, res) {
         res.status(500).json({ error });
     } finally {
         // Close the connection
-        await connection.end();
+        // await connection.end();
     }
 }

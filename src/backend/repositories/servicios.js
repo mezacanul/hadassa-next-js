@@ -1,4 +1,5 @@
-import connection from "../models/db";
+// import connection from "../models/db";
+import pool from "../models/db";
 
 async function getAll(id) {
     const query = `
@@ -9,10 +10,12 @@ async function getAll(id) {
             reglas_agenda 
         FROM servicios
     `;
-    const [rows] = await connection.execute(query);
+    const [rows] = await pool.query(query);
     return rows;
 }
 
-export default {
+const serviciosRepository = {
     getAll,
 };
+
+export default serviciosRepository;

@@ -121,7 +121,7 @@ export default function CalendarioMes() {
                             dateInfo.view.currentStart.getMonth()
                         ); // Update on month change
                     }}
-                    height="85vh"
+                    height="65vh"
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
                     weekends={true}

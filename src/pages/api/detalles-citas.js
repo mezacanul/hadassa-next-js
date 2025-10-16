@@ -1,20 +1,20 @@
-import mysql from "mysql2/promise";
-import { parse, format } from "date-fns";
-import { es, enUS } from "date-fns/locale";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 import { getCurrentDateSpan } from "@/utils/detalles-citas";
-import { db_info } from "@/config/db";
+
 
 export default async function handler(req, res) {
     let query;
     let rows;
 
-    const connection = await mysql.createConnection({
-        host: db_info.host,
-        port: db_info.port,
-        user: db_info.user,
-        password: db_info.password,
-        database: db_info.database,
-    });
+    // const connection = await mysql.createConnection({
+    //     host: db_info.host,
+    //     port: db_info.port,
+    //     user: db_info.user,
+    //     password: db_info.password,
+    //     database: db_info.database,
+    // });
 
     try {
         if (req.method === "GET") {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
             switch (req.query.table) {
                 case "lashistas":
                     query = "SELECT id, nombre, image as foto FROM lashistas";
-                    [rows] = await connection.execute(query);
+                    [rows] = await pool.query(query);
                     response = rows;
                     break;
                 case "citas":
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
                                 lashista,
                                 dateSQLParams.thisWeek.startDate,
                             ];
-                            [rows] = await connection.execute(query, params);
+                            [rows] = await pool.query(query, params);
                             response = {
                                 lashista,
                                 counts: {
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
                                         dateSQLParams.thisWeek.endDate,
                                     ];
                                     const [rowsThisWeek] =
-                                        await connection.execute(
+                                        await pool.query(
                                             query,
                                             paramsThisWeek
                                         );
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
                                         dateSQLParams.future.startDate,
                                     ];
                                     const [rowsFuture] =
-                                        await connection.execute(
+                                        await pool.query(
                                             query,
                                             paramsFuture
                                         );
@@ -137,7 +137,7 @@ export default async function handler(req, res) {
                                         dateSQLParams.past.startDate,
                                     ];
                                     const [rowsPast] =
-                                        await connection.execute(
+                                        await pool.query(
                                             query,
                                             paramsPast
                                         );
@@ -165,7 +165,7 @@ export default async function handler(req, res) {
     } catch (error) {
         res.status(500).json({ error });
     } finally {
-        await connection.end();
+        //await connection.end();
     }
 }
 

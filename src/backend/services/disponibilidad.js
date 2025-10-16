@@ -9,10 +9,10 @@ import {
 // } from "@/utils/disponibilidad";
 import citasRepository from "../repositories/citas";
 import serviciosRepository from "../repositories/servicios";
-import camasRepository from "../repositories/camas";
 import lashistasRepository from "../repositories/lashistas";
 import eventosRepository from "../repositories/eventos";
 import utilsRepository from "../repositories/utils";
+import camasRepository from "../repositories/camas";
 
 async function getHorariosDisponibles(parametros) {
     // Nombre del dia
@@ -43,7 +43,7 @@ async function getHorariosDisponibles(parametros) {
         );
     // const servicios = await serviciosRepository.getAll();
     // const camasIDs =
-    //     await camasRepository.getCamasIDsByLashista(
+    // await camasRepository.getCamasIDsByLashista(
     //         parametros.lashista_id
     //     );
     // const eventos =

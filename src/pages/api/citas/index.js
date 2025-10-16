@@ -1,4 +1,6 @@
-import mysql from "mysql2/promise";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 import { parse, format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import {
@@ -19,7 +21,7 @@ import {
     sortByHora,
 } from "@/utils/disponibilidad";
 import { filterTimeSlotsByRange } from "@/utils/detalles-citas";
-import { db_info } from "@/config/db";
+
 import citasController from "@/backend/controllers/citas";
 import {
     encodeHoraToFloat,
@@ -28,13 +30,13 @@ import {
 } from "@/utils/disponibilidad-v1.2";
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection({
-        host: db_info.host,
-        port: db_info.port,
-        user: db_info.user,
-        password: db_info.password,
-        database: db_info.database,
-    });
+    // const connection = await mysql.createConnection({
+    //     host: db_info.host,
+    //     port: db_info.port,
+    //     user: db_info.user,
+    //     password: db_info.password,
+    //     database: db_info.database,
+    // });
 
     try {
         if (req.method === "GET") {
@@ -112,7 +114,7 @@ export default async function handler(req, res) {
 
             // let citasDelDia = []
 
-            let [citasDelDia] = await connection.execute(
+            let [citasDelDia] = await pool.query(
                 `SELECT 
                         servicio_id, 
                         servicios.servicio, 
@@ -128,17 +130,17 @@ export default async function handler(req, res) {
                     WHERE fecha = '${cita.fecha}' AND citas.lashista_id = '${cita.lashista_id}' AND citas.status != 0`
                 // Date format for CITAS table, FECHA column: 'YYYY-MM-DD'
             );
-            [servicios] = await connection.execute(
+            [servicios] = await pool.query(
                 `SELECT id, servicio, minutos, reglas_agenda FROM servicios`
             );
-            [camasKeys] = await connection.execute(
+            [camasKeys] = await pool.query(
                 `SELECT id FROM camas WHERE lashista_id = '${cita.lashista_id}'`
             );
-            [lashista] = await connection.execute(
+            [lashista] = await pool.query(
                 `SELECT * FROM lashistas WHERE id = '${cita.lashista_id}'`
             );
 
-            let [eventos] = await connection.execute(
+            let [eventos] = await pool.query(
                 `SELECT 
                     *, 
                     lashistas.nombre as lashista
@@ -348,7 +350,8 @@ export default async function handler(req, res) {
     } catch (error) {
         res.status(500).json(error);
     } finally {
-        await connection.end();
+        // Close the connection to prevent connection leaks
+        // await connection.end();
     }
 }
 

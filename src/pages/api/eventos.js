@@ -1,6 +1,7 @@
 // pages/api/clientas.js
-import mysql from "mysql2/promise";
-import { db_info } from "@/config/db";
+// import mysql from "mysql2/promise";
+// import { db_info } from "@/config/db";
+import pool from "@/backend/models/db";
 import { toZonedTime, format } from "date-fns-tz";
 
 const timeZone = "America/Mexico_City";
@@ -10,15 +11,15 @@ const today = format(
 );
 
 export default async function handler(req, res) {
-    const connection = await mysql.createConnection(
-        db_info
-    );
+    // const connection = await mysql.createConnection(
+    //     db_info
+    // );
 
     try {
         if (req.method === "GET") {
             if (req.query.lashista) {
                 const { lashista } = req.query;
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     `SELECT 
                         * 
                     FROM 
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
 
             if (req.query.fecha) {
                 const { fecha } = req.query;
-                const [rows] = await connection.execute(
+                const [rows] = await pool.query(
                     `SELECT 
                         * 
                     FROM 
@@ -59,7 +60,7 @@ export default async function handler(req, res) {
 
             let query =
                 "UPDATE eventos SET status = 0 WHERE id = ?";
-            let [result] = await connection.execute(query, [
+            let [result] = await pool.query(query, [
                 eventoID,
             ]);
             if (result.affectedRows > 0) {
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
         if (req.method === "POST") {
             const nuevo_evento = req.body;
             const { tipo } = nuevo_evento;
-            const [uuidResult] = await connection.execute(
+            const [uuidResult] = await pool.query(
                 `SELECT UUID() AS id`
             );
             const uuid = uuidResult[0].id;
@@ -88,7 +89,7 @@ export default async function handler(req, res) {
             let sql;
 
             const [cancelAllCurrentEventos] =
-                await connection.execute(
+                await pool.query(
                     `UPDATE 
                         eventos 
                     SET 
@@ -124,8 +125,9 @@ export default async function handler(req, res) {
                                     status
                                 )
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
@@ -135,7 +137,8 @@ export default async function handler(req, res) {
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
                 case "dia-libre":
                     sql = `INSERT INTO eventos 
@@ -149,8 +152,9 @@ export default async function handler(req, res) {
                                     status
                                 )
                             VALUES (?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
@@ -158,7 +162,8 @@ export default async function handler(req, res) {
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
                 case "cambio-horario":
                     sql = `INSERT INTO eventos 
@@ -173,8 +178,9 @@ export default async function handler(req, res) {
                                     status
                                 )
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-                    [mysql_response] =
-                        await connection.execute(sql, [
+                    [mysql_response] = await pool.query(
+                        sql,
+                        [
                             uuid,
                             nuevo_evento.titulo,
                             nuevo_evento.notas,
@@ -183,7 +189,8 @@ export default async function handler(req, res) {
                             nuevo_evento.lashistaID,
                             nuevo_evento.tipo,
                             1,
-                        ]);
+                        ]
+                    );
                     break;
                 default:
                     break;
@@ -203,6 +210,6 @@ export default async function handler(req, res) {
         res.status(500).json({ error });
     } finally {
         // Close the connection
-        await connection.end();
+        //await connection.end();
     }
 }
