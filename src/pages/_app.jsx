@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect } from "react";
 import "@/styles/Tables.css";
+import "@/styles/main.css";
 import API from "@/services/main";
 import NavBar from "@/components/Layout/Navbar";
 

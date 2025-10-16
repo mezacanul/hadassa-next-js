@@ -1,5 +1,6 @@
 "use client";
 
+import BadgeCustom from "./common/BadgeCustom";
 import {
     Box,
     Heading,
@@ -17,6 +18,7 @@ import { AgGridReact } from "ag-grid-react";
 import "@/config/agGridSetup";
 import { sortByHora } from "@/utils/disponibilidad";
 import { useToken } from "@chakra-ui/react";
+import { formatFechaDMY } from "@/utils/main";
 
 export default function Hoy() {
     const primaryColor = useToken("colors", "blue.600");
@@ -105,12 +107,18 @@ export default function Hoy() {
         }
     };
 
+    const goToServicio = (citaID) => {
+        setLoading(true);
+        NextNav.push(`/citas/${citaID}`);
+    };
+
     return (
         <Box
             id="Hoy"
             // bg={"white"}
+            w={"100%"}
         >
-            <Box>
+            <Box w={"100%"}>
                 <Heading>Hoy</Heading>
 
                 <Box
@@ -122,14 +130,17 @@ export default function Hoy() {
                     {citas && (
                         <AgGridReact
                             rowData={citas}
-                            columnDefs={getColumnDefinitions(primaryColor)}
+                            columnDefs={getColumnDefinitions(
+                                primaryColor,
+                                goToServicio
+                            )}
                             rowHeight={60}
-                            autoSizeStrategy={{
-                                type: "fitCellContents",
-                            }}
+                            // autoSizeStrategy={{
+                            //     type: "fitCellContents",
+                            // }}
                             defaultColDef={{
                                 resizable: true,
-                                flex: 1,
+                                flex: 2,
                                 cellStyle: {
                                     display: "flex",
                                     // justifyContent: "center",
@@ -145,24 +156,29 @@ export default function Hoy() {
     );
 }
 
-function getColumnDefinitions(primaryColor) {
+function getColumnDefinitions(primaryColor, goToServicio) {
     return [
         {
             headerName: "Hora",
             field: "hora",
             cellStyle: {
                 fontWeight: "bold",
-                fontSize: "1rem",
-                color: primaryColor
+                // fontSize: "1rem",
+                color: primaryColor,
+                justifyContent: "center",
             },
         },
         {
             headerName: "Servicio",
             field: "servicio",
-            flex: 2,
+            flex: 3,
             cellStyle: {
                 // fontWeight: "bold",
-                textDecoration: "underline",
+                // textDecoration: "underline",
+            },
+            cellClass: "hover-link",
+            onCellClicked: (params) => {
+                goToServicio(params.data.cita_ID);
             },
         },
         {
@@ -171,20 +187,44 @@ function getColumnDefinitions(primaryColor) {
             valueGetter: (params) =>
                 `${params.data.nombres} ${params.data.apellidos}`,
             // cellRenderer: renderResourceLabel,
-            flex: 2,
+            flex: 3,
         },
         {
+            headerName: "Lashista",
+            field: "lashista",
+            flex: 2,
+            // minWidth: 100,
+        },
+        // {
+        //     headerName: "Fecha",
+        //     field: "fecha",
+        //     valueGetter: (params) =>
+        //         formatFechaDMY(params.data.fecha),
+        // },
+        {
             headerName: "Pagado",
-            field: "pagado",
+            // field: "pagado",
+            cellRenderer: ({ data }) => (
+                <BadgeCustom
+                    type="pagado"
+                    status={data.pagado}
+                />
+            ),
         },
         {
             headerName: "Status",
-            field: "status",
+            // field: "status",
+            cellRenderer: ({ data }) => (
+                <BadgeCustom
+                    type="status"
+                    status={data.status}
+                />
+            ),
         },
-        {
-            headerName: "Acciones",
-            field: "acciones",
-        },
+        // {
+        //     headerName: "Acciones",
+        //     field: "acciones",
+        // },
     ];
 }
 
