@@ -19,6 +19,7 @@ import {
 import { LuCalendarPlus } from "react-icons/lu";
 import { FaHouseChimney } from "react-icons/fa6";
 import { format, parse } from "date-fns";
+import NavbarItem from "@/components/Layout/NavbarItem";
 
 export default function NavBar({ h }) {
     const [selectedDate] = loadHook("useSelectedDate");
@@ -137,7 +138,7 @@ export default function NavBar({ h }) {
                 align={"center"}
             >
                 {NavBarLinks.map((link) => (
-                    <NavbarLink
+                    <NavbarItem
                         key={link.title}
                         title={link.title}
                         pathname={link.pathname}
