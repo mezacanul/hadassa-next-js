@@ -24,7 +24,7 @@ export default function Index() {
 
     return (
         <Grid
-            templateColumns="3fr 2fr"
+            templateColumns="6fr 2fr"
             gap={"2.5rem"}
             w={"100%"}
         >

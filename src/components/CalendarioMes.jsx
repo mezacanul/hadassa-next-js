@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { format, parse } from "date-fns";
 import { loadHook } from "@/utils/lattice-design";
 import { IoMdToday } from "react-icons/io";
+import { FaHouse } from "react-icons/fa6";
 
 // import { useCalendarControl } from "@/pages";
 // import { useCalendarControl } from "./Hoy";
@@ -121,7 +122,9 @@ export default function CalendarioMes() {
                             dateInfo.view.currentStart.getMonth()
                         ); // Update on month change
                     }}
-                    height="53vh"
+                    height="40vh"
+                    contentHeight="30vh"
+                    aspectRatio={1.5}
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
                     weekends={true}
@@ -231,28 +234,24 @@ const DayBox = (router) => (info) => {
     const today = format(new Date(), "yyyy-MM-dd");
     // console.log("today", today, formattedDate);
 
-    // DEV:
-    // We parse and format the Date to be URL friendly
-    const handleNuevaCita = () => {
-        const dateStr = info.date.toLocaleDateString();
-        const date = parse(dateStr, "M/d/yyyy", new Date());
-        const formattedDate = format(date, "dd-MM-yyyy");
-        console.log(formattedDate);
-        // console.log(info.date.toLocaleDateString());
-        // router.push(`/nueva-cita/${formattedDate}`);
-    };
-
     return (
-        <div>
-            <p>{info.dayNumberText}</p>
-            <p
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "0.2rem",
+                paddingTop: "0.1rem",
+            }}
+        >
+            <span
                 style={{
-                    fontSize: "1.2rem",
-                    marginTop: "0.5rem",
+                    fontSize: "0.9rem",
                 }}
             >
-                {today == formattedDate && "Hoy"}
-            </p>
+                {today == formattedDate && <FaHouse />}
+            </span>
+            <p>{info.dayNumberText}</p>
         </div>
     );
 };

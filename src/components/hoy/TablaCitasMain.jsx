@@ -139,6 +139,17 @@ function getColumnDefinitions(primaryColor, goToServicio) {
         // {
         //     headerName: "Acciones",
         //     field: "acciones",
+        //     cellRenderer: ({ data }) => (
+        //         <Actions data={data} />
+        //     ),
         // },
     ];
+}
+
+function Actions({ data }) {
+    return (
+        <HStack>
+            <Button>Ver</Button>
+        </HStack>
+    );
 }
