@@ -18,12 +18,15 @@ import { BsWhatsapp } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import StatusBadge from "../common/StatusBadge";
 import { IoLogoWhatsapp } from "react-icons/io";
-
+import ModalAccionesCita from "./ModalAccionesCita";
 export default function TablaCitasMain({
     citas,
     primaryColor,
     goToServicio,
 }) {
+    const [open, setOpen] = useState(false);
+    const [cita, setCita] = useState(null);
+
     return (
         <Box
             my={"1rem"}
@@ -52,7 +55,9 @@ export default function TablaCitasMain({
                     rowData={citas}
                     columnDefs={getColumnDefinitions(
                         primaryColor,
-                        goToServicio
+                        goToServicio,
+                        setOpen,
+                        setCita
                     )}
                     rowHeight={60}
                     autoSizeStrategy={{
@@ -78,11 +83,22 @@ export default function TablaCitasMain({
                     No hay citas en este día
                 </Text>
             )}
+
+            <ModalAccionesCita
+                open={open}
+                setOpen={setOpen}
+                cita={cita}
+            />
         </Box>
     );
 }
 
-function getColumnDefinitions(primaryColor, goToServicio) {
+function getColumnDefinitions(
+    primaryColor,
+    goToServicio,
+    setOpen,
+    setCita
+) {
     return [
         {
             headerName: "Inicio",
@@ -144,6 +160,9 @@ function getColumnDefinitions(primaryColor, goToServicio) {
             headerName: "Status",
             // field: "status",
             width: 150,
+            cellStyle: {
+                justifyContent: "center",
+            },
             cellRenderer: ({ data }) => (
                 <StatusBadge
                     status={data.status}
@@ -153,11 +172,14 @@ function getColumnDefinitions(primaryColor, goToServicio) {
         },
         {
             headerName: "Acciones",
-            field: "acciones",
             cellRenderer: ({ data }) => (
-                <Actions data={data} />
+                <Actions
+                    data={data}
+                    setOpen={setOpen}
+                    setCita={setCita}
+                />
             ),
-            width: 350,
+            width: 150,
             // flex: 3,
             // cellStyle: {
             //     width: "15rem",
@@ -166,17 +188,27 @@ function getColumnDefinitions(primaryColor, goToServicio) {
     ];
 }
 
-function Actions({ data }) {
+function Actions({ data, setOpen, setCita }) {
     const buttonStyles = {
         variant: "surface",
         // colorPalette: "blue",
         size: "sm",
-        shadow: "sm",
+        // shadow: "sm",
         fontWeight: "600",
     };
     return (
         <HStack w={"15rem"}>
             <Button
+                {...buttonStyles}
+                colorPalette={"blue"}
+                onClick={() => {
+                    setOpen(true);
+                    setCita(data);
+                }}
+            >
+                {"Opciones"}
+            </Button>
+            {/* <Button
                 {...buttonStyles}
                 colorPalette={"blue"}
             >
@@ -201,7 +233,7 @@ function Actions({ data }) {
                 colorPalette={"red"}
             >
                 <FaCalendarXmark />
-            </Button>
+            </Button> */}
         </HStack>
     );
 }
