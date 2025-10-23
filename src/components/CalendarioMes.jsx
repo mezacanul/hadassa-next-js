@@ -116,7 +116,6 @@ export default function CalendarioMes() {
                         <IoMdToday />
                     )}
                     // events={events}
-                    // eventContent={renderEventContent}
                     datesSet={(dateInfo) => {
                         setDisplayedMonthIndex(
                             dateInfo.view.currentStart.getMonth()
@@ -246,12 +245,12 @@ const DayBox = (router) => (info) => {
         >
             <span
                 style={{
-                    fontSize: "0.9rem",
+                    fontSize: "0.8rem",
                 }}
             >
                 {today == formattedDate && <FaHouse />}
             </span>
-            <p>{info.dayNumberText}</p>
+            <p style={{ fontSize: "0.9rem" }}>{info.dayNumberText}</p>
         </div>
     );
 };

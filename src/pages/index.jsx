@@ -1,8 +1,10 @@
-import { Grid } from "@chakra-ui/react";
+import { Grid, VStack } from "@chakra-ui/react";
 import Hoy from "@/components/Hoy";
 import CalendarioMes from "@/components/CalendarioMes";
 import { loadHook } from "@/utils/lattice-design";
 import { useEffect } from "react";
+import CamasLive from "@/components/CamasLive";
+import CalendarioMesV2 from "@/components/CalendarioMesV2";
 
 export default function Index() {
     const [selectedDate, setSelectedDate] = loadHook(
@@ -24,12 +26,19 @@ export default function Index() {
 
     return (
         <Grid
-            templateColumns="6fr 2fr"
+            templateColumns="5fr 2fr"
             gap={"2.5rem"}
             w={"100%"}
         >
             <Hoy />
-            <CalendarioMes />
+            <VStack
+                w={"100%"}
+                align={"start"}
+                gap={"2rem"}
+            >
+                <CamasLive />
+                <CalendarioMesV2 />
+            </VStack>
         </Grid>
     );
 }

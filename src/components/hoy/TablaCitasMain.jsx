@@ -4,9 +4,20 @@ import {
     Text,
     HStack,
     Spinner,
+    Button,
+    Badge,
 } from "@chakra-ui/react";
 import "@/config/agGridSetup";
 import { AgGridReact } from "ag-grid-react";
+import {
+    FaCalendarCheck,
+    FaCalendarXmark,
+    FaWhatsapp,
+} from "react-icons/fa6";
+import { BsWhatsapp } from "react-icons/bs";
+import { useEffect, useState } from "react";
+import StatusBadge from "../common/StatusBadge";
+import { IoLogoWhatsapp } from "react-icons/io";
 
 export default function TablaCitasMain({
     citas,
@@ -44,12 +55,12 @@ export default function TablaCitasMain({
                         goToServicio
                     )}
                     rowHeight={60}
-                    // autoSizeStrategy={{
-                    //     type: "fitCellContents",
-                    // }}
+                    autoSizeStrategy={{
+                        type: "fitCellContents",
+                    }}
                     defaultColDef={{
                         resizable: true,
-                        flex: 2,
+                        // flex: 2,
                         cellStyle: {
                             display: "flex",
                             // justifyContent: "center",
@@ -74,7 +85,7 @@ export default function TablaCitasMain({
 function getColumnDefinitions(primaryColor, goToServicio) {
     return [
         {
-            headerName: "Hora",
+            headerName: "Inicio",
             field: "hora",
             cellStyle: {
                 fontWeight: "bold",
@@ -82,11 +93,29 @@ function getColumnDefinitions(primaryColor, goToServicio) {
                 color: primaryColor,
                 justifyContent: "center",
             },
+            pinned: "left",
+        },
+        // {
+        //     headerName: "Salida",
+        //     // field: "hora_fin",
+        //     valueGetter: (params) => "--",
+        //     cellStyle: {
+        //         justifyContent: "center",
+        //     },
+        // },
+        {
+            headerName: "Nombre",
+            // field: "lashista",
+            valueGetter: (params) =>
+                `${params.data.nombres} ${params.data.apellidos}`,
+            // cellRenderer: renderResourceLabel,
+            // flex: 3,
+            pinned: "left",
         },
         {
             headerName: "Servicio",
             field: "servicio",
-            flex: 3,
+            // flex: 3,
             cellStyle: {
                 // fontWeight: "bold",
                 // textDecoration: "underline",
@@ -95,61 +124,84 @@ function getColumnDefinitions(primaryColor, goToServicio) {
             onCellClicked: (params) => {
                 goToServicio(params.data.cita_ID);
             },
-        },
-        {
-            headerName: "Nombre",
-            // field: "lashista",
-            valueGetter: (params) =>
-                `${params.data.nombres} ${params.data.apellidos}`,
-            // cellRenderer: renderResourceLabel,
-            flex: 3,
+            // pinned: "left",
         },
         {
             headerName: "Lashista",
             field: "lashista",
-            flex: 2,
+            // flex: 2,
             // minWidth: 100,
         },
-        // {
-        //     headerName: "Fecha",
-        //     field: "fecha",
-        //     valueGetter: (params) =>
-        //         formatFechaDMY(params.data.fecha),
-        // },
         {
-            headerName: "Pagado",
-            // field: "pagado",
-            cellRenderer: ({ data }) => (
-                <BadgeCustom
-                    type="pagado"
-                    status={data.pagado}
-                />
-            ),
+            headerName: "Costo",
+            // field: "costo",
+            valueGetter: (params) => "--",
+            cellStyle: {
+                justifyContent: "center",
+            },
         },
         {
             headerName: "Status",
             // field: "status",
+            width: 150,
             cellRenderer: ({ data }) => (
-                <BadgeCustom
-                    type="status"
+                <StatusBadge
                     status={data.status}
+                    pagado={data.pagado}
                 />
             ),
         },
-        // {
-        //     headerName: "Acciones",
-        //     field: "acciones",
-        //     cellRenderer: ({ data }) => (
-        //         <Actions data={data} />
-        //     ),
-        // },
+        {
+            headerName: "Acciones",
+            field: "acciones",
+            cellRenderer: ({ data }) => (
+                <Actions data={data} />
+            ),
+            width: 350,
+            // flex: 3,
+            // cellStyle: {
+            //     width: "15rem",
+            // },
+        },
     ];
 }
 
 function Actions({ data }) {
+    const buttonStyles = {
+        variant: "surface",
+        // colorPalette: "blue",
+        size: "sm",
+        shadow: "sm",
+        fontWeight: "600",
+    };
     return (
-        <HStack>
-            <Button>Ver</Button>
+        <HStack w={"15rem"}>
+            <Button
+                {...buttonStyles}
+                colorPalette={"blue"}
+            >
+                <FaCalendarCheck />
+            </Button>
+            <Button
+                {...buttonStyles}
+                colorPalette={"green"}
+            >
+                <BsWhatsapp />
+                {"Rec."}
+            </Button>
+            <Button
+                {...buttonStyles}
+                colorPalette={"green"}
+            >
+                <BsWhatsapp />
+                {"Conf."}
+            </Button>
+            <Button
+                {...buttonStyles}
+                colorPalette={"red"}
+            >
+                <FaCalendarXmark />
+            </Button>
         </HStack>
     );
 }

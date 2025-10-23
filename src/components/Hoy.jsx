@@ -3,7 +3,9 @@
 import BadgeCustom from "./common/BadgeCustom";
 import {
     Box,
+    Grid,
     Heading,
+    HStack,
     Text,
     VStack,
 } from "@chakra-ui/react";
@@ -21,6 +23,7 @@ import { useToken } from "@chakra-ui/react";
 import { formatFechaDMY } from "@/utils/main";
 import TablaCitasMain from "./hoy/TablaCitasMain";
 import TablaEventosMain from "./hoy/TablaEventosMain";
+import { Form } from "react-bootstrap";
 
 export default function Hoy() {
     const primaryColor = useToken("colors", "blue.600");
@@ -73,7 +76,7 @@ export default function Hoy() {
                             console.log(
                                 "Responses",
                                 eventosResp.data,
-                                citasResp.data,
+                                citasResp.data
                                 // lashistasResp.data
                             );
 
@@ -124,7 +127,10 @@ export default function Hoy() {
             w={"100%"}
         >
             <Box w={"100%"}>
-                <Text fontSize={"2xl"}>Citas</Text>
+                <HStack>
+                    <Text fontSize={"2xl"}>Citas</Text>
+                    {/* <Form.Control type="date" /> */}
+                </HStack>
 
                 <TablaCitasMain
                     citas={citas}
@@ -134,12 +140,15 @@ export default function Hoy() {
             </Box>
 
             <Box w={"100%"}>
-                <Text fontSize={"xl"}>Eventos</Text>
-
-                <TablaEventosMain
-                    eventos={eventos}
-                    primaryColor={primaryColor}
-                />
+                {/* <Grid gridTemplateColumns={"1fr 1fr"}>
+                    <Box> */}
+                        <Text fontSize={"xl"}>Eventos</Text>
+                        <TablaEventosMain
+                            eventos={eventos}
+                            primaryColor={primaryColor}
+                        />
+                    {/* </Box>
+                </Grid> */}
             </Box>
         </VStack>
     );
