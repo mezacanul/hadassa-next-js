@@ -75,7 +75,10 @@ export default function CamasLive() {
                 position="relative"
                 h="20vh"
             >
-                <VStack>
+                <VStack
+                    h="100%"
+                    justifyContent="space-around"
+                >
                     {liveFeed.sillas.map((silla) => (
                         <LugarBtn
                             key={silla.id}
@@ -86,7 +89,7 @@ export default function CamasLive() {
                     ))}
                 </VStack>
                 <HStack
-                    justify="space-between"
+                    justify="space-around"
                     px="1rem"
                     w="100%"
                 >
@@ -140,7 +143,9 @@ function BtnActualizar({ onReload }) {
             bg="pink.500"
             color="white"
             fontWeight="bold"
-            size="xs"
+            size="2xs"
+            // fontSize="1rem"
+            // p="0.rem"
             position="absolute"
             right="0"
             top="0"
@@ -157,7 +162,7 @@ function BtnActualizar({ onReload }) {
 function LugarBtn({ type, data, updateLiveFeed }) {
     return (
         <Text
-            color={data.active ? "pink.500" : "black"}
+            color={data.active ? "pink.500" : "green.500"}
             style={{
                 ...styles.btn,
                 fontSize:

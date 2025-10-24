@@ -150,14 +150,6 @@ function getColumnDefinitions(
             // minWidth: 100,
         },
         {
-            headerName: "Costo",
-            // field: "costo",
-            valueGetter: (params) => "--",
-            cellStyle: {
-                justifyContent: "center",
-            },
-        },
-        {
             headerName: "Status",
             // field: "status",
             width: 150,
@@ -170,6 +162,14 @@ function getColumnDefinitions(
                     pagado={data.pagado}
                 />
             ),
+        },
+        {
+            headerName: "Costo",
+            // field: "costo",
+            valueGetter: (params) => "--",
+            cellStyle: {
+                justifyContent: "center",
+            },
         },
         {
             headerName: "Acciones",
