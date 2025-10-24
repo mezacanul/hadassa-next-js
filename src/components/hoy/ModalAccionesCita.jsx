@@ -16,7 +16,7 @@ import { loadHook } from "@/utils/lattice-design";
 export default function ModalAccionesCita({
     open,
     setOpen,
-    cita = {},
+    cita,
 }) {
     return (
         <Dialog.Root
@@ -36,13 +36,15 @@ export default function ModalAccionesCita({
                             </Text>
                         </Dialog.Header>
 
-                        <Dialog.Body>
-                            {/* {loading && <Loader />}
+                        {cita && (
+                            <Dialog.Body>
+                                {/* {loading && <Loader />}
                             {success && <Success />} */}
-                            <Heading
-                                size={"md"}
-                            >{`Cita ${cita.cita_ID}`}</Heading>
-                        </Dialog.Body>
+                                <Heading
+                                    size={"md"}
+                                >{`Cita ${cita.cita_ID}`}</Heading>
+                            </Dialog.Body>
+                        )}
                     </Dialog.Content>
                 </Dialog.Positioner>
             </Portal>

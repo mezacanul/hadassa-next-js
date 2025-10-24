@@ -1,6 +1,6 @@
 import { Grid, VStack } from "@chakra-ui/react";
 import Hoy from "@/components/Hoy";
-import CalendarioMes from "@/components/CalendarioMes";
+// import CalendarioMes from "@/components/CalendarioMes";
 import { loadHook } from "@/utils/lattice-design";
 import { useEffect } from "react";
 import CamasLive from "@/components/CamasLive";
