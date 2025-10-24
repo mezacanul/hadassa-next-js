@@ -19,7 +19,7 @@ export default function TablaEventosMain({
     const labels = {
         "horas-libres": "Horas Libres",
         "cambio-horario": "Cambio de Horario",
-        "todo-el-dia": "Todo el Día",
+        "dia-libre": "Dia Libre",
     };
     return (
         <Box

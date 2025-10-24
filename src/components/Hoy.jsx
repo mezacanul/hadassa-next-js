@@ -140,15 +140,11 @@ export default function Hoy() {
             </Box>
 
             <Box w={"100%"}>
-                {/* <Grid gridTemplateColumns={"1fr 1fr"}>
-                    <Box> */}
-                        <Text fontSize={"xl"}>Eventos</Text>
-                        <TablaEventosMain
-                            eventos={eventos}
-                            primaryColor={primaryColor}
-                        />
-                    {/* </Box>
-                </Grid> */}
+                <Text fontSize={"xl"}>Eventos</Text>
+                <TablaEventosMain
+                    eventos={eventos}
+                    primaryColor={primaryColor}
+                />
             </Box>
         </VStack>
     );

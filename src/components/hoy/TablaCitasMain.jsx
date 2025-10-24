@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import StatusBadge from "../common/StatusBadge";
 import { IoLogoWhatsapp } from "react-icons/io";
 import ModalAccionesCita from "./ModalAccionesCita";
+
 export default function TablaCitasMain({
     citas,
     primaryColor,
