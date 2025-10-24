@@ -1,4 +1,3 @@
-import BadgeCustom from "../common/BadgeCustom";
 import {
     Box,
     Text,
@@ -6,18 +5,12 @@ import {
     Spinner,
     Button,
     Badge,
+    VStack,
 } from "@chakra-ui/react";
 import "@/config/agGridSetup";
 import { AgGridReact } from "ag-grid-react";
-import {
-    FaCalendarCheck,
-    FaCalendarXmark,
-    FaWhatsapp,
-} from "react-icons/fa6";
-import { BsWhatsapp } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import StatusBadge from "../common/StatusBadge";
-import { IoLogoWhatsapp } from "react-icons/io";
 import ModalAccionesCita from "./ModalAccionesCita";
 
 export default function TablaCitasMain({
@@ -165,8 +158,10 @@ function getColumnDefinitions(
         },
         {
             headerName: "Costo",
-            // field: "costo",
-            valueGetter: (params) => "--",
+            field: "monto_pagado",
+            cellRenderer: CostoCell,
+            // valueGetter: (params) => "--",
+
             cellStyle: {
                 justifyContent: "center",
             },
@@ -236,5 +231,38 @@ function Actions({ data, setOpen, setCita }) {
                 <FaCalendarXmark />
             </Button> */}
         </HStack>
+    );
+}
+
+function CostoCell({ value, data }) {
+    return (
+        <VStack
+            justifyContent="center"
+            h="100%"
+        >
+            {data.pagado ? (
+                <>
+                    <Text
+                        // color={"green"}
+                        fontWeight={600}
+                        lineHeight="1"
+                    >{`$${value}`}</Text>
+                    <Text
+                        fontSize="xs"
+                        lineHeight="1"
+                        opacity={0.8}
+                        color={
+                            data.metodo_pago == "tarjeta"
+                                ? "blue.600"
+                                : "green"
+                        }
+                    >
+                        {data.metodo_pago}
+                    </Text>
+                </>
+            ) : (
+                <span>{"--"}</span>
+            )}
+        </VStack>
     );
 }
