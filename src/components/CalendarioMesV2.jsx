@@ -10,7 +10,7 @@ import "dayjs/locale/es";
 dayjs.locale("es");
 
 export default function CalendarioMesV2() {
-    const [value, setValue] = useState(dayjs("2025-10-23"));
+    const [value, setValue] = useState(dayjs());
     const [selectedDate, setSelectedDate] = loadHook(
         "useSelectedDate"
     );

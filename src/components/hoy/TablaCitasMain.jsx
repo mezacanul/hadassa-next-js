@@ -12,11 +12,13 @@ import { AgGridReact } from "ag-grid-react";
 import { useEffect, useState } from "react";
 import StatusBadge from "../common/StatusBadge";
 import ModalAccionesCita from "./ModalAccionesCita";
+import CostoSelector from "../common/CostoSelector";
 
 export default function TablaCitasMain({
     citas,
     primaryColor,
     goToServicio,
+    servicios,
 }) {
     const [open, setOpen] = useState(false);
     const [cita, setCita] = useState(null);
@@ -51,7 +53,8 @@ export default function TablaCitasMain({
                         primaryColor,
                         goToServicio,
                         setOpen,
-                        setCita
+                        setCita,
+                        servicios
                     )}
                     rowHeight={60}
                     autoSizeStrategy={{
@@ -91,7 +94,8 @@ function getColumnDefinitions(
     primaryColor,
     goToServicio,
     setOpen,
-    setCita
+    setCita,
+    servicios
 ) {
     return [
         {
@@ -159,7 +163,13 @@ function getColumnDefinitions(
         {
             headerName: "Costo",
             field: "monto_pagado",
-            cellRenderer: CostoCell,
+            cellRenderer: ({ data, value }) => (
+                <CostoSelector
+                    data={data}
+                    value={value}
+                    servicios={servicios}
+                />
+            ),
             // valueGetter: (params) => "--",
 
             cellStyle: {
@@ -204,65 +214,6 @@ function Actions({ data, setOpen, setCita }) {
             >
                 {"Opciones"}
             </Button>
-            {/* <Button
-                {...buttonStyles}
-                colorPalette={"blue"}
-            >
-                <FaCalendarCheck />
-            </Button>
-            <Button
-                {...buttonStyles}
-                colorPalette={"green"}
-            >
-                <BsWhatsapp />
-                {"Rec."}
-            </Button>
-            <Button
-                {...buttonStyles}
-                colorPalette={"green"}
-            >
-                <BsWhatsapp />
-                {"Conf."}
-            </Button>
-            <Button
-                {...buttonStyles}
-                colorPalette={"red"}
-            >
-                <FaCalendarXmark />
-            </Button> */}
         </HStack>
-    );
-}
-
-function CostoCell({ value, data }) {
-    return (
-        <VStack
-            justifyContent="center"
-            h="100%"
-        >
-            {data.pagado ? (
-                <>
-                    <Text
-                        // color={"green"}
-                        fontWeight={600}
-                        lineHeight="1"
-                    >{`$${value}`}</Text>
-                    <Text
-                        fontSize="xs"
-                        lineHeight="1"
-                        opacity={0.8}
-                        color={
-                            data.metodo_pago == "tarjeta"
-                                ? "blue.600"
-                                : "green"
-                        }
-                    >
-                        {data.metodo_pago}
-                    </Text>
-                </>
-            ) : (
-                <span>{"--"}</span>
-            )}
-        </VStack>
     );
 }

@@ -92,7 +92,9 @@ async function getByMultipleFilters(reqQuery) {
             lashistas.nombre as lashista,
             pagado,
             metodo_pago,
-            monto_pagado
+            monto_pagado,
+            clientas.lada,
+            clientas.telefono
         FROM 
             citas 
         LEFT JOIN clientas ON citas.clienta_id = clientas.id

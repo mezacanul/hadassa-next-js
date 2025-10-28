@@ -36,6 +36,7 @@ export default function Hoy() {
     const [lashistas, setLashistas] = useState(null);
     const [eventos, setEventos] = useState(null);
     const NextNav = useNextNav();
+    const [servicios, setServicios] = useState(null);
     // const [events, setEvents] = loadHook("useEvents");
 
     useEffect(() => {
@@ -48,6 +49,11 @@ export default function Hoy() {
             console.log("formattedToday", formattedToday);
             setSelectedDate(formattedToday);
         }
+        axios
+            .get("/api/servicios")
+            .then((serviciosResp) => {
+                setServicios(serviciosResp.data);
+            });
     }, []);
 
     useEffect(() => {
@@ -136,6 +142,7 @@ export default function Hoy() {
                     citas={citas}
                     primaryColor={primaryColor}
                     goToServicio={goToServicio}
+                    servicios={servicios}
                 />
             </Box>
 
