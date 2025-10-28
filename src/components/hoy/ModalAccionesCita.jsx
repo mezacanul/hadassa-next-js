@@ -97,7 +97,7 @@ export default function ModalAccionesCita({
                                     mb={"1rem"}
                                     px={"1rem"}
                                     py={"2rem"}
-                                    minH={"15rem"}
+                                    minH={"17rem"}
                                 >
                                     <DetallesCita
                                         cita={cita}
@@ -127,6 +127,16 @@ export default function ModalAccionesCita({
                                             precios={
                                                 precios
                                             }
+                                            setCurrentView={
+                                                setCurrentView
+                                            }
+                                        />
+                                    )}
+
+                                    {currentView ==
+                                        "cancelar" && (
+                                        <CancelarView
+                                            cita={cita}
                                             setCurrentView={
                                                 setCurrentView
                                             }
@@ -281,6 +291,7 @@ function AccionesCita({ cita, setCurrentView }) {
             <Button
                 {...buttonStyles}
                 colorPalette={"red"}
+                onClick={() => setCurrentView("cancelar")}
             >
                 <FaTimes />
                 {"Cancelar Cita"}
@@ -327,6 +338,35 @@ function PagadoView({ cita }) {
     );
 }
 
+function CancelarView({ cita, setCurrentView }) {
+    return (
+        <VStack
+            h={"100%"}
+            w={"100%"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            // shadow={"sm"}
+            rounded={"lg"}
+            borderColor={"black"}
+            borderWidth={"2px"}
+            position={"relative"}
+        >
+            <CloseButton
+                onClick={() => setCurrentView(null)}
+            />
+            <Heading size={"lg"}>{"Confirmar Cancelación"}</Heading>
+            <Text color={"red.600"} mb={"1rem"}>{"No puedes revertir esta acción"}</Text>
+            <Button
+                colorPalette={"red"}
+                variant={"subtle"}
+                // onClick={() => setCurrentView(null)}
+            >
+                {"Cancelar Cita"}
+            </Button>
+        </VStack>
+    );
+}
+
 function PagarView({ cita, precios, setCurrentView }) {
     const mps = ["efectivo", "tarjeta"];
     const [mp, setMp] = useState(null);
@@ -347,6 +387,7 @@ function PagarView({ cita, precios, setCurrentView }) {
             <CloseButton
                 onClick={() => setCurrentView(null)}
             />
+            <Text>{"Pagar Cita"}</Text>
             <Text
                 fontWeight={700}
                 fontSize={"md"}
