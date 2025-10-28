@@ -86,6 +86,7 @@ export default function TablaCitasMain({
                 open={open}
                 setOpen={setOpen}
                 cita={cita}
+                servicios={servicios}
             />
         </Box>
     );

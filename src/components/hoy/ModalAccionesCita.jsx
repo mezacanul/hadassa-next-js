@@ -29,12 +29,33 @@ import { TbCashRegister } from "react-icons/tb";
 import { IoMdTime } from "react-icons/io";
 import { IoPerson } from "react-icons/io5";
 import StatusBadge from "../common/StatusBadge";
+import { Form } from "react-bootstrap";
+import CloseButton from "../common/CloseButton";
 
 export default function ModalAccionesCita({
     open,
     setOpen,
     cita,
+    servicios,
 }) {
+    const [currentView, setCurrentView] = useState(null);
+    const [precios, setPrecios] = useState(null);
+
+    useEffect(() => {
+        if (cita && servicios) {
+            const servicio = servicios.find(
+                (servicio) =>
+                    servicio.id === cita.servicio_id
+            );
+            const preciosObj = {
+                efectivo: servicio.precio,
+                tarjeta: servicio.precio_tarjeta,
+            };
+            setCurrentView(null);
+            setPrecios(preciosObj);
+        }
+    }, [cita, servicios]);
+
     return (
         <Dialog.Root
             placement="center"
@@ -82,15 +103,33 @@ export default function ModalAccionesCita({
                                         cita={cita}
                                     />
 
-                                    {cita.pagado != 1 && (
-                                        <AccionesCita
-                                            cita={cita}
-                                        />
-                                    )}
+                                    {cita.pagado != 1 &&
+                                        !currentView && (
+                                            <AccionesCita
+                                                cita={cita}
+                                                setCurrentView={
+                                                    setCurrentView
+                                                }
+                                            />
+                                        )}
 
-                                    {cita.pagado == 1 && (
-                                        <PagadoView
+                                    {cita.pagado == 1 &&
+                                        !currentView && (
+                                            <PagadoView
+                                                cita={cita}
+                                            />
+                                        )}
+
+                                    {currentView ==
+                                        "pagar" && (
+                                        <PagarView
                                             cita={cita}
+                                            precios={
+                                                precios
+                                            }
+                                            setCurrentView={
+                                                setCurrentView
+                                            }
                                         />
                                     )}
                                 </Grid>
@@ -194,7 +233,7 @@ function DetallesCita({ cita }) {
     );
 }
 
-function AccionesCita({ cita }) {
+function AccionesCita({ cita, setCurrentView }) {
     const buttonStyles = {
         fontWeight: 700,
         shadow: "sm",
@@ -218,6 +257,7 @@ function AccionesCita({ cita }) {
             <Button
                 {...buttonStyles}
                 colorPalette={"blue"}
+                onClick={() => setCurrentView("pagar")}
             >
                 <TbCashRegister />
                 {"Pagar"}
@@ -283,6 +323,73 @@ function PagadoView({ cita }) {
             <Text>{`Fecha: ${formatHoyTitle(
                 cita.fecha_pagado
             )}`}</Text>
+        </VStack>
+    );
+}
+
+function PagarView({ cita, precios, setCurrentView }) {
+    const mps = ["efectivo", "tarjeta"];
+    const [mp, setMp] = useState(null);
+
+    return (
+        <VStack
+            h={"100%"}
+            w={"100%"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={"0.5rem"}
+            // shadow={"sm"}
+            rounded={"lg"}
+            borderColor={"black"}
+            borderWidth={"2px"}
+            position={"relative"}
+        >
+            <CloseButton
+                onClick={() => setCurrentView(null)}
+            />
+            <Text
+                fontWeight={700}
+                fontSize={"md"}
+            >
+                {mp ? `Costo: $${precios[mp]}` : "--"}
+            </Text>
+            <Form.Select
+                style={{
+                    width: "50%",
+                    padding: "0.5rem",
+                    fontSize: "0.9rem",
+                    borderColor: "black",
+                    borderWidth: "2px",
+                    borderRadius: "0.3rem",
+                }}
+                value={mp}
+                onChange={(e) => setMp(e.target.value)}
+            >
+                <option
+                    value={null}
+                    disabled
+                    selected
+                >
+                    {"Método de pago"}
+                </option>
+                {mps.map((mp) => (
+                    <option
+                        key={mp}
+                        value={mp}
+                    >
+                        {mp}
+                    </option>
+                ))}
+            </Form.Select>
+            <Button
+                // variant={"subtle"}
+                colorPalette={"green"}
+                shadow={"sm"}
+                w={"50%"}
+                disabled={mp == null}
+            >
+                {"Pagar"}
+            </Button>
         </VStack>
     );
 }
