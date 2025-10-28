@@ -114,7 +114,7 @@ function PriceTag({
                             setMp(null);
                         }}
                         fontSize="0.6rem"
-                        opacity="0.7"
+                        opacity="0.6"
                     >
                         <FaTimes />
                     </Text>

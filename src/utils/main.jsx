@@ -1,5 +1,10 @@
 import { es } from "date-fns/locale"; // Spanish locale
-import { format, parse, getDay } from "date-fns";
+import {
+    format,
+    parse,
+    getDay,
+    addMinutes,
+} from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 function formatHoyTitle(date) {
@@ -306,6 +311,23 @@ function decodeJSONToHorarioObjects(horarios) {
     );
 }
 
+function addMinutesToTime(timeStr, minutes) {
+    // Parse the time string (HH:mm format)
+
+    const [hours, mins] = timeStr.split(":").map(Number);
+
+    // Create a date object for today with the given time
+    const date = new Date();
+    date.setHours(hours, mins, 0, 0);
+
+    // Add minutes using date-fns
+    const newDate = addMinutes(date, minutes);
+    // console.log(timeStr, minutes, newDate);
+
+    // Format back to HH:mm
+    return format(newDate, "HH:mm");
+}
+
 export {
     decodeHorario,
     encodeHorarios,
@@ -327,4 +349,5 @@ export {
     parseQueryFilters,
     getHorarioObject,
     decodeJSONToHorarioObjects,
+    addMinutesToTime,
 };

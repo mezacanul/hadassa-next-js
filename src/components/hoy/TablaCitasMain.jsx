@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import StatusBadge from "../common/StatusBadge";
 import ModalAccionesCita from "./ModalAccionesCita";
 import CostoSelector from "../common/CostoSelector";
+import { addMinutesToTime } from "@/utils/main";
 
 export default function TablaCitasMain({
     citas,
@@ -99,30 +100,29 @@ function getColumnDefinitions(
 ) {
     return [
         {
-            headerName: "Inicio",
+            headerName: "Horario",
             field: "hora",
-            cellStyle: {
-                fontWeight: "bold",
-                // fontSize: "1rem",
-                color: primaryColor,
-                justifyContent: "center",
-            },
             pinned: "left",
+            cellRenderer: HorarioCell,
         },
         // {
         //     headerName: "Salida",
-        //     // field: "hora_fin",
-        //     valueGetter: (params) => "--",
+        //     // field: "hora",
+        //     valueGetter: ({ data }) =>
+        //         addMinutesToTime(data.hora, data.minutos),
         //     cellStyle: {
         //         justifyContent: "center",
         //     },
+        //     pinned: "left",
         // },
         {
             headerName: "Nombre",
-            // field: "lashista",
             valueGetter: (params) =>
                 `${params.data.nombres} ${params.data.apellidos}`,
-            // cellRenderer: renderResourceLabel,
+            cellClass: "hover-link",
+            onCellClicked: (params) => {
+                goToServicio(params.data.cita_ID);
+            },
             // flex: 3,
             pinned: "left",
         },
@@ -130,15 +130,11 @@ function getColumnDefinitions(
             headerName: "Servicio",
             field: "servicio",
             // flex: 3,
-            cellStyle: {
-                // fontWeight: "bold",
-                // textDecoration: "underline",
-            },
             cellClass: "hover-link",
             onCellClicked: (params) => {
                 goToServicio(params.data.cita_ID);
             },
-            // pinned: "left",
+            pinned: "left",
         },
         {
             headerName: "Lashista",
@@ -214,6 +210,28 @@ function Actions({ data, setOpen, setCita }) {
             >
                 {"Opciones"}
             </Button>
+        </HStack>
+    );
+}
+
+function HorarioCell({ data }) {
+    return (
+        <HStack
+            justifyContent="center"
+            gap={1.5}
+        >
+            <Text
+                fontWeight="bold"
+                color={"blue.600"}
+            >
+                {data.hora}
+            </Text>
+            <Text
+                fontSize={"0.8rem"}
+            >{` a ${addMinutesToTime(
+                data.hora,
+                data.minutos
+            )}`}</Text>
         </HStack>
     );
 }
