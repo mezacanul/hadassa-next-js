@@ -93,6 +93,7 @@ async function getByMultipleFilters(reqQuery) {
             pagado,
             metodo_pago,
             monto_pagado,
+            fecha_pagado,
             clientas.lada,
             clientas.telefono
         FROM 

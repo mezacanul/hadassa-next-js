@@ -23,6 +23,7 @@ import {
     FaTimes,
     FaWhatsapp,
     FaMoneyBill,
+    FaRegCheckCircle,
 } from "react-icons/fa";
 import { TbCashRegister } from "react-icons/tb";
 import { IoMdTime } from "react-icons/io";
@@ -86,6 +87,12 @@ export default function ModalAccionesCita({
                                             cita={cita}
                                         />
                                     )}
+
+                                    {cita.pagado == 1 && (
+                                        <PagadoView
+                                            cita={cita}
+                                        />
+                                    )}
                                 </Grid>
                             </Dialog.Body>
                         )}
@@ -128,9 +135,7 @@ function DetallesCita({ cita }) {
                         {cita.hora}
                     </Text>
 
-                    <Text
-                        fontSize={"sm"}
-                    >
+                    <Text fontSize={"sm"}>
                         {` - ${addMinutesToTime(
                             cita.hora,
                             cita.minutos
@@ -241,6 +246,44 @@ function AccionesCita({ cita }) {
                 {"Cancelar Cita"}
             </Button>
         </Grid>
+    );
+}
+
+function PagadoView({ cita }) {
+    return (
+        <VStack
+            h={"100%"}
+            w={"100%"}
+            alignItems={"center"}
+            gap={"0.5rem"}
+        >
+            <Text
+                color={"green.600"}
+                fontSize={"4xl"}
+            >
+                <FaRegCheckCircle />
+            </Text>
+            <Text
+                fontWeight={700}
+                fontSize={"lg"}
+            >{`Pagado: $${cita.monto_pagado}`}</Text>
+            <HStack>
+                <Text>{`Método de Pago: `}</Text>
+                <Text
+                    fontWeight={700}
+                    color={
+                        cita.metodo_pago == "tarjeta"
+                            ? "blue.600"
+                            : "green.600"
+                    }
+                >
+                    {cita.metodo_pago}
+                </Text>
+            </HStack>
+            <Text>{`Fecha: ${formatHoyTitle(
+                cita.fecha_pagado
+            )}`}</Text>
+        </VStack>
     );
 }
 
