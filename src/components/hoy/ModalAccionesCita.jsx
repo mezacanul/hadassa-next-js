@@ -14,7 +14,10 @@ import {
 import { useEffect, useState } from "react";
 import API from "@/services/main";
 import { loadHook } from "@/utils/lattice-design";
-import { formatHoyTitle } from "@/utils/main";
+import {
+    addMinutesToTime,
+    formatHoyTitle,
+} from "@/utils/main";
 import {
     FaCheck,
     FaTimes,
@@ -45,25 +48,19 @@ export default function ModalAccionesCita({
                     <Dialog.Content>
                         <Dialog.Header>
                             <HStack
-                                justifyContent={
-                                    "space-between"
-                                }
+                                // justifyContent={
+                                //     "space-between"
+                                // }
                                 w={"100%"}
-                                m={"0.7rem"}
+                                // my={"0.2rem"}
+                                // mx={"0.5rem"}
                             >
                                 <Text
-                                    fontSize={"md"}
+                                    fontSize={"lg"}
                                     fontWeight={600}
                                 >
                                     {"Cita"}
                                 </Text>
-
-                                {cita && (
-                                    <StatusBadge
-                                        status={cita.status}
-                                        pagado={cita.pagado}
-                                    />
-                                )}
                             </HStack>
                         </Dialog.Header>
 
@@ -75,9 +72,10 @@ export default function ModalAccionesCita({
                                         "2fr 3fr"
                                     }
                                     gap={"2rem"}
-                                    mb={"4rem"}
+                                    mb={"1rem"}
                                     px={"1rem"}
                                     py={"2rem"}
+                                    minH={"15rem"}
                                 >
                                     <DetallesCita
                                         cita={cita}
@@ -107,9 +105,11 @@ function DetallesCita({ cita }) {
             <VStack
                 alignItems={"start"}
                 gap={"0.5rem"}
+                w={"100%"}
             >
                 <HStack
-                    alignItems={"center"}
+                    // alignItems={"center"}
+                    alignItems={"end"}
                     gap={"0.2rem"}
                 >
                     <Text
@@ -127,15 +127,24 @@ function DetallesCita({ cita }) {
                     >
                         {cita.hora}
                     </Text>
+
+                    <Text
+                        fontSize={"sm"}
+                    >
+                        {` - ${addMinutesToTime(
+                            cita.hora,
+                            cita.minutos
+                        )}`}
+                    </Text>
                 </HStack>
 
                 <HStack>
-                    <Text
+                    {/* <Text
                         fontWeight={600}
                         fontSize={"lg"}
                     >
                         <IoPerson />
-                    </Text>
+                    </Text> */}
                     <Text
                         fontWeight={600}
                         fontSize={"lg"}
@@ -143,12 +152,24 @@ function DetallesCita({ cita }) {
                         {cita.nombres} {cita.apellidos}
                     </Text>
                 </HStack>
+
+                <StatusBadge
+                    status={cita.status}
+                    pagado={cita.pagado}
+                />
                 {/* <Text>{`+${cita.lada} ${cita.telefono}`}</Text> */}
             </VStack>
 
             <VStack
                 alignItems={"start"}
                 gap={"0rem"}
+                py={"0.5rem"}
+                px={"1rem"}
+                rounded={"lg"}
+                // shadow={"sm"}
+                borderColor={"pink.500"}
+                borderWidth={"2px"}
+                w={"100%"}
             >
                 <Text
                     fontWeight={600}
@@ -178,6 +199,7 @@ function AccionesCita({ cita }) {
         <Grid
             gridTemplateColumns={"1fr 1fr"}
             gap={"1rem"}
+            h={"fit-content"}
         >
             {cita.status != 2 && (
                 <Button
