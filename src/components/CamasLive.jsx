@@ -6,44 +6,55 @@ import {
     Button,
     Spinner,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuBed } from "react-icons/lu";
 import { MdOutlineChair } from "react-icons/md";
 import { IoReload } from "react-icons/io5";
+import API from "@/services/main";
+import { mapLiveFeed } from "@/utils/main";
 
-const initialLiveFeed = {
-    sillas: [
-        { id: "s1", active: false },
-        { id: "s2", active: false },
-        { id: "s3", active: false },
-    ],
-    camas: [
-        { id: "c1", active: false },
-        { id: "c2", active: false },
-        { id: "c3", active: false },
-    ],
-};
+// const initialLiveFeed = {
+//     sillas: [
+//         { id: "s1", active: false },
+//         { id: "s2", active: false },
+//         { id: "s3", active: false },
+//     ],
+//     camas: [
+//         { id: "c1", active: false },
+//         { id: "c2", active: false },
+//         { id: "c3", active: false },
+//     ],
+// };
 
 export default function CamasLive() {
     const [isLoading, setIsLoading] = useState(false);
-    const [liveFeed, setLiveFeed] =
-        useState(initialLiveFeed);
+    const [liveFeed, setLiveFeed] = useState({
+        sillas: [],
+        camas: [],
+    });
 
-    const updateLiveFeed = (id, type) => {
+    useEffect(() => {
+        onReload();
+    }, []);
+
+    const updateLiveFeed = (data, type) => {
         setIsLoading(true);
         setTimeout(() => {
+            const updatedType = liveFeed[type].map(
+                (item) => {
+                    if (item.id === data.id) {
+                        return {
+                            ...item,
+                            active: !data.active,
+                        };
+                    }
+                    return item;
+                }
+            );
             setLiveFeed(() => {
                 return {
                     ...liveFeed,
-                    [type]: liveFeed[type].map((item) => {
-                        if (item.id === id) {
-                            return {
-                                ...item,
-                                active: !item.active,
-                            };
-                        }
-                        return item;
-                    }),
+                    [type]: updatedType,
                 };
             });
             setIsLoading(false);
@@ -52,9 +63,14 @@ export default function CamasLive() {
 
     function onReload() {
         setIsLoading(true);
-        setTimeout(() => {
+        API.live.getAll().then((liveResp) => {
+            const mappedLiveFeed = mapLiveFeed(
+                liveResp.data
+            );
+            console.log("mappedLiveFeed", mappedLiveFeed);
+            setLiveFeed(mappedLiveFeed);
             setIsLoading(false);
-        }, 500);
+        });
     }
 
     return (
@@ -171,7 +187,7 @@ function LugarBtn({ type, data, updateLiveFeed }) {
             _hover={{
                 transform: "scale(1.1)",
             }}
-            onClick={() => updateLiveFeed(data.id, type)}
+            onClick={() => updateLiveFeed(data, type)}
         >
             {type == "sillas" ? (
                 <MdOutlineChair />

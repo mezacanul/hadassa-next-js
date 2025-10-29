@@ -364,6 +364,25 @@ function formatTimeToAMPM(timeStr) {
     return format(zonedTime, "h:mm a").toLowerCase();
 }
 
+function mapLiveFeed(liveFeed) {
+    const mapped = {
+        camas: [],
+        sillas: [],
+    };
+    liveFeed.forEach((item) => {
+        const obj = {
+            id: item.id,
+            active: item.status == 1,
+        }
+        if (item.tipo == "cama") {
+            mapped.camas.push(obj);
+        } else if (item.tipo == "silla") {
+            mapped.sillas.push(obj);
+        }
+    });
+    return mapped;
+}
+
 export {
     decodeHorario,
     encodeHorarios,
@@ -388,4 +407,5 @@ export {
     addMinutesToTime,
     formatSpanishDate,
     formatTimeToAMPM,
+    mapLiveFeed,
 };
