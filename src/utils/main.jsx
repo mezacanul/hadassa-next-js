@@ -328,6 +328,42 @@ function addMinutesToTime(timeStr, minutes) {
     return format(newDate, "HH:mm");
 }
 
+function formatSpanishDate(dateStr) {
+    const [day, month, year] = dateStr.split("-");
+    const parsedDate = parse(
+        `${year}-${month}-${day}`,
+        "yyyy-MM-dd",
+        new Date()
+    );
+    const zonedDate = toZonedTime(
+        parsedDate,
+        "America/Mexico_City"
+    );
+    return format(zonedDate, "EEEE d 'de' MMMM", {
+        locale: es,
+    })
+        .split(" ")
+        .map(
+            (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+        )
+        .join(" ");
+}
+
+function formatTimeToAMPM(timeStr) {
+    const today = new Date().toISOString().split("T")[0]; // Use current date as base
+    const parsedTime = parse(
+        `${today} ${timeStr}`,
+        "yyyy-MM-dd HH:mm",
+        new Date()
+    );
+    const zonedTime = toZonedTime(
+        parsedTime,
+        "America/Mexico_City"
+    );
+    return format(zonedTime, "h:mm a").toLowerCase();
+}
+
 export {
     decodeHorario,
     encodeHorarios,
@@ -350,4 +386,6 @@ export {
     getHorarioObject,
     decodeJSONToHorarioObjects,
     addMinutesToTime,
+    formatSpanishDate,
+    formatTimeToAMPM,
 };

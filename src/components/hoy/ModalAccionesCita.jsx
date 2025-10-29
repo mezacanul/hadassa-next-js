@@ -16,6 +16,7 @@ import API from "@/services/main";
 import { loadHook } from "@/utils/lattice-design";
 import {
     addMinutesToTime,
+    formatFechaYMD,
     formatHoyTitle,
 } from "@/utils/main";
 import {
@@ -32,6 +33,7 @@ import StatusBadge from "../common/StatusBadge";
 import { Form } from "react-bootstrap";
 import CloseButton from "../common/CloseButton";
 import { format } from "date-fns";
+import whatsappUtils from "@/utils/whatsapp";
 
 export default function ModalAccionesCita({
     open,
@@ -62,47 +64,91 @@ export default function ModalAccionesCita({
 
     const handleConfirmarCita = () => {
         setCurrentView("loading");
-        setTimeout(() => {
-            setCurrentView("success");
+        API.citas
+            .confirmarCita(cita.cita_ID)
+            .then((resp) => {
+                console.log("confirmar cita:", resp);
+                if (
+                    resp.status == 200 &&
+                    resp.data.affectedRows == 1
+                ) {
+                    setCurrentView("success");
+                    setCita({ ...cita, status: 2 });
+                    const updatedCitas = citas.map(
+                        (citaObj) => {
+                            if (
+                                citaObj.cita_ID ===
+                                cita.cita_ID
+                            ) {
+                                return {
+                                    ...citaObj,
+                                    status: 2,
+                                };
+                            }
+                            return citaObj;
+                        }
+                    );
+                    setCitas(updatedCitas);
+                } else {
+                    alert("Error al confirmar cita");
+                    setCurrentView(null);
+                }
+            });
+    };
+
+    const handlePagarCita = async (mp, precio, citaID) => {
+        try {
+            const resp = await API.citas.pagarCita(
+                citaID,
+                mp,
+                precio
+            );
+
+            console.log("pagar cita:", resp);
             const updatedCitas = citas.map((citaObj) => {
-                if (citaObj.cita_ID === cita.cita_ID) {
-                    setCita({ ...citaObj, status: 2 });
-                    return { ...citaObj, status: 2 };
+                if (citaObj.cita_ID === citaID) {
+                    const updatedObj = {
+                        ...citaObj,
+                        status: 2,
+                        pagado: 1,
+                        metodo_pago: mp,
+                        monto_pagado: precio,
+                        fecha_pagado: format(
+                            new Date(),
+                            "yyyy-MM-dd HH:mm:ss"
+                        ),
+                    };
+                    setCita(updatedObj);
+                    return updatedObj;
                 }
                 return citaObj;
             });
             setCitas(updatedCitas);
-        }, 1000);
+            return { success: true };
+        } catch (err) {
+            console.log("error pagar cita:", err);
+            alert("Error al pagar cita");
+            return { success: false };
+        }
     };
 
-    const handlePagarCita = (mp, precio, citaID) => {
-        const updatedCitas = citas.map((citaObj) => {
-            if (citaObj.cita_ID === citaID) {
-                const updatedObj = {
-                    ...citaObj,
-                    status: 2,
-                    pagado: 1,
-                    metodo_pago: mp,
-                    monto_pagado: precio,
-                    fecha_pagado: format(
-                        new Date(),
-                        "yyyy-MM-dd HH:mm:ss"
-                    ),
-                };
-                setCita(updatedObj);
-                return updatedObj;
-            }
-            return citaObj;
-        });
-        setCitas(updatedCitas);
-    };
+    const handleCancelarCita = async (cita) => {
+        try {
+            const resp = await API.citas.cancelCita(
+                cita.cita_ID
+            );
 
-    const handleCancelarCita = (cita) => {
-        const updatedCitas = citas.filter((citaObj) => {
-            return citaObj.cita_ID !== cita.cita_ID;
-        });
-        setCitas(updatedCitas);
-        setCita({ ...cita, status: 0 });
+            console.log("cancelar cita:", resp);
+            const updatedCitas = citas.filter((citaObj) => {
+                return citaObj.cita_ID !== cita.cita_ID;
+            });
+            setCitas(updatedCitas);
+            setCita({ ...cita, status: 0 });
+            return { success: true };
+        } catch (err) {
+            alert("Error al cancelar cita");
+            return { success: false };
+        }
     };
 
     return (
@@ -120,17 +166,13 @@ export default function ModalAccionesCita({
                         <CloseButton
                             onClick={() => setOpen(false)}
                             size="lg"
-                            position={{ top: "1rem", right: "1rem" }}
+                            position={{
+                                top: "1rem",
+                                right: "1rem",
+                            }}
                         />
                         <Dialog.Header>
-                            <HStack
-                                // justifyContent={
-                                //     "space-between"
-                                // }
-                                w={"100%"}
-                                // my={"0.2rem"}
-                                // mx={"0.5rem"}
-                            >
+                            <HStack w={"100%"}>
                                 <Text
                                     fontSize={"lg"}
                                     fontWeight={600}
@@ -168,13 +210,20 @@ export default function ModalAccionesCita({
                                                 handleConfirmarCita={
                                                     handleConfirmarCita
                                                 }
+                                                servicios={
+                                                    servicios
+                                                }
                                             />
                                         )}
 
                                     {cita.pagado == 1 &&
+                                        cita.status != 0 &&
                                         !currentView && (
                                             <PagadoView
                                                 cita={cita}
+                                                setCurrentView={
+                                                    setCurrentView
+                                                }
                                             />
                                         )}
 
@@ -308,6 +357,12 @@ function DetallesCita({ cita }) {
                     </Text>
                 </HStack>
 
+                <Text>
+                    {formatHoyTitle(
+                        formatFechaYMD(cita.fecha)
+                    )}
+                </Text>
+
                 <StatusBadge
                     status={cita.status}
                     pagado={cita.pagado}
@@ -348,11 +403,45 @@ function AccionesCita({
     cita,
     setCurrentView,
     handleConfirmarCita,
+    servicios,
 }) {
     const buttonStyles = {
         fontWeight: 700,
         shadow: "sm",
         variant: "subtle",
+    };
+    const servicio = servicios.find(
+        (servicioObj) => servicioObj.id === cita.servicio_id
+    );
+
+    const enviarConfirmacion = () => {
+        whatsappUtils.copyMessage(
+            {
+                ...cita,
+                precio: servicio.precio,
+                precio_tarjeta: servicio.precio_tarjeta,
+            },
+            "confirmacion"
+        );
+        window.open(
+            whatsappUtils.createWhatsAppUrl(cita),
+            "_blank"
+        );
+    };
+
+    const enviarRecordatorio = () => {
+        whatsappUtils.copyMessage(
+            {
+                ...cita,
+                precio: servicio.precio,
+                precio_tarjeta: servicio.precio_tarjeta,
+            },
+            "recordatorio"
+        );
+        window.open(
+            whatsappUtils.createWhatsAppUrl(cita),
+            "_blank"
+        );
     };
     return (
         <Grid
@@ -379,21 +468,26 @@ function AccionesCita({
                 {"Pagar"}
             </Button>
             {cita.status != 2 && (
-                <Button
-                    {...buttonStyles}
-                    colorPalette={"green"}
-                >
-                    <FaWhatsapp />
-                    {"Confirmación"}
-                </Button>
+                <>
+                    <Button
+                        {...buttonStyles}
+                        colorPalette={"green"}
+                        onClick={enviarConfirmacion}
+                    >
+                        <FaWhatsapp />
+                        {"Confirmación"}
+                    </Button>
+                    <Button
+                        {...buttonStyles}
+                        colorPalette={"green"}
+                        onClick={enviarRecordatorio}
+                    >
+                        <FaWhatsapp />
+                        {"Recordatorio"}
+                    </Button>
+                </>
             )}
-            <Button
-                {...buttonStyles}
-                colorPalette={"green"}
-            >
-                <FaWhatsapp />
-                {"Recordatorio"}
-            </Button>
+
             <Button
                 {...buttonStyles}
                 colorPalette={"red"}
@@ -406,7 +500,7 @@ function AccionesCita({
     );
 }
 
-function PagadoView({ cita }) {
+function PagadoView({ cita, setCurrentView }) {
     return (
         <VStack
             h={"100%"}
@@ -440,6 +534,15 @@ function PagadoView({ cita }) {
             <Text>{`Fecha: ${formatHoyTitle(
                 cita.fecha_pagado
             )}`}</Text>
+            <Button
+                colorPalette={"red"}
+                variant={"outline"}
+                size={"sm"}
+                onClick={() => setCurrentView("cancelar")}
+                mt={"1rem"}
+            >
+                {"Cancelar Cita"}
+            </Button>
         </VStack>
     );
 }
@@ -451,12 +554,10 @@ function CancelarView({
 }) {
     const [status, setStatus] = useState(null);
 
-    const onCancelarCita = () => {
+    const onCancelarCita = async () => {
         setStatus("loading");
-        setTimeout(() => {
-            setStatus("success");
-            handleCancelarCita(cita);
-        }, 1000);
+        const resp = await handleCancelarCita(cita);
+        setStatus(resp.success ? "success" : null);
     };
 
     return (
@@ -516,12 +617,14 @@ function PagarView({
     const [mp, setMp] = useState(null);
     const [status, setStatus] = useState(null);
 
-    const onPagarCita = () => {
+    const onPagarCita = async () => {
         setStatus("loading");
-        setTimeout(() => {
-            setStatus("success");
-            handlePagarCita(mp, precios[mp], cita.cita_ID);
-        }, 1000);
+        const resp = await handlePagarCita(
+            mp,
+            precios[mp],
+            cita.cita_ID
+        );
+        setStatus(resp.success ? "success" : null);
     };
 
     return (
@@ -573,7 +676,7 @@ function PagarView({
                         }
                     >
                         <option
-                            value={null}
+                            // value={null}
                             disabled
                             selected
                         >

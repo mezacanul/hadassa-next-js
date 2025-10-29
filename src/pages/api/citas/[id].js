@@ -42,7 +42,8 @@ export default async function handler(req, res) {
                                 pagado = ?, 
                                 fecha_pagado = NOW(),
                                 metodo_pago = ?,
-                                monto_pagado = ?
+                                monto_pagado = ?,
+                                status = 2
                             WHERE 
                                 id = ?`;
                     [result] = await pool.query(

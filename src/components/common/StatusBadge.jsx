@@ -49,10 +49,17 @@ function getBagdeConfig(status, pagado) {
             }
             break;
         case 1:
-            config = {
-                label: "Pagado",
-                colorPalette: "green",
-            };
+            if (status == 0) {
+                config = {
+                    label: "Cancelada",
+                    colorPalette: "red",
+                };
+            } else {
+                config = {
+                    label: "Pagado",
+                    colorPalette: "green",
+                };
+            }
             break;
         default:
             break;

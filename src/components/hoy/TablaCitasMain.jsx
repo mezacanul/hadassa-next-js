@@ -105,21 +105,27 @@ function getColumnDefinitions(
 ) {
     return [
         {
-            headerName: "Horario",
+            headerName: "Inicio",
             field: "hora",
             pinned: "left",
-            cellRenderer: HorarioCell,
+            // cellRenderer: HorarioCell,
+            cellStyle: {
+                justifyContent: "center",
+                color: primaryColor,
+                fontWeight: "bold",
+                fontSize: "1rem",
+            },
         },
-        // {
-        //     headerName: "Salida",
-        //     // field: "hora",
-        //     valueGetter: ({ data }) =>
-        //         addMinutesToTime(data.hora, data.minutos),
-        //     cellStyle: {
-        //         justifyContent: "center",
-        //     },
-        //     pinned: "left",
-        // },
+        {
+            headerName: "Salida",
+            pinned: "left",
+            valueGetter: ({ data }) =>
+                addMinutesToTime(data.hora, data.minutos),
+            width: 80,
+            cellStyle: {
+                justifyContent: "center",
+            },
+        },
         {
             headerName: "Nombre",
             valueGetter: (params) =>
@@ -139,7 +145,7 @@ function getColumnDefinitions(
             onCellClicked: (params) => {
                 goToServicio(params.data.cita_ID);
             },
-            pinned: "left",
+            // pinned: "left",
         },
         {
             headerName: "Lashista",
@@ -154,6 +160,7 @@ function getColumnDefinitions(
             cellStyle: {
                 justifyContent: "center",
             },
+            width: 100,
             cellRenderer: ({ data }) => (
                 <StatusBadge
                     status={data.status}
@@ -164,6 +171,7 @@ function getColumnDefinitions(
         {
             headerName: "Costo",
             field: "monto_pagado",
+            width: 100,
             cellRenderer: ({ data, value }) => (
                 <CostoSelector
                     data={data}
