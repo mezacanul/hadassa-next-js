@@ -117,6 +117,11 @@ export default function ModalAccionesCita({
                 <Dialog.Backdrop />
                 <Dialog.Positioner>
                     <Dialog.Content>
+                        <CloseButton
+                            onClick={() => setOpen(false)}
+                            size="lg"
+                            position={{ top: "1rem", right: "1rem" }}
+                        />
                         <Dialog.Header>
                             <HStack
                                 // justifyContent={
