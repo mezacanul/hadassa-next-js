@@ -37,28 +37,30 @@ export default function CamasLive() {
         onReload();
     }, []);
 
-    const updateLiveFeed = (data, type) => {
+    const updateLiveFeed = (data) => {
         setIsLoading(true);
-        setTimeout(() => {
-            const updatedType = liveFeed[type].map(
-                (item) => {
-                    if (item.id === data.id) {
-                        return {
-                            ...item,
-                            active: !data.active,
-                        };
-                    }
-                    return item;
-                }
-            );
-            setLiveFeed(() => {
-                return {
-                    ...liveFeed,
-                    [type]: updatedType,
-                };
+        try {
+            const payload = {
+                id: data.id,
+                status: data.active ? 0 : 1,
+            };
+            API.live.update(payload).then((updatedResp) => {
+                console.log("updatedResp", updatedResp);
+
+                const mappedUpdatedResp = mapLiveFeed(
+                    updatedResp.data
+                );
+
+                setLiveFeed(mappedUpdatedResp);
+                setIsLoading(false);
             });
+        } catch (error) {
+            console.error(
+                "Error updating live feed:",
+                error
+            );
             setIsLoading(false);
-        }, 500);
+        }
     };
 
     function onReload() {
@@ -135,7 +137,7 @@ function OverlayActualizar({ isLoading }) {
             top="0"
             w="100%"
             h="100%"
-            bg="rgba(255, 255, 255, 0.7)"
+            bg="rgba(255, 255, 255, 0.3)"
             zIndex="1000"
             justifyContent="end"
             alignItems="end"
@@ -187,7 +189,7 @@ function LugarBtn({ type, data, updateLiveFeed }) {
             _hover={{
                 transform: "scale(1.1)",
             }}
-            onClick={() => updateLiveFeed(data, type)}
+            onClick={() => updateLiveFeed(data)}
         >
             {type == "sillas" ? (
                 <MdOutlineChair />

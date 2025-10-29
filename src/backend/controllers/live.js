@@ -6,7 +6,11 @@ async function getAll() {
 
 async function update(body) {
     const { id, status } = body;
-    return await liveRepository.update(id, status);
+    const result = await liveRepository.update(id, status);
+    if (result.affectedRows == 1) {
+      const all = await liveRepository.getAll();
+      return all;
+    }
 }
 
 export default {
