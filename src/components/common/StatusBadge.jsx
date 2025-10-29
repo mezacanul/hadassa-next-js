@@ -8,7 +8,7 @@ export default function StatusBadge({ status, pagado }) {
     useEffect(() => {
         const config = getBagdeConfig(status, pagado);
         setBagdeConfig(config);
-    }, []);
+    }, [status, pagado]);
     return (
         <>
             {bagdeConfig && (
@@ -31,7 +31,12 @@ function getBagdeConfig(status, pagado) {
     };
     switch (pagado) {
         case null:
-            if (status == 1) {
+            if (status == 0) {
+                config = {
+                    label: "Cancelada",
+                    colorPalette: "red",
+                };
+            } else if (status == 1) {
                 config = {
                     label: "Pendiente",
                     colorPalette: "yellow",

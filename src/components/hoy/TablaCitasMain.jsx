@@ -17,6 +17,7 @@ import { addMinutesToTime } from "@/utils/main";
 
 export default function TablaCitasMain({
     citas,
+    setCitas,
     primaryColor,
     goToServicio,
     servicios,
@@ -86,7 +87,10 @@ export default function TablaCitasMain({
                 open={open}
                 setOpen={setOpen}
                 cita={cita}
+                setCita={setCita}
                 servicios={servicios}
+                citas={citas}
+                setCitas={setCitas}
             />
         </Box>
     );
@@ -180,6 +184,7 @@ function getColumnDefinitions(
                     data={data}
                     setOpen={setOpen}
                     setCita={setCita}
+                    servicios={servicios}
                 />
             ),
             width: 150,
@@ -191,7 +196,7 @@ function getColumnDefinitions(
     ];
 }
 
-function Actions({ data, setOpen, setCita }) {
+function Actions({ data, setOpen, setCita, servicios }) {
     const buttonStyles = {
         variant: "surface",
         // colorPalette: "blue",
@@ -208,6 +213,7 @@ function Actions({ data, setOpen, setCita }) {
                     setOpen(true);
                     setCita(data);
                 }}
+                disabled={!servicios}
             >
                 {"Opciones"}
             </Button>

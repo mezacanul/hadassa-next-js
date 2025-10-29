@@ -140,6 +140,7 @@ export default function Hoy() {
 
                 <TablaCitasMain
                     citas={citas}
+                    setCitas={setCitas}
                     primaryColor={primaryColor}
                     goToServicio={goToServicio}
                     servicios={servicios}
