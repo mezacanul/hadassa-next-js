@@ -4,11 +4,13 @@ import {
     Text,
     HStack,
     Spinner,
+    VStack,
 } from "@chakra-ui/react";
 import "@/config/agGridSetup";
 import { AgGridReact } from "ag-grid-react";
 import {
     formatFechaDMY,
+    formatHorario,
     getFechaLocal,
 } from "@/utils/main";
 
@@ -51,7 +53,7 @@ export default function TablaEventosMain({
                         primaryColor,
                         labels
                     )}
-                    rowHeight={60}
+                    rowHeight={80}
                     // autoSizeStrategy={{
                     //     type: "fitCellContents",
                     // }}
@@ -99,6 +101,7 @@ function getColumnDefinitions(primaryColor, labels) {
             cellStyle: {
                 color: primaryColor,
             },
+            cellRenderer: HorariosCell,
         },
         {
             headerName: "Fecha",
@@ -113,13 +116,47 @@ function getColumnDefinitions(primaryColor, labels) {
     ];
 }
 
+function HorariosCell({ value }) {
+    console.log("value", typeof value, value);
+    return (
+        <VStack>
+            {typeof value != "string" &&
+                value.map((hr) => {
+                    return (
+                        <Text
+                            lineHeight={"1.5"}
+                            key={hr}
+                            textDecor={"underline"}
+                        >
+                            {hr}
+                        </Text>
+                    );
+                })}
+            {typeof value == "string" && (
+                <Text
+                    // lineHeight={"1.5"}
+                    textDecor={"underline"}
+                >
+                    {value}
+                </Text>
+            )}
+        </VStack>
+    );
+}
+
 function getHorasByType(params) {
     const { horarios, hora_init, hora_fin, tipo } =
         params.data;
     if (tipo == "horas-libres") {
         return `${hora_init} - ${hora_fin}`;
     } else if (tipo == "cambio-horario") {
-        return horarios;
+        console.log("horarios", JSON.parse(horarios));
+        const formattedHorarios = JSON.parse(horarios).map(
+            (hr) => {
+                return formatHorario(hr);
+            }
+        );
+        return formattedHorarios;
     } else {
         return "Todo el día";
     }
