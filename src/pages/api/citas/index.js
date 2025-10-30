@@ -194,14 +194,21 @@ export default async function handler(req, res) {
                     horarioLashista
                 );
 
-            if (
-                eventos.length > 0 &&
-                eventos[0].tipo == "cambio-horario"
-            ) {
+            if (eventos.length > 0) {
                 let eventoHorarios = eventos[0].horarios;
-                horarioLashistaArray =
-                    horarioJSONToFullArray(eventoHorarios);
-                // console.log("nuevoHorario", nuevoHorario);
+                switch (eventos[0].tipo) {
+                    case "cambio-horario":
+                        horarioLashistaArray =
+                            horarioJSONToFullArray(
+                                eventoHorarios
+                            );
+                        break;
+                    case "dia-libre":
+                        res.status(200).json([]);
+                        return;
+                    default:
+                        break;
+                }
             }
             console.log(
                 "horarioLashistaArray",
