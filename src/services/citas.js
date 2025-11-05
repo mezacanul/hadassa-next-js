@@ -29,10 +29,20 @@ function pagarCita(id, metodoPago, precio) {
         .then((resp) => resp);
 }
 
+function actualizarEnServicio(id, enServicio) {
+    return axios
+        .patch(`/api/citas/${id}`, {
+            column: "en_servicio",
+            value: enServicio,
+        })
+        .then((resp) => resp);
+}
+
 const citasService = {
     cancelCita,
     confirmarCita,
     pagarCita,
+    actualizarEnServicio,
 };
 
 export default citasService;

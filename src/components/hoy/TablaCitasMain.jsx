@@ -16,6 +16,7 @@ import ModalAccionesCita from "./ModalAccionesCita";
 import CostoSelector from "../common/CostoSelector";
 import { addMinutesToTime } from "@/utils/main";
 import { useToken } from "@chakra-ui/react";
+import API from "@/services/main";
 
 export default function TablaCitasMain({
     citas,
@@ -33,16 +34,39 @@ export default function TablaCitasMain({
         gray: useToken("colors", "gray.300"),
     };
 
-    const updateEnServicio = (cita_ID, enServicio) => {
+    const updateEnServicio = async (
+        cita_ID,
+        enServicio
+    ) => {
         console.log(cita_ID, enServicio);
-        const updatedObject = citas.find(
-            (cita) => cita.cita_ID === cita_ID
+        const resp = await API.citas.actualizarEnServicio(
+            cita_ID,
+            enServicio
         );
-        updatedObject.en_servicio = enServicio;
-        const updatedArray = citas.map((cita) =>
-            cita.cita_ID === cita_ID ? updatedObject : cita
-        );
-        setCitas(updatedArray);
+        if (
+            resp.data.success &&
+            resp.data.affectedRows == 1
+        ) {
+            console.log("resp", resp);
+            const updatedObject = citas.find(
+                (cita) => cita.cita_ID === cita_ID
+            );
+            updatedObject.en_servicio = enServicio;
+            const updatedArray = citas.map((cita) =>
+                cita.cita_ID === cita_ID
+                    ? updatedObject
+                    : cita
+            );
+            setCitas(updatedArray);
+            return true;
+        } else {
+            console.log("error", resp);
+            return false;
+        }
+
+        // .then((resp) => {
+        // console.log(resp);
+        // });
     };
 
     return (
@@ -72,7 +96,6 @@ export default function TablaCitasMain({
             {citas && citas.length > 0 && (
                 <AgGridReact
                     rowData={citas}
-                    // detltaRowDataMode={true}
                     getRowId={({ data }) => data.cita_ID}
                     columnDefs={getColumnDefinitions(
                         primaryColor,
@@ -249,10 +272,6 @@ function getColumnDefinitions(
                 />
             ),
             width: 150,
-            // flex: 3,
-            // cellStyle: {
-            //     width: "15rem",
-            // },
         },
     ];
 }
@@ -305,8 +324,14 @@ function HorarioCell({ data }) {
 }
 
 function EnServicioCell({ data, updateEnServicio }) {
-    const onCheckedChange = (e) => {
-        updateEnServicio(data.cita_ID, e.checked ? 1 : 0);
+    const [loading, setLoading] = useState(false);
+    const onCheckedChange = async (e) => {
+        setLoading(true);
+        const resp = await updateEnServicio(
+            data.cita_ID,
+            e.checked ? 1 : 0
+        );
+        setLoading(false);
     };
 
     return (
@@ -314,14 +339,23 @@ function EnServicioCell({ data, updateEnServicio }) {
             justifyContent={"center"}
             w={"100%"}
         >
-            <Switch.Root
-                colorPalette={"blue"}
-                checked={data.en_servicio}
-                onCheckedChange={onCheckedChange}
-            >
-                <Switch.HiddenInput />
-                <Switch.Control />
-            </Switch.Root>
+            {loading && (
+                <Spinner
+                    size={"md"}
+                    borderWidth={"3px"}
+                    color={"blue.500"}
+                />
+            )}
+            {!loading && (
+                <Switch.Root
+                    colorPalette={"blue"}
+                    checked={data.en_servicio}
+                    onCheckedChange={onCheckedChange}
+                >
+                    <Switch.HiddenInput />
+                    <Switch.Control />
+                </Switch.Root>
+            )}
         </HStack>
     );
 }

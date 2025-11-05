@@ -1,24 +1,10 @@
-// pages/api/citas/[id].js
-// import mysql from "mysql2/promise";
-// import { db_info } from "@/config/db";
-
-// const dbConfig = {
-//     host: db_info.host,
-//     port: db_info.port,
-//     user: db_info.user,
-//     password: db_info.password,
-//     database: db_info.database,
-// };
 import pool from "@/backend/models/db";
 
 export default async function handler(req, res) {
-    let connection;
     let query;
     let result;
 
     try {
-        // connection = await mysql.createConnection(dbConfig);
-
         if (req.method == "PATCH") {
             const id = req.query.id;
             const { column, value } = req.body; // Use req.body for PATCH payload
@@ -30,10 +16,10 @@ export default async function handler(req, res) {
                             SET 
                                 status = ? 
                             WHERE id = ?`;
-                    [result] = await pool.query(
-                        query,
-                        [value, id]
-                    );
+                    [result] = await pool.query(query, [
+                        value,
+                        id,
+                    ]);
                     break;
                 case "pagado":
                     query = `UPDATE 
@@ -46,15 +32,12 @@ export default async function handler(req, res) {
                                 status = 2
                             WHERE 
                                 id = ?`;
-                    [result] = await pool.query(
-                        query,
-                        [
-                            value,
-                            req.body.metodoPago,
-                            req.body.precio,
-                            id,
-                        ]
-                    );
+                    [result] = await pool.query(query, [
+                        value,
+                        req.body.metodoPago,
+                        req.body.precio,
+                        id,
+                    ]);
                     break;
                 case "cama_id":
                     query = `UPDATE 
@@ -63,10 +46,22 @@ export default async function handler(req, res) {
                                 cama_id = ? 
                             WHERE 
                                 id = ?`;
-                    [result] = await pool.query(
-                        query,
-                        [value, id]
-                    );
+                    [result] = await pool.query(query, [
+                        value,
+                        id,
+                    ]);
+                    break;
+                case "en_servicio":
+                    query = `UPDATE 
+                                citas 
+                            SET 
+                                en_servicio = ? 
+                            WHERE 
+                                id = ?`;
+                    [result] = await pool.query(query, [
+                        value,
+                        id,
+                    ]);
                     break;
                 default:
                     break;
@@ -86,7 +81,5 @@ export default async function handler(req, res) {
     } catch (error) {
         console.error("Error:", error); // Debug
         res.status(500).json({ error });
-    } finally {
-        // if (connection) await connection.end(); // Close connection
     }
 }
