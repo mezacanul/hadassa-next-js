@@ -13,19 +13,6 @@ import { IoReload } from "react-icons/io5";
 import API from "@/services/main";
 import { mapLiveFeed } from "@/utils/main";
 
-// const initialLiveFeed = {
-//     sillas: [
-//         { id: "s1", active: false },
-//         { id: "s2", active: false },
-//         { id: "s3", active: false },
-//     ],
-//     camas: [
-//         { id: "c1", active: false },
-//         { id: "c2", active: false },
-//         { id: "c3", active: false },
-//     ],
-// };
-
 export default function CamasLive() {
     const [isLoading, setIsLoading] = useState(false);
     const [liveFeed, setLiveFeed] = useState({
@@ -124,6 +111,27 @@ export default function CamasLive() {
                 <BtnActualizar onReload={onReload} />
                 <OverlayActualizar isLoading={isLoading} />
             </HStack>
+
+            {/* <HStack py="1rem" px="0.5rem" gap="1.5rem">
+                <HStack>
+                    <Box
+                        w="1rem"
+                        h="1rem"
+                        bg="gray.400"
+                    />
+                    <Text fontSize={"sm"}>
+                        {"Disponible"}
+                    </Text>
+                </HStack>
+                <HStack>
+                    <Box
+                        w="1rem"
+                        h="1rem"
+                        bg="pink.500"
+                    />
+                    <Text fontSize={"sm"}>{"Ocupado"}</Text>
+                </HStack>
+            </HStack> */}
         </Box>
     );
 }
@@ -180,7 +188,7 @@ function BtnActualizar({ onReload }) {
 function LugarBtn({ type, data, updateLiveFeed }) {
     return (
         <Text
-            color={data.active ? "pink.500" : "green.500"}
+            color={data.active ? "pink.500" : "green.400"}
             style={{
                 ...styles.btn,
                 fontSize:

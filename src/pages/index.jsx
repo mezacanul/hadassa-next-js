@@ -34,7 +34,7 @@ export default function Index() {
             <VStack
                 w={"100%"}
                 align={"start"}
-                gap={"2rem"}
+                gap={"1.5rem"}
             >
                 <CamasLive />
                 <CalendarioMesV2 />
