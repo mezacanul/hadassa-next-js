@@ -10,6 +10,8 @@ import {
     HStack,
     Box,
     Grid,
+    Switch,
+    Badge,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import API from "@/services/main";
@@ -25,6 +27,7 @@ import {
     FaWhatsapp,
     FaMoneyBill,
     FaRegCheckCircle,
+    FaCheckCircle,
 } from "react-icons/fa";
 import { TbCashRegister } from "react-icons/tb";
 import { IoMdTime } from "react-icons/io";
@@ -34,6 +37,7 @@ import { Form } from "react-bootstrap";
 import CloseButton from "../common/CloseButton";
 import { format } from "date-fns";
 import whatsappUtils from "@/utils/whatsapp";
+import { LuBed } from "react-icons/lu";
 
 export default function ModalAccionesCita({
     open,
@@ -293,6 +297,10 @@ export default function ModalAccionesCita({
                                             </Text>
                                         )}
                                 </Grid>
+
+                                {cita.en_servicio == 1 && (
+                                    <EnServicio />
+                                )}
                             </Dialog.Body>
                         )}
                     </Dialog.Content>
@@ -380,6 +388,7 @@ function DetallesCita({ cita }) {
                 borderColor={"pink.500"}
                 borderWidth={"2px"}
                 w={"100%"}
+                bg={"white"}
             >
                 <Text
                     fontWeight={600}
@@ -447,6 +456,7 @@ function AccionesCita({
         <Grid
             gridTemplateColumns={"1fr 1fr"}
             gap={"1rem"}
+            bg={"white"}
             h={"fit-content"}
         >
             {cita.status != 2 && (
@@ -534,15 +544,20 @@ function PagadoView({ cita, setCurrentView }) {
             <Text>{`Fecha: ${formatHoyTitle(
                 cita.fecha_pagado
             )}`}</Text>
-            <Button
-                colorPalette={"red"}
-                variant={"outline"}
-                size={"sm"}
-                onClick={() => setCurrentView("cancelar")}
-                mt={"1rem"}
-            >
-                {"Cancelar Cita"}
-            </Button>
+
+            <HStack>
+                <Button
+                    colorPalette={"red"}
+                    variant={"outline"}
+                    size={"sm"}
+                    onClick={() =>
+                        setCurrentView("cancelar")
+                    }
+                    mt={"1rem"}
+                >
+                    {"Cancelar Cita"}
+                </Button>
+            </HStack>
         </VStack>
     );
 }
@@ -756,5 +771,39 @@ function Success({ message, setCurrentView }) {
                 {"Cerrar"}
             </Button>
         </VStack>
+    );
+}
+
+function EnServicio() {
+    return (
+        <HStack
+            justifyContent={"center"}
+            w={"100%"}
+            mt={"2rem"}
+            mb={"1rem"}
+        >
+            <Badge
+                colorPalette={"green"}
+                shadow={"sm"}
+                px={"1rem"}
+                py={"0.5rem"}
+                rounded={"lg"}
+            >
+                <Text
+                    fontSize={"2xl"}
+                    // color={"pink.500"}
+                    fontWeight={600}
+                >
+                    <LuBed />
+                </Text>
+                <Text
+                    fontSize={"md"}
+                    // color={"pink.500"}
+                    fontWeight={600}
+                >
+                    {"Cita en servicio"}
+                </Text>
+            </Badge>
+        </HStack>
     );
 }

@@ -1,9 +1,9 @@
 .hover-link {
     transition: all ease 0.3s;
+    cursor: pointer;
 }
 
 .hover-link:hover {
-    cursor: pointer;
     text-decoration: underline;
     /* font-weight: bold; */
 }

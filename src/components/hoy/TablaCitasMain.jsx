@@ -6,6 +6,7 @@ import {
     Button,
     Badge,
     VStack,
+    Switch,
 } from "@chakra-ui/react";
 import "@/config/agGridSetup";
 import { AgGridReact } from "ag-grid-react";
@@ -14,6 +15,7 @@ import StatusBadge from "../common/StatusBadge";
 import ModalAccionesCita from "./ModalAccionesCita";
 import CostoSelector from "../common/CostoSelector";
 import { addMinutesToTime } from "@/utils/main";
+import { useToken } from "@chakra-ui/react";
 
 export default function TablaCitasMain({
     citas,
@@ -24,6 +26,24 @@ export default function TablaCitasMain({
 }) {
     const [open, setOpen] = useState(false);
     const [cita, setCita] = useState(null);
+    const colors = {
+        green: useToken("colors", "green.200"),
+        pink: useToken("colors", "pink.200"),
+        yellow: useToken("colors", "yellow.50"),
+        gray: useToken("colors", "gray.300"),
+    };
+
+    const updateEnServicio = (cita_ID, enServicio) => {
+        console.log(cita_ID, enServicio);
+        const updatedObject = citas.find(
+            (cita) => cita.cita_ID === cita_ID
+        );
+        updatedObject.en_servicio = enServicio;
+        const updatedArray = citas.map((cita) =>
+            cita.cita_ID === cita_ID ? updatedObject : cita
+        );
+        setCitas(updatedArray);
+    };
 
     return (
         <Box
@@ -36,6 +56,7 @@ export default function TablaCitasMain({
             id={"AG-Table"}
             w={"100%"}
         >
+            <style>{getStylesRowStatus(colors)}</style>
             {!citas && (
                 <HStack
                     w={"100%"}
@@ -51,12 +72,15 @@ export default function TablaCitasMain({
             {citas && citas.length > 0 && (
                 <AgGridReact
                     rowData={citas}
+                    // detltaRowDataMode={true}
+                    getRowId={({ data }) => data.cita_ID}
                     columnDefs={getColumnDefinitions(
                         primaryColor,
                         goToServicio,
                         setOpen,
                         setCita,
-                        servicios
+                        servicios,
+                        updateEnServicio
                     )}
                     rowHeight={60}
                     autoSizeStrategy={{
@@ -70,6 +94,21 @@ export default function TablaCitasMain({
                             // justifyContent: "center",
                             alignItems: "center",
                         },
+                    }}
+                    rowClassRules={{
+                        "cita-pendiente": ({ data }) =>
+                            data.en_servicio != 1 &&
+                            data.pagado != 1 &&
+                            data.status == 1,
+                        "cita-confirmada": ({ data }) =>
+                            data.en_servicio != 1 &&
+                            data.pagado != 1 &&
+                            data.status == 2,
+                        "cita-pagada": ({ data }) =>
+                            data.en_servicio != 1 &&
+                            data.pagado == 1,
+                        "cita-en-servicio": ({ data }) =>
+                            data.en_servicio == 1,
                     }}
                     // quickFilterText={searchTerm}
                 />
@@ -101,7 +140,8 @@ function getColumnDefinitions(
     goToServicio,
     setOpen,
     setCita,
-    servicios
+    servicios,
+    updateEnServicio
 ) {
     return [
         {
@@ -186,6 +226,19 @@ function getColumnDefinitions(
             },
         },
         {
+            headerName: "En Servicio",
+            cellRenderer: ({ data }) => (
+                <EnServicioCell
+                    data={data}
+                    updateEnServicio={updateEnServicio}
+                />
+            ),
+            width: 100,
+            cellStyle: {
+                justifyContent: "center",
+            },
+        },
+        {
             headerName: "Acciones",
             cellRenderer: ({ data }) => (
                 <Actions
@@ -213,7 +266,7 @@ function Actions({ data, setOpen, setCita, servicios }) {
         fontWeight: "600",
     };
     return (
-        <HStack w={"15rem"}>
+        <HStack>
             <Button
                 {...buttonStyles}
                 colorPalette={"blue"}
@@ -250,3 +303,43 @@ function HorarioCell({ data }) {
         </HStack>
     );
 }
+
+function EnServicioCell({ data, updateEnServicio }) {
+    const onCheckedChange = (e) => {
+        updateEnServicio(data.cita_ID, e.checked ? 1 : 0);
+    };
+
+    return (
+        <HStack
+            justifyContent={"center"}
+            w={"100%"}
+        >
+            <Switch.Root
+                colorPalette={"blue"}
+                checked={data.en_servicio}
+                onCheckedChange={onCheckedChange}
+            >
+                <Switch.HiddenInput />
+                <Switch.Control />
+            </Switch.Root>
+        </HStack>
+    );
+}
+
+const getStylesRowStatus = (colors) => {
+    const estilos = `
+        .cita-pendiente {
+            background-color: ${colors.yellow};
+        }
+        .cita-confirmada {
+            background-color: ${colors.pink};
+        }
+        .cita-pagada {
+            background-color: ${colors.gray};
+        }
+        .cita-en-servicio {
+            background-color: ${colors.green};
+        }
+    `;
+    return estilos;
+};

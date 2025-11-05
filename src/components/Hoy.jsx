@@ -110,16 +110,6 @@ export default function Hoy() {
         }
     }, [selectedDate]);
 
-    const handleEventPreview = (info) => {
-        // const { cita_ID } = info.event["_def"].extendedProps
-        const cita = info.event["_def"].extendedProps;
-        if (cita.status != 3) {
-            setLoading(true);
-            NextNav.push(`/citas/${cita.cita_ID}`);
-            // console.log(info.event.toPlainObject());
-        }
-    };
-
     const goToServicio = (citaID) => {
         setLoading(true);
         NextNav.push(`/citas/${citaID}`);

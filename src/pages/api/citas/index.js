@@ -30,14 +30,6 @@ import {
 } from "@/utils/disponibilidad-v1.2";
 
 export default async function handler(req, res) {
-    // const connection = await mysql.createConnection({
-    //     host: db_info.host,
-    //     port: db_info.port,
-    //     user: db_info.user,
-    //     password: db_info.password,
-    //     database: db_info.database,
-    // });
-
     try {
         if (req.method === "GET") {
             if (req.query.clienta) {
