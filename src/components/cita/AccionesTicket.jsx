@@ -4,6 +4,7 @@ import {
     Heading,
     HStack,
     Spinner,
+    Text,
     VStack,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -28,6 +29,7 @@ export default function AccionesTicket({ cita, setCita }) {
 
     useEffect(() => {
         console.log(cita);
+        setMp([]);
     }, []);
 
     function confirmarCita() {
@@ -137,7 +139,9 @@ export default function AccionesTicket({ cita, setCita }) {
                 <HStack w={"100%"}>
                     <Link
                         style={{ width: "100%" }}
-                        href={whatsappUtils.createWhatsAppUrl(cita)}
+                        href={whatsappUtils.createWhatsAppUrl(
+                            cita
+                        )}
                         target="_blank"
                     >
                         <Button
@@ -159,7 +163,9 @@ export default function AccionesTicket({ cita, setCita }) {
 
                     <Link
                         style={{ width: "100%" }}
-                        href={whatsappUtils.createWhatsAppUrl(cita)}
+                        href={whatsappUtils.createWhatsAppUrl(
+                            cita
+                        )}
                         target="_blank"
                     >
                         <Button
@@ -210,14 +216,33 @@ export default function AccionesTicket({ cita, setCita }) {
 
                     {cita.pagado != 1 &&
                         cita.status != 0 && (
-                            <Button
-                                onClick={marcarComoPagada}
-                                {...buttonStyles}
-                                colorPalette={"green"}
-                                w={"100%"}
-                            >
-                                Marcar como Pagada
-                            </Button>
+                            <VStack w={"100%"}>
+                                <Button
+                                    onClick={
+                                        marcarComoPagada
+                                    }
+                                    {...buttonStyles}
+                                    colorPalette={"green"}
+                                    w={"100%"}
+                                    disabled={
+                                        mp == null ||
+                                        mp.length == 0
+                                    }
+                                >
+                                    {"Marcar como Pagada"}
+                                </Button>
+                                {(mp == null ||
+                                    mp.length == 0) && (
+                                    <Text
+                                        fontSize={"sm"}
+                                        color={"blue.600"}
+                                    >
+                                        {
+                                            "Selecciona un método de pago"
+                                        }
+                                    </Text>
+                                )}
+                            </VStack>
                         )}
                 </>
             )}

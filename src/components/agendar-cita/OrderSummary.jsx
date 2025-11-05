@@ -96,7 +96,7 @@ export default function OrderSummary({
         setAgendarLoading(true);
         console.log({
             ...currentCita,
-            metodoPago: mp[0],
+            // metodoPago: mp[0],
             action: "agendar",
         });
         // return
@@ -104,7 +104,7 @@ export default function OrderSummary({
         axios
             .post("/api/citas", {
                 ...currentCita,
-                metodoPago: mp[0],
+                // metodoPago: mp[0],
                 action: "agendar",
             })
             .then((citasResp) => {
@@ -422,7 +422,7 @@ export default function OrderSummary({
                     </HStack>
                 </HStack>
 
-                <HStack
+                {/* <HStack
                     w={"100%"}
                     justify={"space-between"}
                 >
@@ -447,19 +447,19 @@ export default function OrderSummary({
                             `$${currentCita.servicio.precio_tarjeta}`}
                         {!mp && "--"}
                     </Text>
-                </HStack>
+                </HStack> */}
             </VStack>
 
-            <SelectMetodoPago citaID={citaID} />
+            {/* <SelectMetodoPago citaID={citaID} /> */}
             <CitaExito />
             {!citaID && agendarLoading != true && (
                 <Button
                     // disabled={mp == []  ? false : true}
-                    disabled={
-                        mp?.length == 0 || mp == null
-                            ? true
-                            : false
-                    }
+                    // disabled={
+                    //     mp?.length == 0 || mp == null
+                    //         ? true
+                    //         : false
+                    // }
                     onClick={handleAgendar}
                     size={"lg"}
                     bg={"pink.500"}

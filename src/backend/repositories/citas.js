@@ -61,9 +61,7 @@ async function getByClientaID(clientaId) {
             citas.fecha DESC,
             citas.hora DESC
     `;
-    const [rows] = await pool.query(query, [
-        clientaId,
-    ]);
+    const [rows] = await pool.query(query, [clientaId]);
     return rows;
 }
 
@@ -112,10 +110,7 @@ async function getByMultipleFilters(reqQuery) {
     let fullQuery = queryPlusFilters(sqlQuery, conditions);
     fullQuery = `${fullQuery} ORDER BY STR_TO_DATE(fecha, '%d-%m-%Y') DESC, lashista DESC, hora DESC`;
 
-    const [rows] = await pool.query(
-        fullQuery,
-        params
-    );
+    const [rows] = await pool.query(fullQuery, params);
     console.log("repository", rows);
     return rows;
 }
@@ -133,26 +128,22 @@ async function createCita(cita, uuid, hora) {
                 hora, 
                 duracion, 
                 cama_id, 
-                metodo_pago, 
                 status, 
                 added
             ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
-        const [mysql_response] = await pool.query(
-            query,
-            [
-                uuid,
-                cita.clienta.id,
-                cita.servicio.id,
-                cita.lashista.id,
-                cita.fecha,
-                hora,
-                cita.servicio.minutos,
-                cita.horario.cama,
-                cita.metodoPago,
-                1,
-            ]
-        );
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
+        const [mysql_response] = await pool.query(query, [
+            uuid,
+            cita.clienta.id,
+            cita.servicio.id,
+            cita.lashista.id,
+            cita.fecha,
+            hora,
+            cita.servicio.minutos,
+            cita.horario.cama,
+            // cita.metodoPago,
+            1,
+        ]);
         return mysql_response;
     } catch (error) {
         throw new Error(
